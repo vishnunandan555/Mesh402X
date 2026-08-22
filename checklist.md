@@ -19,35 +19,35 @@
 Objective: *Prove the entire x402 payment rail end-to-end on Algorand TestNet before writing audit logic.*
 
 ### 1.1 Dev Environment & Repo Setup
-- [ ] Verify Node.js LTS (v18+) is installed (`node -v`)
-- [ ] Install `pnpm` package manager
-- [ ] Clone / initialize the `x402-commerce-template` into workspace
-- [ ] Run `pnpm install` and verify `@x402-avm` packages are installed
-- [ ] Ensure `.env` and sensitive patterns are included in `.gitignore`
+- [x] Verify Node.js LTS (v18+) is installed (`node -v`)
+- [x] Install `pnpm` package manager
+- [x] Clone / initialize the `x402-commerce-template` into workspace
+- [] Run `pnpm install` and verify `@x402-avm` packages are installed
+- [x] Ensure `.env` and sensitive patterns are included in `.gitignore`
 
 ### 1.2 Algorand TestNet Wallet Setup
-- [ ] Open [Lora TestNet Explorer](https://lora.algokit.io/testnet)
-- [ ] **Create Payer Account (AI Agent simulation)**:
-  - [ ] Generate account and securely store 25-word mnemonic
-  - [ ] Copy public address
-- [ ] **Create Receiver Account (ADSEC Server payout address)**:
-  - [ ] Generate account and copy public address
+- [x] Open [Lora TestNet Explorer](https://lora.algokit.io/testnet)
+- [x] **Create Payer Account (AI Agent simulation)**:
+  - [x] Generate account and securely store 25-word mnemonic
+  - [x] Copy public address
+- [x] **Create Receiver Account (ADSEC Server payout address)**:
+  - [x] Generate account and copy public address
 
 ### 1.3 Funding & Asset Opt-in (Critical)
-- [ ] Fund Payer account with TestNet ALGO via [Lora Faucet](https://lora.algokit.io/testnet/fund)
-- [ ] Fund Receiver account with TestNet ALGO via [Lora Faucet](https://lora.algokit.io/testnet/fund)
-- [ ] **Opt-in Payer account to TestNet USDC** on Lora
-- [ ] **Opt-in Receiver account to TestNet USDC** on Lora
-- [ ] Fund Payer account with TestNet USDC via [Circle Faucet](https://faucet.circle.com/)
-- [ ] Confirm nonzero ALGO and USDC balances for both accounts on Lora
+- [x] Fund Payer account with TestNet ALGO via [Lora Faucet](https://lora.algokit.io/testnet/fund)
+- [x] Fund Receiver account with TestNet ALGO via [Lora Faucet](https://lora.algokit.io/testnet/fund)
+- [x] **Opt-in Payer account to TestNet USDC** on Lora
+- [x] **Opt-in Receiver account to TestNet USDC** on Lora
+- [x] Fund Payer account with TestNet USDC via [Circle Faucet](https://faucet.circle.com/)
+- [x] Confirm nonzero ALGO and USDC balances for both accounts on Lora
 
 ### 1.4 Environment Configuration
-- [ ] Create `.env` from `.env.example`
-- [ ] Set `ALGORAND_NETWORK=testnet`
-- [ ] Set `PAY_TO_ADDRESS=<Receiver Public Address>`
-- [ ] Set `CLIENT_MNEMONIC="<Payer 25-word mnemonic>"`
-- [ ] Set `WALLET_ADDRESS=<Receiver Public Address>`
-- [ ] Set `DEMO_MODE=true`
+- [x] Create `.env` from `.env.example`
+- [x] Set `ALGORAND_NETWORK=testnet`
+- [x] Set `PAY_TO_ADDRESS=<Receiver Public Address>`
+- [x] Set `CLIENT_MNEMONIC="<Payer 25-word mnemonic>"`
+- [x] Set `WALLET_ADDRESS=<Receiver Public Address>`
+- [x] Set `DEMO_MODE=true`
 
 ### 1.5 Local Payment Rail Verification
 - [ ] Start development server (`pnpm dev`) at `http://localhost:3000`
