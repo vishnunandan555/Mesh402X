@@ -65,3 +65,16 @@ pie title Project Completion Status
 - [ ] **4.2 Keep-Alive Setup**: Configure free ping on `cron-job.org` hitting `/health` every 10 minutes to prevent cold starts during demo.
 - [ ] **4.3 Bazaar Discovery Check**: Query GoPlausible discovery registry to verify public indexing of our live domain.
 - [ ] **4.4 Demo Backup & Pitch Prep**: Record a 60-second backup video clip of the payment and audit flow for presentation day.
+
+---
+
+## 🔮 Phase 5: High-Impact Feature Expansions (Roadmap)
+
+See detailed specs in [**`features.md`**](file:///home/vishnunandan555/Projects/Mesh402X/features.md):
+- [ ] **GitHub Repository Auditing (`repoUrl`)**: Ingest public repositories via GitHub REST API without git cloning.
+- [ ] **Directory Auto-Discovery & Globbing**: CLI pattern matching (`src/**/*.py`) with automatic `.gitignore` compliance.
+- [ ] **Algorand Smart Contract Specialist**: PyTeAL / AlgoKit AST rules for missing ASA opt-ins and unchecked inner transactions (`itxn`).
+- [ ] **AI Agent Prompt Firewall**: Detect indirect prompt injections and outbound data exfiltration attempts.
+- [ ] **On-Chain Audit Attestation**: Write SHA-256 code hash and audit score to Algorand transaction note field (`tx_note`).
+- [ ] **PR Diff Mode**: Scan only changed lines in GitHub Actions for sub-200ms CI/CD gating.
+

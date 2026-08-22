@@ -85,7 +85,8 @@ When autonomous AI coding agents generate code, write smart contracts, or prepar
 ```text
 Mesh402X/
 ├── checklist.md                        # Master project progress checklist
-├── Phase 2 Build Plan.md               # Security engine architecture & contract
+├── features.md                         # Detailed feature specs & expansion roadmap
+├── Phase 2 Build Plan.md               # Security engine architecture & flowcharts
 ├── full-setup.md                       # Complete build plan & milestones
 ├── pre-setup.md                        # Infrastructure & wallet setup guide
 ├── README.md                           # Main documentation
@@ -97,12 +98,12 @@ Mesh402X/
     │   ├── handlers/                   # Endpoint handlers
     │   │   └── adsec-audit.ts          # ADSEC audit endpoint handler
     │   ├── scripts/
-    │   │   └── agent-audit.ts          # Terminal Agent CLI script
+    │   │   └── agent-audit.ts          # Multi-file Terminal Agent CLI script
     │   └── engine/                     # Core Security Audit Engine
     │       ├── types.ts                # TypeScript interface contract
     │       ├── scoring.ts              # 0-100 Security Health Score calculator
     │       ├── tier1/                  # Deterministic scanners & OSV.dev
-    │       └── tier2/                  # AI logic review & diff generator
+    │       └── tier2/                  # Multi-provider LLM review & diff generator
     │
     └── X402-Usecase/                   # Frontend Web Application (Optional UI)
         └── projects/X402-Usecase/      # React dashboard
@@ -146,10 +147,15 @@ npm run dev
 
 ```bash
 cd x402-Project/x402-demo-server
-npx tsx scripts/agent-audit.ts test-fixtures/vulnerable-app.py
+
+# Audit default vulnerable demo
+npm run audit
+
+# Or audit multiple custom files at once
+npx tsx scripts/agent-audit.ts path/to/file1.py path/to/file2.js --tier=tier2
 ```
 
-*Watch the autonomous agent pay 0.01 USDC on Algorand TestNet, receive the findings, and apply the Git diff fix automatically.*
+*Watch the autonomous agent pay 0.01 USDC on Algorand TestNet, receive the findings across all files, and generate unified Git diff fixes automatically.*
 
 ---
 
