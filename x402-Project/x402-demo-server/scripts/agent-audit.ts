@@ -2,15 +2,15 @@
  * ADSEC Autonomous Agent CLI
  *
  * Demonstrates an AI agent or developer running an on-demand,
- * x402-paid security audit on local code.
+ * x402-paid security audit on local code files.
  *
  * Usage:
- *   npx tsx scripts/agent-audit.ts [filepath] [--tier=tier1|tier2]
+ *   npx tsx scripts/agent-audit.ts file1.py file2.js [--tier=tier1|tier2]
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { runAudit } from '../engine';
+import { runAudit, AuditFinding, AuditDiffFix } from '../engine';
 
 const SAMPLE_VULNERABLE_CODE = `
 import os
@@ -35,29 +35,17 @@ def get_user_records(user_id):
 
 async function main() {
   const args = process.argv.slice(2);
-  let filePath = args.find((a) => !a.startsWith('--'));
   const tierArg = args.find((a) => a.startsWith('--tier='));
   const tier = (tierArg ? tierArg.split('=')[1] : 'tier2') as 'tier1' | 'tier2';
-
-  let code = SAMPLE_VULNERABLE_CODE;
-  let filename = 'vulnerable-demo.py';
-
-  if (filePath && fs.existsSync(filePath)) {
-    code = fs.readFileSync(filePath, 'utf-8');
-    filename = path.basename(filePath);
-  }
-
-  const ext = path.extname(filename).toLowerCase();
-  let language: 'python' | 'javascript' | 'typescript' | 'solidity' = 'python';
-  if (ext === '.js') language = 'javascript';
-  else if (ext === '.ts') language = 'typescript';
-  else if (ext === '.sol') language = 'solidity';
+  
+  // Get all file paths passed in CLI arguments
+  const filePaths = args.filter((a) => !a.startsWith('--'));
 
   console.log('\n' + '═'.repeat(65));
   console.log('🤖 ADSEC — Autonomous Agent Security Pre-Flight Audit');
   console.log('═'.repeat(65));
-  console.log(`📁 Target File : ${filename} (${language})`);
-  console.log(`🏷️ Service Tier: ${tier.toUpperCase()} (${tier === 'tier2' ? '$0.05 USDC' : '$0.01 USDC'})`);
+  console.log(`📁 Files to Audit : ${filePaths.length > 0 ? filePaths.length : 1} file(s)`);
+  console.log(`🏷️ Service Tier   : ${tier.toUpperCase()} (${tier === 'tier2' ? '$0.05 USDC' : '$0.01 USDC'})`);
   console.log('═'.repeat(65));
 
   console.log('\n📡 [x402 Flow] Initiating audit request to ADSEC node...');
@@ -66,26 +54,47 @@ async function main() {
   console.log('🟢 [x402 Facilitator] Settled on Algorand TestNet (TxID: 0x4f9a2b8e...)');
 
   console.log('\n🔍 [ADSEC Engine] Scanning code for secrets, CVEs, and pattern flaws...');
-  const result = await runAudit({
-    code,
-    language,
-    tier,
-    filename,
-  });
+
+  if (filePaths.length === 0) {
+    // Default demo run
+    await auditSingleContent('vulnerable-demo.py', SAMPLE_VULNERABLE_CODE, 'python', tier);
+    return;
+  }
+
+  let grandTotalIssues = 0;
+  let allFindings: AuditFinding[] = [];
+  let allFixes: AuditDiffFix[] = [];
+
+  for (const filePath of filePaths) {
+    if (!fs.existsSync(filePath)) {
+      console.log(`\n❌ File not found: ${filePath}`);
+      continue;
+    }
+
+    const filename = path.basename(filePath);
+    const code = fs.readFileSync(filePath, 'utf-8');
+    const ext = path.extname(filename).toLowerCase();
+    let language: 'python' | 'javascript' | 'typescript' | 'solidity' = 'python';
+    if (ext === '.js') language = 'javascript';
+    else if (ext === '.ts') language = 'typescript';
+    else if (ext === '.sol') language = 'solidity';
+
+    const result = await runAudit({ code, language, tier, filename });
+
+    grandTotalIssues += result.summary.totalIssues;
+    allFindings.push(...result.findings.map(f => ({ ...f, title: `[${filename}] ${f.title}` })));
+    if (result.fixes) allFixes.push(...result.fixes);
+
+    console.log(`\n📄 Audited: ${filename} ➔ Score: ${result.summary.score}/100 | Issues: ${result.summary.totalIssues} (Critical: ${result.summary.critical}, High: ${result.summary.high})`);
+  }
 
   console.log('\n' + '─'.repeat(65));
-  console.log(`🛡️  AUDIT REPORT: ${result.summary.score}/100 Security Score (${result.summary.durationMs}ms)`);
-  console.log('─'.repeat(65));
-  console.log(`⚠️  Total Issues Found: ${result.summary.totalIssues}`);
-  console.log(`   • Critical : ${result.summary.critical}`);
-  console.log(`   • High     : ${result.summary.high}`);
-  console.log(`   • Medium   : ${result.summary.medium}`);
-  console.log(`   • Low      : ${result.summary.low}`);
+  console.log(`🛡️  AUDIT SUMMARY Across ${filePaths.length} Files: ${grandTotalIssues} Total Issues Detected`);
   console.log('─'.repeat(65));
 
-  if (result.findings.length > 0) {
+  if (allFindings.length > 0) {
     console.log('\n📋 DETAILED FINDINGS:');
-    result.findings.forEach((f, idx) => {
+    allFindings.forEach((f, idx) => {
       const icon = f.severity === 'critical' ? '🔴 [CRITICAL]' : f.severity === 'high' ? '🟠 [HIGH]' : '🟡 [MEDIUM]';
       console.log(`\n${idx + 1}. ${icon} ${f.title}`);
       if (f.line) console.log(`   📍 Line ${f.line}: \`${f.snippet}\``);
@@ -94,11 +103,11 @@ async function main() {
     });
   }
 
-  if (result.fixes && result.fixes.length > 0) {
+  if (allFixes.length > 0) {
     console.log('\n' + '═'.repeat(65));
     console.log('✨ [ADSEC Auto-Remediation] Generated Actionable Git Diff Patches:');
     console.log('═'.repeat(65));
-    for (const fix of result.fixes) {
+    for (const fix of allFixes) {
       console.log(`\n# Fix for: ${fix.findingId}`);
       console.log(fix.diff);
       console.log(`Explanation: ${fix.explanation}`);
@@ -108,6 +117,20 @@ async function main() {
   console.log('\n' + '═'.repeat(65));
   console.log('✅ Audit Completed & Verified On-Chain! Ready for deployment.');
   console.log('═'.repeat(65) + '\n');
+}
+
+async function auditSingleContent(filename: string, code: string, language: any, tier: any) {
+  const result = await runAudit({ code, language, tier, filename });
+  console.log(`\n🛡️  AUDIT REPORT: ${result.summary.score}/100 Security Score (${result.summary.durationMs}ms)`);
+  console.log(`⚠️  Total Issues Found: ${result.summary.totalIssues} (Critical: ${result.summary.critical}, High: ${result.summary.high})`);
+  if (result.findings.length > 0) {
+    result.findings.forEach((f, idx) => {
+      const icon = f.severity === 'critical' ? '🔴 [CRITICAL]' : '🟠 [HIGH]';
+      console.log(`\n${idx + 1}. ${icon} ${f.title}`);
+      if (f.line) console.log(`   📍 Line ${f.line}: \`${f.snippet}\``);
+      console.log(`   💡 Remediation: ${f.remediation}`);
+    });
+  }
 }
 
 main().catch(console.error);

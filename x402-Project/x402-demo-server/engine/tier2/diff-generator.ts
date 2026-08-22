@@ -21,7 +21,14 @@ export function generateUnifiedDiffs(
 
     // Pattern-specific automated fixes
     if (finding.category === 'secret') {
-      fixedLine = `// TODO: [ADSEC-FIX] Loaded from environment variable\nconst secretKey = process.env.API_SECRET_KEY;`;
+      const isPython = filename.endsWith('.py');
+      const varNameMatch = originalLine.match(/^([a-zA-Z0-9_]+)\s*=/);
+      const varName = varNameMatch ? varNameMatch[1] : 'SECRET_KEY';
+      if (isPython) {
+        fixedLine = `${varName} = os.environ.get("${varName}")  # Loaded from environment variable`;
+      } else {
+        fixedLine = `const ${varName} = process.env.${varName}; // Loaded from environment variable`;
+      }
       explanation = 'Replaced hardcoded secret credential with environment variable lookup.';
     } else if (finding.id.startsWith('PAT-001')) {
       // SQL Injection fix

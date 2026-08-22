@@ -38,3 +38,7 @@ Thumbs.db
 
 # AlgoKit & Local TestNet state
 .algokit/
+
+# Local test directories
+ufdr-analyzer-sih25/
+
