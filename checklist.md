@@ -33,8 +33,13 @@ pie title Project Completion Status
 - [x] Created two Algorand TestNet accounts on Lora (Payer for Agent, Receiver for ADSEC Server).
 - [x] Funded both accounts with TestNet ALGO via Lora dispenser.
 - [x] Opted both accounts into TestNet USDC (ASA `10458941`).
-- [x] Funded Payer account with TestNet USDC via Circle faucet.
+- [x] Funded Payer account with TestNet USDC via Circle faucet / Pera wallet transfer.
 - [x] Configured `.env` in `x402-demo-server` and `.env.local` in `X402-Usecase`.
+- [x] Standalone automated payment client added in `x402-Project/402-demo-client/` with balance checker and Algo25 generator.
+- [x] **Live On-Chain x402 Settlement Verified**:
+  - Payer: `BLZQISYSYJSO5UAQ4XYBI7YWSIJAW4TQ6XKL43WEXWYRCCXQU2S7AVCJMI`
+  - Receiver: `LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`
+  - TxID: [`KYDRKTKYR4Y57L6DUQITC7CUZW2IUONHB5FIGMK5AJSB5ONSZRKQ`](https://lora.algokit.io/testnet/transaction/KYDRKTKYR4Y57L6DUQITC7CUZW2IUONHB5FIGMK5AJSB5ONSZRKQ) (Confirmed in round 66557283)
 
 ### Phase 2: Core ADSEC Security Engine (Backend) ✅
 - [x] Defined TypeScript data contracts (`engine/types.ts`).
