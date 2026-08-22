@@ -39,63 +39,27 @@ All security analysis logic is completely modular and isolated inside `x402-Proj
 └────────────────────────────────────────────────────────┘
 ```
 
-### The Exact TypeScript Interface Contract (`engine/types.ts`)
+### 🏛️ The 3-Endpoint Green Card Pipeline Architecture
 
-```typescript
-export interface AuditRequest {
-  code: string;                  // Target source code snippet
-  language: 'javascript' | 'typescript' | 'python' | 'solidity' | 'json' | 'text';
-  tier: 'tier1' | 'tier2';       // tier1 = deterministic, tier2 = deterministic + LLM
-  filename?: string;             // Optional filename (e.g. "auth.py", "server.ts")
-  manifestContent?: string;      // Optional package.json or requirements.txt
-}
+```mermaid
+flowchart LR
+    A["🤖 AI Agent / Developer"] --> B["🟢 POST /adsec/scan ($0.01)\nPre-Flight Scanner"]
+    B -->|Flagged| C["🟢 POST /adsec/remediate ($0.03)\nGit Diff Patch Engine"]
+    B -->|Clean| D["🟢 POST /adsec/attest ($0.01)\nOn-Chain Proof-of-Audit"]
+    C --> D
 
-export interface AuditFinding {
-  id: string;
-  category: 'secret' | 'vulnerability' | 'dangerous-pattern' | 'typosquat' | 'outdated-dep' | 'semantic-logic';
-  severity: 'critical' | 'high' | 'medium' | 'low';
-  title: string;
-  description: string;
-  line?: number;
-  lineEnd?: number;
-  snippet?: string;
-  remediation: string;
-  cveId?: string;
-  cweId?: string;
-  packageName?: string;
-  confidence: 'high' | 'medium' | 'low';
-}
-
-export interface AuditDiffFix {
-  findingId: string;
-  filePath?: string;
-  diff: string;                 // Standard unified diff format
-  explanation: string;
-}
-
-export interface AuditResponse {
-  success: boolean;
-  tier: 'tier1' | 'tier2';
-  summary: {
-    totalIssues: number;
-    critical: number;
-    high: number;
-    medium: number;
-    low: number;
-    score: number;               // Security Health Score (0 - 100)
-    durationMs: number;
-  };
-  findings: AuditFinding[];
-  fixes?: AuditDiffFix[];        // Populated in Tier 2
-  receipt?: {
-    txId?: string;               // Populated on settlement
-    network?: string;
-    timestamp?: string;
-  };
-}
+    subgraph Unified["⚡ All-In-One Node"]
+        E["POST /adsec/audit ($0.05)\nFull Scan + Diffs + Attestation"]
+    end
 ```
 
----
+| Green Card Endpoint | Route | Price (USDC) | Purpose & Deliverable |
+| :--- | :--- | :---: | :--- |
+| **🟢 Green Card 1** | `POST /adsec/scan` | `$0.01` | Pre-flight deterministic scan (Secrets, CVEs, Typosquatting, AST). |
+| **🟢 Green Card 2** | `POST /adsec/remediate` | `$0.03` | Automated language-aware Git diff patch generator (`git apply`). |
+| **🟢 Green Card 3** | `POST /adsec/attest` | `$0.01` | Issues SHA-256 on-chain audit proof in Algorand transaction note. |
+| **⚡ Unified Suite** | `POST /adsec/audit` | `$0.05` | Complete end-to-end audit report + patches + receipt. |
+
 
 ## 📁 Directory Structure inside `x402-demo-server/`
 
