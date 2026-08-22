@@ -35,7 +35,12 @@ import { handleCreatorContentRequest,
   handleCreatorEarningsRequest,
 } from './handlers/creator-content';
 import { handleMemeGenerateRequest, handleMemeStylesRequest } from './handlers/meme-generator';
-import { handleAdsecAuditRequest } from './handlers/adsec-audit';
+import {
+  handleAdsecScanRequest,
+  handleAdsecRemediateRequest,
+  handleAdsecAttestRequest,
+  handleAdsecAuditRequest,
+} from './handlers/adsec-audit';
 
 // Import endpoint configuration
 import createPaymentConfig, { EndpointConfig } from './endpoints.config';
@@ -154,7 +159,19 @@ app.use(paymentMiddleware(paymentConfig as any, x402Server));
  * by the x402 middleware
  */
 
-// ADSEC Security Audit - Pay $0.01 USDC (Payment Protected)
+// ════════════════════════════════════════════════════════════════════
+// ADSEC SECURITY AUDIT PIPELINE (3 Green Cards + Unified Suite)
+// ════════════════════════════════════════════════════════════════════
+// Green Card 1: Pre-Flight Deterministic Scanner ($0.01 USDC)
+app.post('/adsec/scan', handleAdsecScanRequest);
+
+// Green Card 2: Auto-Remediation Unified Git Diff Generator ($0.03 USDC)
+app.post('/adsec/remediate', handleAdsecRemediateRequest);
+
+// Green Card 3: Cryptographic On-Chain Audit Attestation ($0.01 USDC)
+app.post('/adsec/attest', handleAdsecAttestRequest);
+
+// Unified All-in-One Security Audit ($0.05 USDC)
 app.post('/adsec/audit', handleAdsecAuditRequest);
 
 // Example 1: Weather Data - Pay $0.005
