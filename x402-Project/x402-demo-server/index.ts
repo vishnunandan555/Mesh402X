@@ -29,13 +29,13 @@ import {
   handleAIAnalysisRequest,
   handleAIAnalysisBatchRequest,
 } from './handlers/ai-analysis';
-import {
-  handleCreatorContentRequest,
+import { handleCreatorContentRequest,
   handleCreatorContentListRequest,
   handleCreatorPublishRequest,
   handleCreatorEarningsRequest,
 } from './handlers/creator-content';
 import { handleMemeGenerateRequest, handleMemeStylesRequest } from './handlers/meme-generator';
+import { handleAdsecAuditRequest } from './handlers/adsec-audit';
 
 // Import endpoint configuration
 import createPaymentConfig, { EndpointConfig } from './endpoints.config';
@@ -153,6 +153,9 @@ app.use(paymentMiddleware(paymentConfig as any, x402Server));
  * These handlers are only called AFTER payment is verified
  * by the x402 middleware
  */
+
+// ADSEC Security Audit - Pay $0.01 USDC (Payment Protected)
+app.post('/adsec/audit', handleAdsecAuditRequest);
 
 // Example 1: Weather Data - Pay $0.005
 app.get('/weather', handleWeatherRequest);

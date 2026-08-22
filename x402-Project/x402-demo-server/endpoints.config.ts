@@ -36,7 +36,60 @@ export interface EndpointConfig {
  */
 export function createPaymentConfig(avmAddress: string): EndpointConfig {
   return {
-    // ========== EXAMPLE ENDPOINTS - Modify these! ==========
+    /**
+     * ADSEC — Autonomous Decentralized Security Audit Endpoint
+     * Users/AI agents pay $0.01 USDC for deterministic + CVE audit & AI git diff
+     */
+    'POST /adsec/audit': {
+      accepts: [
+        {
+          scheme: 'exact',
+          price: '$0.01',
+          network: ALGORAND_TESTNET_CAIP2,
+          payTo: avmAddress,
+          extra: { asset: Number(USDC_TESTNET_ASA_ID) },
+        },
+      ],
+      description: 'ADSEC Code Security Audit - Scans for CVEs, leaked secrets, dangerous patterns, and generates Git diff fixes ($0.01 USDC)',
+      extensions: declareDiscoveryExtension({
+        bodyType: 'json',
+        input: {
+          code: 'import os\napi_key = "sk-proj-abc..."',
+          language: 'python',
+          tier: 'tier2',
+          filename: 'auth.py',
+        },
+        inputSchema: {
+          properties: {
+            code: { type: 'string', description: 'Source code content to audit' },
+            language: { type: 'string', enum: ['python', 'javascript', 'typescript', 'solidity'] },
+            tier: { type: 'string', enum: ['tier1', 'tier2'] },
+            filename: { type: 'string' },
+          },
+          required: ['code'],
+        },
+        output: {
+          example: {
+            success: true,
+            summary: { score: 75, totalIssues: 2, critical: 1, high: 1 },
+            findings: [
+              {
+                id: 'SEC-002',
+                category: 'secret',
+                severity: 'critical',
+                title: 'Exposed OpenAI API Key',
+                line: 2,
+              },
+            ],
+            fixes: [
+              {
+                diff: '--- a/auth.py\n+++ b/auth.py\n@@ -2,1 +2,1 @@\n- api_key = "..."\n+ api_key = os.environ.get("OPENAI_KEY")',
+              },
+            ],
+          },
+        },
+      }),
+    },
 
     /**
      * EXAMPLE 1: Pay-Per-Use API

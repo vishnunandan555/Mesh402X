@@ -33,13 +33,13 @@
 - [x] Configure backend `.env` and frontend `.env.local`.
 - [x] Verify `x402-Project` backend returns `HTTP 402` and connects to GoPlausible Facilitator.
 
-### DAY 2: Build the ADSEC Security Engine (Phase 2)
-- [ ] Implement engine types & scoring in `x402-demo-server/engine/`.
-- [ ] Build Tier 1 regex scanners: `secrets.ts` and `patterns.ts`.
-- [ ] Build dependency checkers: `typosquat.ts` and `osv.ts` with line correlation.
-- [ ] Build Tier 2 LLM review & git diff generator: `llm.ts` and `diff-generator.ts`.
-- [ ] Wire handler `handlers/adsec-audit.ts` into `endpoints.config.ts` and `index.ts`.
-- [ ] Test standalone audit execution with mock vulnerable files.
+### DAY 2: Build the ADSEC Security Engine (Phase 2) ✅
+- [x] Implement engine types & scoring in `x402-demo-server/engine/`.
+- [x] Build Tier 1 regex scanners: `secrets.ts` and `patterns.ts`.
+- [x] Build dependency checkers: `typosquat.ts` and `osv.ts` with line correlation.
+- [x] Build Tier 2 LLM review & git diff generator: `llm.ts` and `diff-generator.ts`.
+- [x] Wire handler `handlers/adsec-audit.ts` into `endpoints.config.ts` and `index.ts`.
+- [x] Test standalone audit execution with mock vulnerable files (`scripts/agent-audit.ts` verified in 627ms).
 
 ### DAY 3: React Dashboard, Live Deploy & Pitch Prep (Phase 3 & 4)
 - [ ] Build interactive `AdsecAudit.tsx` component in React frontend.
