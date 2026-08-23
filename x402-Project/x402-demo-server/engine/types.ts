@@ -77,7 +77,6 @@ export interface AuditResponse {
     network?: string;
     paidAmount?: string;
     timestamp?: string;
-    codeHash?: string;
     attestationTxId?: string;
     loraUrl?: string;
   };

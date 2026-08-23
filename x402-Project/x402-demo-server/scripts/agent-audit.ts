@@ -45,13 +45,11 @@ async function main() {
   console.log('[ADSEC] Autonomous Agent Security Pre-Flight Audit');
   console.log('═'.repeat(65));
   console.log(`Files to Audit : ${filePaths.length > 0 ? filePaths.length : 1} file(s)`);
-  console.log(`Service Tier   : ${tier.toUpperCase()} (${tier === 'tier2' ? '$0.05 USDC' : '$0.01 USDC'})`);
+  console.log(`Service Tier   : ${tier.toUpperCase()} (local engine demo, no payment required)`);
   console.log('═'.repeat(65));
 
-  console.log('\n[x402 Flow] Initiating audit request to ADSEC node...');
-  console.log('[x402 HTTP 402] Payment Required ($0.01 USDC on Algorand TestNet)');
-  console.log('[x402 Client] Signing micro-payment from Agent Wallet...');
-  console.log('[x402 Facilitator] Settled on Algorand TestNet (TxID: 0x4f9a2b8e...)');
+  console.log('\n[INFO] Local engine demo: this run executes the audit engine directly.');
+  console.log('[INFO] For a REAL on-chain x402 payment run: npx tsx scripts/agent-live-onchain.ts <server-url>');
 
   console.log('\n[ADSEC Engine] Scanning code for secrets, CVEs, and pattern flaws...');
 
@@ -115,7 +113,7 @@ async function main() {
   }
 
   console.log('\n' + '═'.repeat(65));
-  console.log('[COMPLETED] Audit Completed & Verified On-Chain.');
+  console.log('[COMPLETED] Local audit finished. Run agent-live-onchain.ts for on-chain settlement proof.');
   console.log('═'.repeat(65) + '\n');
 }
 

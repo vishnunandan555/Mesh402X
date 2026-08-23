@@ -14,8 +14,8 @@ export const ENDPOINTS_META: Record<EndpointMode, EndpointMeta> = {
   scan: {
     path: '/adsec/scan',
     name: 'Pre-Flight Scanner',
-    price: '$0.01 USDC',
-    priceValue: 0.01,
+    price: '$0.001 USDC',
+    priceValue: 0.001,
     cardBadge: 'GREEN CARD 01',
     desc: 'Fast deterministic check for leaked secrets, AST patterns, typosquatting & live OSV.dev CVEs.',
     accent: 'emerald',
@@ -23,8 +23,8 @@ export const ENDPOINTS_META: Record<EndpointMode, EndpointMeta> = {
   remediate: {
     path: '/adsec/remediate',
     name: 'Auto-Remediation Node',
-    price: '$0.03 USDC',
-    priceValue: 0.03,
+    price: '$0.001 USDC',
+    priceValue: 0.001,
     cardBadge: 'GREEN CARD 02',
     desc: 'Generates language-aware unified Git diff patches (git apply ready) to fix code flaws.',
     accent: 'cyan',
@@ -32,8 +32,8 @@ export const ENDPOINTS_META: Record<EndpointMode, EndpointMeta> = {
   attest: {
     path: '/adsec/attest',
     name: 'On-Chain Attestation',
-    price: '$0.01 USDC',
-    priceValue: 0.01,
+    price: '$0.001 USDC',
+    priceValue: 0.001,
     cardBadge: 'GREEN CARD 03',
     desc: 'Hashes code with SHA-256 and writes a cryptographic proof-of-audit certificate on Algorand TestNet.',
     accent: 'violet',
@@ -41,8 +41,8 @@ export const ENDPOINTS_META: Record<EndpointMode, EndpointMeta> = {
   audit: {
     path: '/adsec/audit',
     name: 'Unified Audit Suite',
-    price: '$0.05 USDC',
-    priceValue: 0.05,
+    price: '$0.001 USDC',
+    priceValue: 0.001,
     cardBadge: 'FULL PIPELINE',
     desc: 'Complete all-in-one suite: Full Scan, Git Diff fixes, and On-Chain Attestation.',
     accent: 'indigo',

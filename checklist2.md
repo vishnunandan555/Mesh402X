@@ -6,27 +6,27 @@
 
 ## 📊 Status Overview
 
-- [ ] **Phase 1: TestNet Wallets & USDC Opt-In**
-- [ ] **Phase 2: Render Backend Deployment & Config**
-- [ ] **Phase 3: Trigger GoPlausible Bazaar Indexing (First Settlement)**
+- [x] **Phase 1: TestNet Wallets & USDC Opt-In** (Completed & Verified ✅)
+- [ ] **Phase 2: Render Backend Deployment & Config** (Action required: 1-click Render deploy)
+- [ ] **Phase 3: Trigger GoPlausible Bazaar Indexing (First Settlement against public URL)**
 - [ ] **Phase 4: Global Bazaar & Lora Explorer Verification**
 - [ ] **Phase 5: Vercel Frontend Wiring & End-to-End Test**
 
 ---
 
-## 🛠️ Phase 1: Algorand TestNet Wallet Preparation
+## 🛠️ Phase 1: Algorand TestNet Wallet Preparation ✅
 
-### 1.1 Receiver Wallet (Your Server Address)
+### 1.1 Receiver Wallet (Your Server Address) ✅
 - Address receiving payments from customers and autonomous agents.
-- **Critical Requirement:** Must opt-in to **TestNet USDC** (ASA ID: `10458941`).
-- **How to Opt-in & Fund:**
-  - Connect wallet to [Lora TestNet Dispenser & Opt-In](https://lora.algokit.io/testnet/dispenser)
-  - Or use Pera / Defly TestNet App ➔ Assets ➔ `+` ➔ Search ASA `10458941` ➔ Opt In.
+- **Configured Address:** `LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ` (or your Pera address)
+- **Status:** Opted into **TestNet USDC** (ASA ID: `10458941`).
 
-### 1.2 Payer Wallet (For CLI Agent / Testing)
-- Needs testnet funds to execute the inaugural on-chain payment.
-- **Fund with ALGO:** [Algorand TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) (~5 ALGO)
-- **Fund with USDC:** [Circle Faucet](https://faucet.circle.com) (Select *Algorand TestNet*, ~10 USDC)
+### 1.2 Payer Wallet (For CLI Agent / Testing) ✅
+- **Configured Address:** `BLZQISYSYJSO5UAQ4XYBI7YWSIJAW4TQ6XKL43WEXWYRCCXQU2S7AVCJMI`
+- **Funded:** 1.199 ALGO + Opted into USDC ASA 10458941.
+- **Verified On-Chain TxIDs:**
+  - TxID 1: [`KYDRKTKYR4Y57L6DUQITC7CUZW2IUONHB5FIGMK5AJSB5ONSZRKQ`](https://lora.algokit.io/testnet/transaction/KYDRKTKYR4Y57L6DUQITC7CUZW2IUONHB5FIGMK5AJSB5ONSZRKQ)
+  - TxID 2: [`EZD7DHBD64QRAO7CSCA7OYUCD3ARZOXALOOVUTI5NFRL7VTWTJFA`](https://lora.algokit.io/testnet/transaction/EZD7DHBD64QRAO7CSCA7OYUCD3ARZOXALOOVUTI5NFRL7VTWTJFA)
 
 ---
 
