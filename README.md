@@ -1,21 +1,22 @@
 # ADSEC - Autonomous Decentralized Security Audit Node
 
 > **x402 Pay-Per-Call Code Security Auditing for AI Agents on Algorand TestNet**  
-> Built for the **x402 Global Build Sprint**
+> Built for the **x402 Global Challenge**
 
 [![Network](https://img.shields.io/badge/Network-Algorand%20TestNet-blue)](https://lora.algokit.io/testnet)
 [![Protocol](https://img.shields.io/badge/Protocol-x402%20HTTP%20Payment-green)](https://x402.money)
 [![Facilitator](https://img.shields.io/badge/Facilitator-GoPlausible-orange)](https://facilitator.goplausible.xyz)
 [![Asset](https://img.shields.io/badge/Currency-TestNet%20USDC%20(ASA%2010458941)-blueviolet)](https://lora.algokit.io/testnet/asset/10458941)
 [![Backend](https://img.shields.io/badge/Backend-Hono%20%2B%20TypeScript-yellow)](https://hono.dev)
+[![Frontend](https://img.shields.io/badge/Frontend-React%20%2B%20Vite%20%2B%20Tailwind-cyan)](https://vitejs.dev)
 
 ---
 
 ## 1. What is ADSEC?
 
-**ADSEC** is an on-demand, pay-per-call **Code Security Audit API and Agent CLI** running as an x402 node on Algorand TestNet.
+**ADSEC** is an on-demand, pay-per-call **Code Security Audit API, Agent CLI, and Web3 Dashboard** running as a live x402 node on Algorand TestNet.
 
-When autonomous AI coding agents generate code, write smart contracts, or prepare pull requests, they cannot safely deploy to production or mainnet without a verified security audit. ADSEC gives agents an automated, pay-per-call security auditor funded via micro-payments in **TestNet USDC (ASA 10458941)** through the **GoPlausible Facilitator**.
+When autonomous AI coding agents generate code, deploy smart contracts, or prepare pull requests, they cannot safely ship without a verifiable security review. ADSEC gives agents and developers an automated, instant security auditor paid via micro-payments in **TestNet USDC (ASA 10458941)** through the **GoPlausible Facilitator**.
 
 ---
 
@@ -24,20 +25,20 @@ When autonomous AI coding agents generate code, write smart contracts, or prepar
 ADSEC implements a modular 3-stage security pipeline where each stage is a standalone x402 payment endpoint:
 
 1. **Card 1: Pre-Flight Deterministic Scanner (`POST /adsec/scan` - $0.01 USDC)**
-   - **Secret & Credential Scanner:** Detects exposed AWS/GCP keys, OpenAI tokens, GitHub PATs, JWTs, and private keys.
-   - **Dangerous Pattern Detector:** Detects `eval()`, SQL string concatenations, unsafe deserialization (`pickle`, `yaml`), and command execution.
-   - **Typosquatting Package Checker:** Levenshtein edit-distance checks against top 500 npm/PyPI packages.
-   - **OSV.dev CVE Database Correlation:** Queries real vulnerability databases and correlates CVEs directly to calling code lines.
+   - **Secret & Token Scanner:** High-precision detection of exposed AWS/GCP keys, OpenAI keys (`sk-...`), GitHub PATs, JWTs, and private keys.
+   - **Dangerous Pattern Detector:** Detects `eval()`, SQL string injection, unsafe deserialization (`pickle.loads`, `yaml`), and shell command injection.
+   - **Typosquatting Package Checker:** Levenshtein edit-distance algorithm checking against top npm/PyPI libraries (e.g. `reqeusts` vs `requests`).
+   - **OSV.dev CVE Database Query:** Live HTTP queries to Google OSV database correlated directly to calling code lines.
 
 2. **Card 2: Auto-Remediation Patch Generator (`POST /adsec/remediate` - $0.03 USDC)**
    - **Language-Aware Unified Diff Generator:** Generates actionable unified Git diff patches (`--- a/ +++ b/`) formatted for `git apply`.
-   - **Multi-Provider Semantic Fallback:** Groq (Llama-3.3-70B in <300ms) -> Google Gemini 1.5 Flash -> OpenAI GPT-4o-mini -> Deterministic rules.
+   - **Multi-Provider Semantic Fallback:** Groq (Llama-3.3-70B in <300ms) ➔ Google Gemini 1.5 Flash ➔ OpenAI GPT-4o-mini ➔ Deterministic rules.
 
 3. **Card 3: Cryptographic On-Chain Attestation (`POST /adsec/attest` - $0.01 USDC)**
-   - Calculates SHA-256 code hash and logs cryptographic Proof-of-Audit certificates directly to Algorand TestNet transaction notes (`tx_note`).
+   - Calculates SHA-256 code hash and broadcasts a real 0-ALGO note transaction carrying the cryptographic Proof-of-Audit certificate (`adsec:v1;sha256:...;score:...`) directly to Algorand TestNet.
 
 4. **Unified Suite (`POST /adsec/audit` - $0.05 USDC)**
-   - Full all-in-one execution of scanning, diff patch generation, and on-chain attestation in a single call.
+   - All-in-one execution of scanning, diff patch generation, and on-chain attestation in a single call.
 
 ---
 
@@ -60,7 +61,7 @@ ADSEC implements a modular 3-stage security pipeline where each stage is a stand
 ┌────────────────────────────────────────────────────────┐
 │             GoPlausible Facilitator                    │
 │   - Agent signs TestNet USDC transaction               │
-│   - Facilitator broadcasts & verifies on Algorand      │
+│   - Facilitator broadcasts & settles on Algorand       │
 └───────────────────────────┬────────────────────────────┘
                             │ 3. Retries POST with Payment-Signature
                             ▼
@@ -75,74 +76,83 @@ ADSEC implements a modular 3-stage security pipeline where each stage is a stand
 │       ├── Auth Bypass & Logic Flaw Review              │
 │       └── Unified Git Patch Generator (--- a/ +++ b/)  │
 └───────────────────────────┬────────────────────────────┘
-                            │ 4. HTTP 200 OK (Findings + Diff + TxID)
+                            │ 4. Broadcasts On-Chain Attestation Note
+                            │ 5. HTTP 200 OK (Findings + Diff + Lora TxID)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │             Agent Auto-Applies Git Patch               │
-│   - Code is secured and ready for production           │
+│   - Verified on Algorand TestNet Lora Explorer         │
 └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Quick Start & CLI Usage
+## 4. Wallet Architecture: Payer vs. Receiver
+
+| Role | Who Holds It | Config Variable | How It Works |
+| :--- | :--- | :--- | :--- |
+| **🏪 Receiver (ADSEC Node)** | Service Owner | `AVM_ADDRESS` | **Fixed & Public.** Configured in Render backend. Every caller pays USDC into this address to unlock endpoints. |
+| **🤖 Payer (User / Agent)** | Independent Users / AI Agents | `PAYER_MNEMONIC` or Browser Wallet | **Dynamic per user.** Funded with TestNet ALGO & USDC to autonomously sign micro-transactions on demand. |
+
+---
+
+## 5. Zero-Web2 On-Chain Ledger & Dashboard
+
+ADSEC does not require any Web2 database or email/password sign-in:
+- **Identity:** Connecting a wallet (Pera / Defly / Lute) acts as instant Web3 authentication.
+- **Ledger:** The frontend queries the **Algorand Indexer API** (`https://testnet-idx.algonode.cloud/v2/accounts/...`) in real-time.
+- **User View:** Lists all past audits, dates, USDC paid, and direct links to **Lora Explorer**.
+- **Admin View:** Displays total node revenue, settlement volume, and active GoPlausible Bazaar routes.
+
+---
+
+## 6. Live Deployment & Discovery Links
+
+- **Live Frontend App (Playground & Ledger):** `https://adsec-app.vercel.app` (or Vercel deployment URL)
+- **Live Backend API (Render Node):** `https://adsec-backend.onrender.com`
+- **GoPlausible Global Discovery Registry:**  
+  `https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true`
+- **Lora TestNet Explorer:**  
+  `https://lora.algokit.io/testnet`
+
+---
+
+## 7. Quick Start & CLI Usage
 
 ### Prerequisites
-- Node.js v18+ and npm
+- Node.js v18+ and npm / pnpm
 
-### Run Commands from Project Root:
+### 1. Install Dependencies
 ```bash
-# 1. Run Dynamic Bazaar Discovery & Hire Demo
+npm install
+```
+
+### 2. Discover ADSEC on the Global Bazaar & Run Audit
+```bash
+cd x402-Project/x402-demo-server
 npm run discover
+```
 
-# 2. Run Live On-Chain Agent against Hosted Backend
+### 3. Run Live On-Chain Agent with Automated USDC Payment
+```bash
+cd x402-Project/x402-demo-server
 npm run live https://adsec-backend.onrender.com
+```
 
-# 3. Run Multi-File Security Audit
-npm run audit path/to/file1.py path/to/file2.js
-
-# 4. Start Local Backend Server
-npm run dev:backend
-
-# 5. Start Local React Playground
-npm run dev:frontend
+### 4. Run Frontend Locally
+```bash
+cd x402-Project/X402-Usecase/projects/X402-Usecase
+npm run dev
 ```
 
 ---
 
-## 5. Cloud Hosting & CI/CD Setup
+## 8. Verified Dependencies (@x402 / avm)
 
-- **Backend:** Hosted on Render as a long-running Node.js Web Service (`x402-demo-server`).
-- **Frontend:** Hosted on Render / Vercel as a Static Site (`X402-Usecase`).
-- **CI/CD:** 2 separate manual GitHub Actions workflows:
-  - `.github/workflows/deploy-backend.yml` (Manual trigger for Render backend)
-  - `.github/workflows/deploy-frontend.yml` (Manual trigger for Frontend)
-
-See [**`HOSTING_GUIDE.md`**](./HOSTING_GUIDE.md) for full deployment instructions.
-
----
-
-## 6. Repository Organization
-
-```text
-Mesh402X/
-├── package.json                        # Root workspace scripts (discover, live, audit, dev)
-├── checklist.md                        # Project milestone tracking
-├── features.md                         # Detailed feature specs & ROI analysis
-├── HOSTING_GUIDE.md                    # Cloud deployment guide for Render & Vercel
-├── README.md                           # Main documentation
-│
-└── x402-Project/
-    ├── x402-demo-server/               # Backend Hono Resource Server
-    │   ├── index.ts                    # Hono server entry, CORS & x402 middleware
-    │   ├── endpoints.config.ts         # 3 Green Card routes & Bazaar discovery metadata
-    │   ├── handlers/adsec-audit.ts     # Endpoint handlers for scan, remediate, attest, audit
-    │   ├── engine/                     # Security audit engine (regex, CVEs, typosquat, diffs)
-    │   └── scripts/                    # Agent CLI demonstration scripts
-    │
-    └── X402-Usecase/                   # React Frontend
-        └── projects/X402-Usecase/
-            ├── src/components/AdsecPlayground.tsx # Interactive x402 audit playground
-            ├── src/AdsecHome.tsx                  # ADSEC view with wallet connector
-            └── src/AppWithTabs.tsx                # App navigation with ADSEC as default tab
-```
+Our codebase uses the official `@x402` and `@x402-avm` packages:
+- `@x402/hono`: x402 payment middleware for Hono.
+- `@x402/core`: Resource server and facilitator client engine.
+- `@x402/avm`: Algorand Virtual Machine exact payment scheme and signers.
+- `@x402-avm/extensions`: GoPlausible Bazaar dynamic discovery metadata declaration.
+- `@x402-avm/fetch`: Automated 402 interceptor and client-side payment wrapper.
+- `@txnlab/use-wallet-react`: Pera, Defly, Exodus, and Lute wallet connection provider.

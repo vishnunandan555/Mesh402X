@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
 import ConnectWallet from './components/ConnectWallet'
 import AdsecPlayground from './components/AdsecPlayground'
+import OnChainLedger from './components/OnChainLedger'
 
 export const AdsecHome: React.FC = () => {
   const [openWalletModal, setOpenWalletModal] = useState<boolean>(false)
+  const [currentView, setCurrentView] = useState<'playground' | 'ledger'>('playground')
   const { activeAddress } = useWallet()
 
   const toggleWalletModal = () => {
@@ -29,6 +31,30 @@ export const AdsecHome: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* View Switcher */}
+            <div className="flex bg-slate-950 border border-slate-800 rounded-xl p-1 text-xs font-mono font-bold">
+              <button
+                onClick={() => setCurrentView('playground')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  currentView === 'playground'
+                    ? 'bg-indigo-600 text-white shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Auditor
+              </button>
+              <button
+                onClick={() => setCurrentView('ledger')}
+                className={`px-3 py-1.5 rounded-lg transition-all ${
+                  currentView === 'ledger'
+                    ? 'bg-indigo-600 text-white shadow'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                📜 On-Chain Ledger
+              </button>
+            </div>
+
             <button
               onClick={toggleWalletModal}
               className={`px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all border flex items-center gap-2 ${
@@ -38,7 +64,7 @@ export const AdsecHome: React.FC = () => {
               }`}
             >
               <span className={`w-2 h-2 rounded-full ${activeAddress ? 'bg-emerald-400 animate-pulse' : 'bg-white'}`}></span>
-              {activeAddress ? `${activeAddress.slice(0, 8)}...${activeAddress.slice(-6)}` : 'Connect Pera / Defly Wallet'}
+              {activeAddress ? `${activeAddress.slice(0, 8)}...${activeAddress.slice(-6)}` : 'Connect Wallet'}
             </button>
           </div>
         </div>
@@ -46,7 +72,7 @@ export const AdsecHome: React.FC = () => {
 
       {/* Main Content */}
       <main className="pt-6">
-        <AdsecPlayground />
+        {currentView === 'playground' ? <AdsecPlayground /> : <OnChainLedger />}
       </main>
 
       {/* Wallet Modal */}
