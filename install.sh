@@ -44,7 +44,7 @@ if [ ! -f "package.json" ]; then
     npm init -y > /dev/null 2>&1
 fi
 
-npm install --save-dev @x402-avm/fetch @x402-avm/avm algosdk dotenv tsx
+npm install --save-dev @x402-avm/fetch @x402-avm/avm algosdk dotenv tsx @types/node typescript
 
 echo -e "${GREEN}✓ Dependencies installed successfully.${NC}"
 
