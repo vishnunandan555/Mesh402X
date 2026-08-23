@@ -1,0 +1,69 @@
+name: ADSEC CI/CD & Auto-Deploy Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allows manual trigger from GitHub UI ("Run workflow")
+
+jobs:
+  verify-and-test:
+    name: 🛡️ Audit Engine & Build Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: |
+            x402-Project/x402-demo-server/package.json
+            x402-Project/X402-Usecase/projects/X402-Usecase/package.json
+
+      - name: 📦 Install Backend Dependencies
+        run: |
+          cd x402-Project/x402-demo-server
+          npm ci || npm install
+
+      - name: 🧪 Test ADSEC Security Engine
+        run: |
+          cd x402-Project/x402-demo-server
+          npm run audit
+
+      - name: 📦 Install Frontend Dependencies
+        run: |
+          cd x402-Project/X402-Usecase/projects/X402-Usecase
+          npm ci || npm install
+
+      - name: 🏗️ Verify Frontend React Build
+        run: |
+          cd x402-Project/X402-Usecase/projects/X402-Usecase
+          npx tsc --noEmit && npx vite build
+
+  deploy-cloud:
+    name: 🚀 Deploy to Cloud (Render / Vercel / Railway)
+    needs: verify-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📡 Trigger Render Backend Deploy Hook
+        if: env.RENDER_DEPLOY_HOOK != ''
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          echo "Triggering Render backend auto-deployment..."
+          curl -X POST "$RENDER_DEPLOY_HOOK"
+
+      - name: ⚡ Trigger Vercel / Netlify Frontend Deploy Hook
+        if: env.FRONTEND_DEPLOY_HOOK != ''
+        env:
+          FRONTEND_DEPLOY_HOOK: ${{ secrets.FRONTEND_DEPLOY_HOOK }}
+        run: |
+          echo "Triggering Frontend auto-deployment..."
+          curl -X POST "$FRONTEND_DEPLOY_HOOK"
