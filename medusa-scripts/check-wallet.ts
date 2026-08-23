@@ -51,7 +51,7 @@ async function main() {
     console.log(`\nBalances:`);
     console.log(`  * ALGO (Gas) : ${algoBalance.toFixed(4)} ALGO ${algoBalance < 0.1 ? '([!] Low/Unfunded - claim at dispenser)' : '([OK])'}`);
 
-    const usdcAsset = (accountInfo?.assets || []).find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
+    const usdcAsset = (accountInfo?.assets || []).find((a: any) => Number(a['asset-id'] ?? a.assetId ?? a['assetId'] ?? a.asset_id ?? 0) === USDC_ASA_ID);
     if (usdcAsset) {
       const usdcBalance = Number(usdcAsset.amount) / 1e6;
       console.log(`  * USDC (ASA) : $${usdcBalance.toFixed(4)} USDC (Opted-in: YES)`);

@@ -38,7 +38,7 @@ fi
 echo -e "${GREEN}[+] Node.js $(node -v) detected.${NC}"
 
 # 2. Initialize package.json if not present & install packages
-echo -e "\n${CYAN}[2/5] Installing x402 & Algorand SDK packages...${NC}"
+echo -e "\n${CYAN}[2/5] Installing/updating x402 & Algorand SDK packages...${NC}"
 if [ ! -f "package.json" ]; then
     echo "Creating package.json..."
     npm init -y > /dev/null 2>&1
@@ -46,38 +46,48 @@ fi
 
 npm install --save-dev --allow-git=all @x402-avm/fetch @x402-avm/avm @modelcontextprotocol/sdk algosdk dotenv tsx @types/node typescript || npm install --save-dev @x402-avm/fetch @x402-avm/avm @modelcontextprotocol/sdk algosdk dotenv tsx @types/node typescript
 
-echo -e "${GREEN}[+] Dependencies installed successfully.${NC}"
+echo -e "${GREEN}[+] Dependencies updated successfully.${NC}"
 
-# 3. Create medusa-scripts and mcp-server directories
-echo -e "\n${CYAN}[3/5] Setting up modular Medusa audit scripts & MCP Server...${NC}"
+# 3. Create medusa-scripts and mcp-server directories (Force Overwrite All Files)
+echo -e "\n${CYAN}[3/5] Force-replacing modular Medusa audit scripts & MCP Server...${NC}"
 mkdir -p medusa-scripts
 mkdir -p mcp-server
 mkdir -p .agents/skills/medusa-audit/scripts
 
 GITHUB_RAW="https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main"
 
-# Function to download or create script fallback
-fetch_or_create_script() {
+# Function to force-download and overwrite script
+force_fetch_script() {
     local script_name="$1"
     local local_path="medusa-scripts/${script_name}"
     
-    # Try downloading from GitHub
+    # Remove existing file if present to guarantee clean replacement
+    rm -f "${local_path}"
+    
+    # Download latest version from GitHub
     if curl -fsSL "${GITHUB_RAW}/medusa-scripts/${script_name}" -o "${local_path}" 2>/dev/null; then
-        echo -e "  ${GREEN}[+] Downloaded ${script_name}${NC}"
+        echo -e "  ${GREEN}[✓] Replaced medusa-scripts/${script_name}${NC}"
+    else
+        echo -e "  ${RED}[!] Failed to fetch ${script_name}${NC}"
     fi
 }
 
 SCRIPTS=("audit-full.ts" "audit-scan.ts" "audit-remediate.ts" "audit-attest.ts" "audit-score.ts" "wallet-history.ts" "check-wallet.ts" "optin-usdc.ts" "generate-wallet.ts")
 
 for s in "${SCRIPTS[@]}"; do
-    fetch_or_create_script "$s"
+    force_fetch_script "$s"
 done
 
-# Copy to .agents/skills
-cp medusa-scripts/*.ts .agents/skills/medusa-audit/scripts/ 2>/dev/null || true
+# Force-copy latest scripts to .agents/skills
+cp -f medusa-scripts/*.ts .agents/skills/medusa-audit/scripts/ 2>/dev/null || true
+echo -e "  ${GREEN}[✓] Synchronized .agents/skills/medusa-audit/scripts/${NC}"
 
-# Setup MCP Server
+# Force-replace MCP Server
+rm -f "mcp-server/index.ts"
 curl -fsSL "${GITHUB_RAW}/mcp-server/index.ts" -o "mcp-server/index.ts" 2>/dev/null || true
+echo -e "  ${GREEN}[✓] Replaced mcp-server/index.ts${NC}"
+
+# Force-replace MCP config
 cat <<EOF > .agents/mcp_config.json
 {
   "mcpServers": {
@@ -91,26 +101,42 @@ cat <<EOF > .agents/mcp_config.json
   }
 }
 EOF
-echo -e "  ${GREEN}[+] Configured Medusa MCP Server in .agents/mcp_config.json${NC}"
+echo -e "  ${GREEN}[✓] Replaced .agents/mcp_config.json${NC}"
 
-# 4. Download / Install Agent Instructions & Skills (AGENTS.md & Medusa_Skill.md)
-echo -e "\n${CYAN}[4/5] Installing Medusa Agent Skill & AGENTS.md instructions...${NC}"
+# 4. Force-replace Agent Instructions & Skills (AGENTS.md & Medusa_Skill.md)
+echo -e "\n${CYAN}[4/5] Force-replacing Medusa Agent Skill & AGENTS.md instructions...${NC}"
+rm -f "AGENTS.md" "Medusa_Skill.md" ".agents/skills/medusa-audit/SKILL.md"
+
 curl -fsSL "${GITHUB_RAW}/AGENTS.md" -o "AGENTS.md" 2>/dev/null || true
 curl -fsSL "${GITHUB_RAW}/Medusa_Skill.md" -o "Medusa_Skill.md" 2>/dev/null || true
 curl -fsSL "${GITHUB_RAW}/Medusa_Skill.md" -o ".agents/skills/medusa-audit/SKILL.md" 2>/dev/null || true
-echo -e "${GREEN}[+] AGENTS.md, Medusa_Skill.md & .agents/skills/medusa-audit/SKILL.md configured.${NC}"
+echo -e "${GREEN}[✓] Overwrote AGENTS.md, Medusa_Skill.md & .agents/skills/medusa-audit/SKILL.md.${NC}"
 
 # 5. Wallet Configuration in wallet.env
 echo -e "\n${CYAN}[5/5] Configuring Agent Algorand Wallet (wallet.env)...${NC}"
+
+# Check for existing mnemonic so running installer repeatedly doesn't erase credentials
+EXISTING_MNEMONIC=""
+if [ -f "wallet.env" ]; then
+    EXISTING_MNEMONIC=$(grep -E "^AGENT_MNEMONIC=" wallet.env 2>/dev/null | sed -E 's/^AGENT_MNEMONIC=["]?//; s/["]?$//' || true)
+fi
 
 USER_MNEMONIC=""
 
 # Read from /dev/tty if available (works even when script is piped via curl | bash)
 if [ -e /dev/tty ]; then
-    echo -e "${YELLOW}Enter your 25-word Algorand TestNet Wallet Mnemonic:${NC}"
+    if [ -n "$EXISTING_MNEMONIC" ]; then
+        echo -e "${YELLOW}Existing mnemonic detected. Press Enter to keep it, or enter a new 25-word mnemonic:${NC}"
+    else
+        echo -e "${YELLOW}Enter your 25-word Algorand TestNet Wallet Mnemonic:${NC}"
+    fi
     read -r -p "AGENT_MNEMONIC: " USER_MNEMONIC < /dev/tty || true
 elif [ -t 0 ]; then
-    echo -e "${YELLOW}Enter your 25-word Algorand TestNet Wallet Mnemonic:${NC}"
+    if [ -n "$EXISTING_MNEMONIC" ]; then
+        echo -e "${YELLOW}Existing mnemonic detected. Press Enter to keep it, or enter a new 25-word mnemonic:${NC}"
+    else
+        echo -e "${YELLOW}Enter your 25-word Algorand TestNet Wallet Mnemonic:${NC}"
+    fi
     read -r -p "AGENT_MNEMONIC: " USER_MNEMONIC || true
 fi
 
@@ -120,29 +146,36 @@ USER_MNEMONIC=$(echo "$USER_MNEMONIC" | sed -E "s/^[[:space:]\"'\\\\]+//; s/[[:s
 USER_MNEMONIC=$(echo "$USER_MNEMONIC" | sed -E "s/^[[:space:]\"'\\\\]+//; s/[[:space:]\"'\\\\]+$//")
 USER_MNEMONIC=$(echo "$USER_MNEMONIC" | xargs 2>/dev/null || echo "$USER_MNEMONIC")
 
-# Write to wallet.env
+# If user pressed enter and we already had a mnemonic, keep the existing one
+if [ -z "$USER_MNEMONIC" ] && [ -n "$EXISTING_MNEMONIC" ]; then
+    FINAL_MNEMONIC="$EXISTING_MNEMONIC"
+else
+    FINAL_MNEMONIC="$USER_MNEMONIC"
+fi
+
+# Write (replace) wallet.env
 cat <<EOF > wallet.env
 # Medusa x402 Agent Wallet Configuration
-AGENT_MNEMONIC="${USER_MNEMONIC}"
+AGENT_MNEMONIC="${FINAL_MNEMONIC}"
 ADSEC_SERVER_URL="https://mesh402x.onrender.com"
 EOF
 
-if [ -n "$USER_MNEMONIC" ]; then
-    echo -e "${GREEN}[+] Saved AGENT_MNEMONIC to wallet.env!${NC}"
+if [ -n "$FINAL_MNEMONIC" ]; then
+    echo -e "${GREEN}[✓] Replaced wallet.env (Active AGENT_MNEMONIC configured)!${NC}"
 else
-    echo -e "${YELLOW}[i] Created wallet.env with placeholder AGENT_MNEMONIC=\"\"${NC}"
+    echo -e "${YELLOW}[i] Replaced wallet.env with placeholder AGENT_MNEMONIC=\"\"${NC}"
     echo -e "  ${YELLOW}Please paste your 25-word mnemonic into wallet.env before running paid audits.${NC}"
 fi
 
 echo -e "\n${GREEN}══════════════════════════════════════════════════════════════════════════${NC}"
-echo -e "${GREEN}[OK] MEDUSA x402 AGENT INSTALLATION COMPLETE!${NC}"
+echo -e "${GREEN}[OK] MEDUSA x402 AGENT INSTALLATION / UPDATE COMPLETE!${NC}"
 echo -e "${GREEN}══════════════════════════════════════════════════════════════════════════${NC}"
 echo -e "\n${CYAN}Available Commands for You or Your AI Agent:${NC}"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-score.ts <file> [threshold]${NC} - CI/CD Security Score Gate ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-full.ts <file>${NC}              - Full Audit Pipeline ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-scan.ts <file>${NC}              - Pre-Flight Scan ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-remediate.ts <file>${NC}         - Auto Git Diff Fixes ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-attest.ts <file>${NC}            - On-Chain Attestation ($0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-score.ts <file> [threshold]${NC} - CI/CD Security Score Gate (\$0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-full.ts <file>${NC}              - Full Audit Pipeline (\$0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-scan.ts <file>${NC}              - Pre-Flight Scan (\$0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-remediate.ts <file>${NC}         - Auto Git Diff Fixes (\$0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-attest.ts <file>${NC}            - On-Chain Attestation (\$0.001 USDC)"
 echo -e "  * ${YELLOW}npx tsx medusa-scripts/wallet-history.ts${NC}                - Financial Ledger & Tx History"
 echo -e "  * ${YELLOW}npx tsx medusa-scripts/check-wallet.ts${NC}                  - Check Wallet Balance & Status"
 echo -e "\n${CYAN}Prompt your AI assistant (Antigravity / Cursor / Claude):${NC}"
