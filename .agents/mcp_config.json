@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "medusa-x402-security": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/index.ts"],
+      "env": {
+        "DOTENV_CONFIG_QUIET": "true"
+      }
+    }
+  }
+}

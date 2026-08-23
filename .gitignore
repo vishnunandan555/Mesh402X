@@ -1,22 +1,41 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+.yarn/
 
-# Environment Variables & Secrets (CRITICAL: Never commit mnemonics or keys)
+# Environment Variables & Secrets (CRITICAL: Never commit mnemonics, private keys, or credentials)
+*.env
+*.env.*
 .env
+.env.*
 .env.local
 .env.*.local
 .env.development
 .env.test
 .env.production
+wallet.env
+wallet.*.env
+!*.env.example
+!*.env.template
 !.env.example
 !.env.template
+!wallet.env.example
+
+# Temporary Audit & Patch outputs
+*.patch
+audit.patch
+*.diff
 
 # Build & Distribution outputs
 dist/
 build/
+out/
 .output/
 coverage/
+.next/
+.nuxt/
+.cache/
+.turbo/
 
 # Logs
 npm-debug.log*
@@ -26,7 +45,7 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
-# OS & Editor files
+# OS & Editor metadata
 .DS_Store
 Thumbs.db
 .idea/
@@ -35,10 +54,18 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+*.bak
+
+# Python byte-code & virtualenvs
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
 
 # AlgoKit & Local TestNet state
 .algokit/
 
 # Local test directories
 ufdr-analyzer-sih25/
-

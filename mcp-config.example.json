@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "medusa-x402-security": {
+      "command": "npx",
+      "args": ["-y", "tsx", "/ABSOLUTE/PATH/TO/Mesh402X/mcp-server/index.ts"],
+      "env": {
+        "DOTENV_CONFIG_QUIET": "true",
+        "ADSEC_SERVER_URL": "https://mesh402x.onrender.com"
+      }
+    }
+  }
+}

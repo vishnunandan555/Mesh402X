@@ -44,13 +44,14 @@ if [ ! -f "package.json" ]; then
     npm init -y > /dev/null 2>&1
 fi
 
-npm install --save-dev @x402-avm/fetch @x402-avm/avm algosdk dotenv tsx @types/node typescript
+npm install --save-dev @x402-avm/fetch @x402-avm/avm @modelcontextprotocol/sdk algosdk dotenv tsx @types/node typescript
 
 echo -e "${GREEN}[+] Dependencies installed successfully.${NC}"
 
-# 3. Create medusa-scripts directory & download/create scripts
-echo -e "\n${CYAN}[3/5] Setting up modular Medusa audit scripts in ./medusa-scripts/...${NC}"
+# 3. Create medusa-scripts and mcp-server directories
+echo -e "\n${CYAN}[3/5] Setting up modular Medusa audit scripts & MCP Server...${NC}"
 mkdir -p medusa-scripts
+mkdir -p mcp-server
 mkdir -p .agents/skills/medusa-audit/scripts
 
 GITHUB_RAW="https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main"
@@ -74,6 +75,23 @@ done
 
 # Copy to .agents/skills
 cp medusa-scripts/*.ts .agents/skills/medusa-audit/scripts/ 2>/dev/null || true
+
+# Setup MCP Server
+curl -fsSL "${GITHUB_RAW}/mcp-server/index.ts" -o "mcp-server/index.ts" 2>/dev/null || true
+cat <<EOF > .agents/mcp_config.json
+{
+  "mcpServers": {
+    "medusa-x402-security": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/index.ts"],
+      "env": {
+        "DOTENV_CONFIG_QUIET": "true"
+      }
+    }
+  }
+}
+EOF
+echo -e "  ${GREEN}[+] Configured Medusa MCP Server in .agents/mcp_config.json${NC}"
 
 # 4. Download / Install Medusa_Skill.md
 echo -e "\n${CYAN}[4/5] Installing Medusa Agent Skill specification...${NC}"
