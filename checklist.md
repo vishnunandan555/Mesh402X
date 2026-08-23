@@ -64,9 +64,9 @@ pie title Project Completion Status
 ### Phase 4: Cloud Deployment, Bazaar Verification & Pitch Prep ⏳
 
 See step-by-step setup in [**`HOSTING_GUIDE.md`**](file:///home/vishnunandan555/Projects/Mesh402X/HOSTING_GUIDE.md):
-- [x] **4.1 CI/CD & Auto-Deploy Workflow (`.github/workflows/deploy.yml`)**: GitHub Actions pipeline for testing and manual "Run action" cloud deployment.
-- [ ] **4.2 Render Backend Deployment**: Deploy `x402-demo-server` to Render (free tier) and set environment variables.
-- [ ] **4.3 Vercel Frontend Deployment**: Deploy `X402-Usecase` to Vercel/Render with `VITE_API_BASE_URL` pointing to backend.
+- [x] **4.1 Separate Backend & Frontend CI/CD Workflows (`.github/workflows/deploy-backend.yml` & `deploy-frontend.yml`)**: GitHub Actions pipelines for isolated testing and manual "Run action" cloud deployment.
+- [ ] **4.2 Render Backend Deployment**: Deploy `x402-demo-server` to Render (free tier) and set environment variables (`AVM_ADDRESS`, `GROQ_API_KEY`, etc.).
+- [ ] **4.3 Vercel Frontend Deployment**: Deploy `X402-Usecase` to Vercel with `VITE_API_BASE_URL` pointing to live Render backend URL.
 - [ ] **4.4 Keep-Alive Ping**: Setup free ping on `cron-job.org` hitting `/health` every 10 minutes to prevent cold starts during demo.
 - [ ] **4.5 Bazaar Discovery Check**: Query GoPlausible discovery registry to verify public indexing of our live domain.
 - [ ] **4.6 Demo Backup & Pitch Prep**: Record a 60-second backup video clip of the payment and audit flow for presentation day.
