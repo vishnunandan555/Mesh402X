@@ -2,6 +2,7 @@ import { SupportedWallet, WalletId, WalletManager, WalletProvider, useWallet } f
 import { SnackbarProvider } from 'notistack'
 import { useMemo, useState } from 'react'
 import AdsecHome from './AdsecHome'
+import AgentGuidePage from './components/AgentGuidePage'
 import ConnectWallet from './components/ConnectWallet'
 import { getAlgodConfigFromViteEnvironment, getKmdConfigFromViteEnvironment } from './utils/network/getAlgoClientConfigs'
 
@@ -27,16 +28,12 @@ if (import.meta.env.VITE_ALGOD_NETWORK === 'localnet') {
   ]
 }
 
-const NAV_LINKS = [
-  { id: 'playground', label: 'Security Auditor' },
-  { id: 'pipeline', label: 'How It Works' },
-  { id: 'endpoints', label: 'Endpoints' },
-  { id: 'ledger-section', label: 'On-Chain Ledger' },
-]
+export type MainTab = 'guide' | 'playground'
 
 export default function App() {
   const algodConfig = getAlgodConfigFromViteEnvironment()
   const [openWalletModal, setOpenWalletModal] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<MainTab>('guide')
 
   const walletManager = useMemo(
     () =>
@@ -61,27 +58,23 @@ export default function App() {
 
   const toggleWalletModal = () => setOpenWalletModal(!openWalletModal)
 
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
-
   return (
     <SnackbarProvider maxSnack={3}>
       <WalletProvider manager={walletManager}>
-        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
           {/* GLOBAL STICKY HEADER */}
-          <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+          <header className="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
               {/* Logo */}
               <div className="flex items-center gap-6">
-                <a href="#" className="flex items-center gap-2.5 shrink-0 group">
+                <button
+                  onClick={() => setActiveTab('guide')}
+                  className="flex items-center gap-2.5 shrink-0 group text-left"
+                >
                   <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-mono font-black text-xs text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
                     🐍
                   </div>
-                  <div className="text-left">
+                  <div>
                     <div className="font-black text-sm tracking-wider text-white flex items-center gap-1.5">
                       MEDUSA
                       <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
@@ -89,31 +82,52 @@ export default function App() {
                       </span>
                     </div>
                   </div>
-                </a>
+                </button>
               </div>
 
-              {/* Navigation Links */}
-              <nav className="hidden md:flex items-center gap-1 bg-slate-900/80 border border-slate-800 rounded-full p-1" aria-label="sections">
-                {NAV_LINKS.map((link) => (
-                  <button
-                    key={link.id}
-                    onClick={() => scrollToSection(link.id)}
-                    className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
-                  >
-                    {link.label}
-                  </button>
-                ))}
+              {/* Main Dual-Page Navigation Tabs */}
+              <nav className="flex items-center gap-1 bg-slate-900/90 border border-slate-800 rounded-full p-1 shadow-inner" aria-label="Main Navigation">
+                <button
+                  onClick={() => setActiveTab('guide')}
+                  className={`px-4 sm:px-5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'guide'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span>📖</span>
+                  <span>Agent & Dev Guide</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('playground')}
+                  className={`px-4 sm:px-5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeTab === 'playground'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  <span>⚡</span>
+                  <span>Live Web Playground</span>
+                </button>
               </nav>
 
-              <NavWalletButton onClick={toggleWalletModal} />
+              {/* Wallet Connection Header Button */}
+              <div className="flex items-center gap-3">
+                <NavWalletButton onClick={toggleWalletModal} />
+              </div>
             </div>
           </header>
 
-          {/* Main App Content */}
+          {/* Main Content View Switcher */}
           <main className="flex-1">
-            <AdsecHome />
+            {activeTab === 'guide' ? (
+              <AgentGuidePage onSwitchToPlayground={() => setActiveTab('playground')} />
+            ) : (
+              <AdsecHome />
+            )}
           </main>
 
+          {/* Global Wallet Modal */}
           <ConnectWallet openModal={openWalletModal} closeModal={toggleWalletModal} />
         </div>
       </WalletProvider>
@@ -127,14 +141,19 @@ function NavWalletButton({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       data-test-id="nav-wallet-button"
-      className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all border flex items-center gap-2 ${
+      className={`shrink-0 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold font-mono transition-all border flex items-center gap-2 ${
         activeAddress
-          ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300 hover:border-emerald-400'
+          ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300 hover:border-emerald-400 shadow-sm'
           : 'bg-indigo-600 hover:bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-600/30 active:scale-95'
       }`}
     >
       <span className={`w-2 h-2 rounded-full ${activeAddress ? 'bg-emerald-400 animate-pulse' : 'bg-white'}`}></span>
-      {activeAddress ? `${activeAddress.slice(0, 6)}...${activeAddress.slice(-4)}` : 'Connect Wallet'}
+      <span className="hidden sm:inline">
+        {activeAddress ? `${activeAddress.slice(0, 6)}...${activeAddress.slice(-4)}` : 'Connect Wallet'}
+      </span>
+      <span className="sm:hidden">
+        {activeAddress ? `${activeAddress.slice(0, 4)}..` : 'Wallet'}
+      </span>
     </button>
   )
 }

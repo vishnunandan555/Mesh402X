@@ -1,59 +1,74 @@
-# 🤖 Global Autonomous AI Agent Guide
+# 🤖 Medusa Global Autonomous AI Agent Guide
 
-> **How any developer or AI agent worldwide can discover, hire, pay, and receive security audits from ADSEC via x402 on Algorand TestNet.**
-
----
-
-## 🚀 3-Step Quickstart for External Users & Agents
-
-### Step 1: Create & Fund Your Agent Wallet (10 seconds)
-You do not need to create an account, register an email, or generate an API key.
-
-1. **Generate a fresh Algorand TestNet wallet:**
-   ```bash
-   cd x402-Project/x402-demo-server
-   npx tsx scripts/run-user-agent.ts --generate-wallet
-   ```
-2. **Fund your new wallet with free TestNet tokens:**
-   - **ALGO (for gas):** [Algorand TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) (~5 ALGO)
-   - **USDC (for micro-payments):** [Circle TestNet Faucet](https://faucet.circle.com) (Select *Algorand TestNet*, ASA `10458941`, ~10 USDC)
-3. **Set your mnemonic in `.env`:**
-   ```ini
-   USER_AGENT_MNEMONIC="word1 word2 word3 ... word25"
-   ```
+> **How any developer or AI agent worldwide can discover, hire, pay, and receive security audits from Medusa via x402 on Algorand TestNet.**
 
 ---
 
-### Step 2: Run the Autonomous Agent Against ADSEC
-Run the agent CLI to audit any local source file (Python, TypeScript, JavaScript, Solidity, etc.):
+## ⚡ 1-Line Universal Setup in Any External Repository
+
+Run this single command inside any codebase:
 
 ```bash
-# Audit a specific code file against your live Render backend
-npm run agent ../../test-files/vulnerable.py -- --backend https://<YOUR_RENDER_URL>.onrender.com
+curl -fsSL https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main/install.sh | bash
 ```
 
-#### What happens autonomously under the hood:
+**This automatically:**
+1. Installs `@x402-avm/fetch` & `algosdk`.
+2. Sets up your agent's Algorand wallet in `.env`.
+3. Downloads the modular `medusa-scripts/` suite.
+4. Configures `Medusa_Skill.md` so that AI agents (Antigravity, Cursor, Claude Code) understand Medusa natively.
+
+---
+
+## 💎 Modular Tiers & Pricing ($0.001 USDC / call)
+
+| Tier / Feature | Endpoint | Price | Modular Script to Execute | When to Choose |
+|---|---|---|---|---|
+| ⚡ **Pre-Flight Scanner** | `POST /adsec/scan` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-scan.ts <file>` | Fast scan, CVE check, leaked secrets, AST patterns. |
+| 🩹 **Auto-Remediator** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Generate language-aware `git apply` patches. |
+| ⛓️ **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | Cryptographic SHA-256 on-chain proof on Algorand. |
+| 🚀 **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Complete pipeline: Scan + AI Review + Diffs + Attestation. |
+| 🟢 **Free Dev Test** | `POST /adsec/dev-audit` | **$0.00** | `npx tsx medusa-scripts/audit-dev.ts <file>` | Zero-token rapid testing without wallet funds. |
+
+---
+
+## 💬 Prompting Your AI Assistant in Plain English
+
+Once installed, simply type into your AI assistant chat (Antigravity, Cursor, Claude Code):
+
+> 💬 *"Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof."*
+
+### What happens autonomously under the hood:
 ```
 1. 🤖 Agent reads source code file.
-2. 🌐 Discovers the ADSEC Security Node and endpoint (/adsec/audit).
-3. ⚡ Sends request ➔ Receives HTTP 402 Payment Required ($0.05 USDC challenge).
-4. ✍️ Programmatically signs 50,000 micro-USDC ASA transfer using local wallet key.
-5. ⛓️ GoPlausible Facilitator settles the transaction on Algorand TestNet.
+2. 🌐 Discovers the Medusa Security Node on GoPlausible Bazaar.
+3. ⚡ Sends request ➔ Receives HTTP 402 Payment Required ($0.001 USDC challenge).
+4. ✍️ Programmatically signs 1,000 micro-USDC ASA transfer using local AGENT_MNEMONIC.
+5. ⛓️ GoPlausible Facilitator settles the transaction on Algorand TestNet (~1.5s).
 6. 📜 Receives:
    - Security Health Score (0-100)
-   - Detailed AST & Typosquatting Vulnerabilities
+   - Detailed AST & Typosquatting Vulnerabilities (with CWE IDs)
    - Cryptographic Proof-of-Audit on-chain certificate
    - Actionable Git Diff patch saved directly to 'audit.patch'
+7. 🩹 Self-heals by running `git apply audit.patch`
 ```
 
 ---
 
-### Step 3: Automatically Apply the Returned Security Patch
-Your agent or CI/CD runner can immediately apply the verified fixes:
+## 🔧 Wallet Diagnostic & Management Scripts
 
-```bash
-git apply audit.patch
-```
+- **Check Balance & Opt-in Status:**
+  ```bash
+  npx tsx medusa-scripts/check-wallet.ts
+  ```
+- **Opt-in to USDC (ASA #10458941):**
+  ```bash
+  npx tsx medusa-scripts/optin-usdc.ts
+  ```
+- **Generate Fresh Wallet:**
+  ```bash
+  npx tsx medusa-scripts/generate-wallet.ts
+  ```
 
 ---
 
@@ -62,14 +77,8 @@ git apply audit.patch
 Any external autonomous agent can dynamically discover this service from the decentralized catalog:
 
 ```bash
-curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true"
+curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000"
 ```
-
-The catalog returns the full OpenAPI schema, pricing ($0.01 – $0.05 USDC), and parameters for:
-- `POST /adsec/scan` ($0.01 USDC) — Pre-flight deterministic secret, CVE, and typosquatting scanner.
-- `POST /adsec/remediate` ($0.03 USDC) — Unified Git diff auto-remediation patch generator.
-- `POST /adsec/attest` ($0.01 USDC) — Cryptographic on-chain proof-of-audit certificate.
-- `POST /adsec/audit` ($0.05 USDC) — Full all-in-one security audit suite.
 
 ---
 
@@ -77,4 +86,4 @@ The catalog returns the full OpenAPI schema, pricing ($0.01 – $0.05 USDC), and
 Every payment and on-chain attestation is publicly verifiable on Algorand TestNet:
 - **Lora Explorer Root:** [https://lora.algokit.io/testnet](https://lora.algokit.io/testnet)
 - **Direct Transaction Link:** `https://lora.algokit.io/testnet/transaction/<TRANSACTION_ID>`
-- **ADSEC Receiver Node Ledger:** [https://lora.algokit.io/testnet/account/BLZQISYSYJSO5UAQ4XYBI7YWSIJAW4TQ6XKL43WEXWYRCCXQU2S7AVCJMI](https://lora.algokit.io/testnet/account/BLZQISYSYJSO5UAQ4XYBI7YWSIJAW4TQ6XKL43WEXWYRCCXQU2S7AVCJMI)
+- **Medusa Receiver Account:** [`LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`](https://lora.algokit.io/testnet/account/LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ)

@@ -1,32 +1,32 @@
-# ADSEC — Architecture & Technical Specification
+# 🐍 MEDUSA (ADSEC) — Architecture & Technical Specification
 
 ---
 
 ## 🏛️ System Architecture
 
-ADSEC (Autonomous Decentralized Security Audit Service) is composed of four decoupled, scalable layers:
+Medusa is composed of four decoupled, scalable layers serving both **Autonomous AI Agents** and **Human Developers**:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          1. CLIENT / AGENT LAYER                       │
-│  • Autonomous AI Agents (Python / Node.js x402 Clients)                │
-│  • CI/CD Pre-Commit Hooks (GitHub Actions / GitLab CI)                 │
-│  • Web Application Users (React + Vite + Pera / Defly Wallet)          │
+│  • Autonomous AI Agents (using Medusa_Skill.md & medusa-scripts/)      │
+│  • CI/CD Autonomous Security Gates (GitHub Actions / GitLab CI)        │
+│  • Web Application Users (Dual-Mode React UI + Pera / Defly Wallet)    │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ HTTP Requests (x402 Protocol)
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        2. X402 PROTOCOL GATEWAY                        │
-│  • Hono HTTP Framework (TypeScript, Edge-Ready)                        │
-│  • @x402/hono Payment Middleware (Enforces 402 Challenges)             │
+│  • Hono HTTP Framework (TypeScript, Node.js / Edge-Ready)              │
+│  • @x402/hono Payment Middleware (Enforces HTTP 402 Challenges)        │
 │  • GoPlausible Facilitator Settlement (`facilitator.goplausible.xyz`)  │
 │  • Algorand TestNet Blockchain (USDC ASA 10458941)                     │
-│  • Bazaar Discovery Registry (Dynamic Agent Service Indexing)          │
+│  • GoPlausible Bazaar Discovery (Dynamic Agent Service Indexing)       │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Verified Paid Requests ($0.01 - $0.05)
+                                    │ Verified Paid Requests ($0.001 USDC)
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│                      3. ADSEC SECURITY AUDIT ENGINE                    │
+│                      3. MEDUSA SECURITY AUDIT ENGINE                   │
 │                                                                        │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
 │  │ Tier 1: Deterministic Engine (<50ms)                             │  │
@@ -54,20 +54,28 @@ ADSEC (Autonomous Decentralized Security Audit Service) is composed of four deco
 
 ---
 
-## 💰 Endpoint Pricing & Specifications
+## 💰 Endpoint Pricing & Modular Script Specifications
 
-| Endpoint | Method | Price | Target Consumers | Description |
-|---|---|---|---|---|
-| `/health` | `GET` | **Free** | Monitors, Uptime | Service heartbeat & uptime status |
-| `/info` | `GET` | **Free** | Developers, Agents | Active network and endpoint metadata |
-| `/weather` | `GET` | **$0.005 USDC** | x402 Verifiers | Starter test payment verification |
-| `/adsec/audit` | `POST` | **$0.01 USDC** | Agents, CI/CD | Deterministic + CVE audit & AI diff patch |
-| `/meme-generate` | `POST` | **$0.10 USDC** | Creative Agents | AI Meme generator with RAG |
+All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.001 USDC (1,000 microUSDC)**.
+
+| Endpoint | Method | Price | Modular Script | Target Consumers | Description |
+|---|---|---|---|---|---|
+| `/adsec/scan` | `POST` | **$0.001 USDC** | `audit-scan.ts` | Pre-commit hooks, fast linters | Fast deterministic secret, CVE, and AST vulnerability scan. |
+| `/adsec/remediate` | `POST` | **$0.001 USDC** | `audit-remediate.ts` | Autonomous self-healing bots | Generates language-aware unified Git diff patches (`git apply` ready). |
+| `/adsec/attest` | `POST` | **$0.001 USDC** | `audit-attest.ts` | Release pipelines, compliance | Computes SHA-256 code hash and broadcasts on-chain Algorand certificate. |
+| `/adsec/audit` | `POST` | **$0.001 USDC** | `audit-full.ts` | Coding agents, comprehensive audits | Complete pipeline: Scan + AI Review + Unified Diffs + Attestation. |
+| `/adsec/dev-audit` | `POST` | **$0.00** | `audit-dev.ts` | Free sandbox testing | Zero-token rapid testing without wallet funds. |
 
 ---
 
-## 🔐 Security & Non-Custodial Architecture
+## 🔄 Dual Interaction Modes
 
-1. **Server Statelessness**: The ADSEC Resource Server never holds user funds or private keys. Payments settle directly into the receiver wallet on Algorand TestNet.
-2. **Deterministic Fallbacks**: Tier 1 analysis executes locally without external third-party dependencies, guaranteeing sub-second response times even if upstream LLM providers experience downtime.
-3. **Safe Memory Handling**: Private keys on automated agents are processed using non-destructive cryptographic primitives (`ed25519Generator`), preventing runtime memory zeroization hazards.
+### Mode 1: Headless Autonomous Agent (Agent-to-Agent)
+1. **Installation:** Any codebase runs `curl -fsSL .../install.sh | bash`.
+2. **Decentralized Discovery:** Queries `GET https://facilitator.goplausible.xyz/discovery/resources`.
+3. **Execution:** Reads `Medusa_Skill.md`, chooses script in `medusa-scripts/`, signs payment with `AGENT_MNEMONIC`.
+4. **Self-Healing:** Automatically runs `git apply audit.patch`.
+
+### Mode 2: Web Playground (Human-to-Agent)
+1. **Interactive Guide:** Tab 1 provides copyable installer commands and live Bazaar inspection.
+2. **Manual Auditor:** Tab 2 provides Pera/Defly wallet connection, code presets, live ASCII terminal animation, and on-chain ledger links.

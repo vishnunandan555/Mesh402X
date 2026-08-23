@@ -18,5 +18,12 @@
     "agentic-commerce"
   ],
   "author": "ADSEC Team",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@x402-avm/avm": "^2.6.1",
+    "@x402-avm/fetch": "^2.6.1",
+    "algosdk": "^3.7.0",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.23.12"
+  }
 }
