@@ -93,11 +93,12 @@ cat <<EOF > .agents/mcp_config.json
 EOF
 echo -e "  ${GREEN}[+] Configured Medusa MCP Server in .agents/mcp_config.json${NC}"
 
-# 4. Download / Install Medusa_Skill.md
-echo -e "\n${CYAN}[4/5] Installing Medusa Agent Skill specification...${NC}"
+# 4. Download / Install Agent Instructions & Skills (AGENTS.md & Medusa_Skill.md)
+echo -e "\n${CYAN}[4/5] Installing Medusa Agent Skill & AGENTS.md instructions...${NC}"
+curl -fsSL "${GITHUB_RAW}/AGENTS.md" -o "AGENTS.md" 2>/dev/null || true
 curl -fsSL "${GITHUB_RAW}/Medusa_Skill.md" -o "Medusa_Skill.md" 2>/dev/null || true
 curl -fsSL "${GITHUB_RAW}/Medusa_Skill.md" -o ".agents/skills/medusa-audit/SKILL.md" 2>/dev/null || true
-echo -e "${GREEN}[+] Medusa_Skill.md & .agents/skills/medusa-audit/SKILL.md configured.${NC}"
+echo -e "${GREEN}[+] AGENTS.md, Medusa_Skill.md & .agents/skills/medusa-audit/SKILL.md configured.${NC}"
 
 # 5. Wallet Configuration in wallet.env
 echo -e "\n${CYAN}[5/5] Configuring Agent Algorand Wallet (wallet.env)...${NC}"
