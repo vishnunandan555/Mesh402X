@@ -413,17 +413,43 @@ export const AdsecPlayground: React.FC = () => {
           {/* On-Chain Attestation Badge */}
           {auditResponse.attestation && (
             <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-5 shadow-lg text-white">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                 <h4 className="font-bold text-emerald-400 flex items-center gap-2">
-                  Cryptographic On-Chain Attestation
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Cryptographic On-Chain Proof-of-Audit
                 </h4>
-                <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-3 py-1 rounded-full border border-emerald-500/40">
-                  {auditResponse.attestation.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold">
+                    {auditResponse.attestation.status}
+                  </span>
+                  {auditResponse.attestation.txId && (
+                    <a
+                      href={auditResponse.attestation.loraUrl || `https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-3 py-1 rounded-full border border-indigo-500/40 transition-all flex items-center gap-1 font-mono font-bold"
+                    >
+                      View Tx on Lora ↗
+                    </a>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1.5 text-xs font-mono text-slate-300 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                <div><span className="text-slate-500">Code SHA-256:</span> {auditResponse.attestation.codeHash}</div>
-                <div><span className="text-slate-500">Tx Note Schema:</span> {auditResponse.attestation.txNoteSchema}</div>
+              <div className="space-y-2 text-xs font-mono text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                <div><span className="text-slate-500">Code SHA-256:</span> <span className="text-emerald-400">{auditResponse.attestation.codeHash}</span></div>
+                <div><span className="text-slate-500">Tx Note Schema:</span> <span className="text-indigo-300">{auditResponse.attestation.txNoteSchema}</span></div>
+                {auditResponse.attestation.txId && (
+                  <div>
+                    <span className="text-slate-500">Confirmed Tx ID: </span>
+                    <a
+                      href={`https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-indigo-400 hover:underline font-bold"
+                    >
+                      {auditResponse.attestation.txId}
+                    </a>
+                  </div>
+                )}
                 <div><span className="text-slate-500">Authority:</span> {auditResponse.attestation.attestationAuthority}</div>
               </div>
             </div>
@@ -524,11 +550,22 @@ export const AdsecPlayground: React.FC = () => {
               <div>
                 <span>Network: </span>
                 <span className="text-slate-200">{auditResponse.receipt.network || 'Algorand TestNet'}</span>
+                {auditResponse.receipt.paidAmount && (
+                  <span className="ml-2 bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded border border-indigo-800">
+                    {auditResponse.receipt.paidAmount}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <span>Settled via GoPlausible • </span>
                 <a
-                  href="https://lora.algokit.io/testnet"
+                  href={
+                    auditResponse.receipt.attestationTxId
+                      ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.attestationTxId}`
+                      : auditResponse.receipt.txId
+                      ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.txId}`
+                      : 'https://lora.algokit.io/testnet'
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="text-indigo-400 hover:underline flex items-center gap-1 font-bold"
@@ -545,3 +582,4 @@ export const AdsecPlayground: React.FC = () => {
 }
 
 export default AdsecPlayground
+

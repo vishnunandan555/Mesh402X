@@ -61,10 +61,24 @@ export interface AuditResponse {
   summary: AuditSummary;
   findings: AuditFinding[];
   fixes?: AuditDiffFix[];
+  attestation?: {
+    codeHash: string;
+    score: number;
+    status: string;
+    totalIssues: number;
+    timestamp: string;
+    attestationAuthority?: string;
+    txNoteSchema: string;
+    txId?: string;
+    loraUrl?: string;
+  };
   receipt?: {
     txId?: string;
     network?: string;
     paidAmount?: string;
     timestamp?: string;
+    codeHash?: string;
+    attestationTxId?: string;
+    loraUrl?: string;
   };
 }

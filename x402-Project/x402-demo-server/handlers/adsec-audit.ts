@@ -1,6 +1,54 @@
 import type { Context } from 'hono';
 import * as crypto from 'crypto';
+import algosdk from 'algosdk';
 import { runAudit, AuditRequest } from '../engine';
+
+const ALGOD_SERVER = process.env.ALGOD_SERVER || 'https://testnet-api.algonode.cloud';
+
+/**
+ * Broadcasts a real cryptographic Proof-of-Audit note to Algorand TestNet
+ */
+async function broadcastOnChainAttestation(
+  codeHash: string,
+  score: number,
+  filename?: string
+): Promise<{ txId?: string; loraUrl?: string }> {
+  const mnemonic = process.env.ATTESTATION_MNEMONIC || process.env.SERVER_MNEMONIC || process.env.PAYER_MNEMONIC;
+  if (!mnemonic) {
+    return {};
+  }
+
+  try {
+    const algodClient = new algosdk.Algodv2('', ALGOD_SERVER, '');
+    const account = algosdk.mnemonicToSecretKey(mnemonic);
+    const suggestedParams = await algodClient.getTransactionParams().do();
+
+    const noteString = `adsec:v1;sha256:${codeHash.slice(0, 32)};score:${score};file:${filename || 'audit'}`;
+    const note = new Uint8Array(Buffer.from(noteString));
+
+    // 0-ALGO self-transaction carrying the cryptographic attestation note
+    const txn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+      sender: account.addr,
+      receiver: account.addr,
+      amount: 0,
+      note,
+      suggestedParams,
+    });
+
+    const signedTxn = txn.signTxn(account.sk);
+    const sendResult = await algodClient.sendRawTransaction(signedTxn).do();
+    const txId = sendResult.txid || txn.txID();
+
+    console.log(`⛓️ [ADSEC On-Chain Attestation] Broadcasted to Algorand TestNet: ${txId}`);
+    return {
+      txId,
+      loraUrl: `https://lora.algokit.io/testnet/transaction/${txId}`,
+    };
+  } catch (err: any) {
+    console.warn(`⚠️ [ADSEC On-Chain Attestation] Notice: ${err?.message || 'Could not broadcast on-chain note'}`);
+    return {};
+  }
+}
 
 /**
  * Helper to parse request body with fallback
@@ -97,6 +145,10 @@ export async function handleAdsecAttestRequest(c: Context) {
 
     // Compute cryptographic SHA-256 hash of audited source code
     const codeHash = crypto.createHash('sha256').update(reqBody.code || '').digest('hex');
+
+    // Broadcast real on-chain note transaction to Algorand TestNet if wallet configured
+    const onChainResult = await broadcastOnChainAttestation(codeHash, auditResult.summary.score, reqBody.filename);
+
     const attestationProof = {
       codeHash,
       score: auditResult.summary.score,
@@ -105,6 +157,8 @@ export async function handleAdsecAttestRequest(c: Context) {
       timestamp: new Date().toISOString(),
       attestationAuthority: 'ADSEC Security Node (Algorand TestNet)',
       txNoteSchema: `adsec:v1;sha256:${codeHash.slice(0, 16)};score:${auditResult.summary.score}`,
+      txId: onChainResult.txId,
+      loraUrl: onChainResult.loraUrl,
     };
 
     return c.json({
@@ -116,6 +170,8 @@ export async function handleAdsecAttestRequest(c: Context) {
         network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
         paidAmount: '0.01 USDC',
         timestamp: new Date().toISOString(),
+        attestationTxId: onChainResult.txId,
+        loraUrl: onChainResult.loraUrl,
       },
     });
   } catch (error) {
@@ -134,12 +190,27 @@ export async function handleAdsecAuditRequest(c: Context) {
     const auditResult = await runAudit(reqBody);
 
     const codeHash = crypto.createHash('sha256').update(reqBody.code || '').digest('hex');
+    const onChainResult = await broadcastOnChainAttestation(codeHash, auditResult.summary.score, reqBody.filename);
+
+    auditResult.attestation = {
+      codeHash,
+      score: auditResult.summary.score,
+      status: auditResult.summary.score >= 80 ? 'PASSED_PREFLIGHT' : 'REQUIRES_REMEDIATION',
+      totalIssues: auditResult.summary.totalIssues,
+      timestamp: new Date().toISOString(),
+      attestationAuthority: 'ADSEC Security Node (Algorand TestNet)',
+      txNoteSchema: `adsec:v1;sha256:${codeHash.slice(0, 16)};score:${auditResult.summary.score}`,
+      txId: onChainResult.txId,
+      loraUrl: onChainResult.loraUrl,
+    };
 
     auditResult.receipt = {
       network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
       paidAmount: '0.05 USDC',
       codeHash,
       timestamp: new Date().toISOString(),
+      attestationTxId: onChainResult.txId,
+      loraUrl: onChainResult.loraUrl,
     };
 
     return c.json(auditResult);
@@ -148,3 +219,4 @@ export async function handleAdsecAuditRequest(c: Context) {
     return c.json({ success: false, error: String(error) }, 500);
   }
 }
+

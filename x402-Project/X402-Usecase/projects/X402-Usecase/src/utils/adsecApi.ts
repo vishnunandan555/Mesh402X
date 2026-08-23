@@ -52,12 +52,17 @@ export interface AdsecResponse {
     timestamp: string
     txNoteSchema: string
     attestationAuthority?: string
+    txId?: string
+    loraUrl?: string
   }
   receipt?: {
     network?: string
     paidAmount?: string
     timestamp?: string
     txId?: string
+    attestationTxId?: string
+    loraUrl?: string
+    codeHash?: string
   }
   error?: string
 }
