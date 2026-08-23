@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
+import { IconExternal, IconLock, IconRefresh, IconWallet } from './icons'
 
 interface TxRecord {
   id: string
@@ -13,7 +14,7 @@ interface TxRecord {
 }
 
 const RECEIVER_WALLET = import.meta.env.VITE_RECEIVER_ADDRESS || 'LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ'
-const INDEXER_URL = (import.meta.env.VITE_INDEXER_SERVER || 'https://testnet-idx.algonode.cloud').replace(/\/+$/, '')
+const INDEXER_URL = import.meta.env.VITE_INDEXER_SERVER || 'https://testnet-idx.algonode.cloud'
 const USDC_ASA_ID = 10458941
 // Admin passcode read from env at build time — not hardcoded in source
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'adsec2026'
@@ -80,115 +81,123 @@ export const OnChainLedger: React.FC = () => {
     setTimeout(() => setCopiedTxId(null), 2000)
   }
 
-  const fetchTransactions = useCallback(async (showFullLoader = false) => {
-    if (showFullLoader || isFirstLoad.current) {
-      setLoading(true)
-    } else {
-      setIsSyncing(true)
-    }
-
-    const targetAddress = viewMode === 'user' ? activeAddress : RECEIVER_WALLET
-
-    if (!targetAddress) {
-      setTransactions([])
-      setLoading(false)
-      setIsSyncing(false)
-      return
-    }
-
-    try {
-      // 1. Fetch Account Balances via Algorand Indexer
-      const accRes = await fetch(`${INDEXER_URL}/v2/accounts/${targetAddress}`)
-      if (accRes.ok) {
-        const accData = await accRes.json()
-        const algo = Number(accData.account?.amount || 0) / 1e6
-        const usdcAsset = accData.account?.assets?.find((a: any) => Number(a['asset-id']) === USDC_ASA_ID)
-        const usdc = usdcAsset ? Number(usdcAsset.amount) / 1e6 : 0
-
-        if (viewMode === 'user') {
-          setUserBalances({ algo, usdc })
-        } else {
-          setNetworkStats((prev) => ({
-            ...prev,
-            algoBalance: algo,
-            usdcBalance: usdc,
-          }))
-        }
+  const fetchTransactions = useCallback(
+    async (showFullLoader = false) => {
+      if (showFullLoader || isFirstLoad.current) {
+        setLoading(true)
+      } else {
+        setIsSyncing(true)
       }
 
-      // 2. Fetch Recent Transactions (Asset transfers + Payment receipts)
-      const txRes = await fetch(`${INDEXER_URL}/v2/accounts/${targetAddress}/transactions?limit=40`)
-      if (txRes.ok) {
-        const txData = await txRes.json()
-        const rawTxns = txData.transactions || []
+      const targetAddress = viewMode === 'user' ? activeAddress : RECEIVER_WALLET
 
-        let totalRev = 0
-        let auditCount = 0
+      if (!targetAddress) {
+        setTransactions([])
+        setLoading(false)
+        setIsSyncing(false)
+        return
+      }
 
-        const parsed: TxRecord[] = []
+      try {
+        // 1. Fetch Account Balances via Algorand Indexer
+        const accRes = await fetch(`${INDEXER_URL}/v2/accounts/${targetAddress}`)
+        if (accRes.ok) {
+          const accData = await accRes.json()
+          const algo = Number(accData.account?.amount || 0) / 1e6
+          const usdcAsset = accData.account?.assets?.find(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped Algorand Indexer JSON
+            (a: any) => Number(a['asset-id']) === USDC_ASA_ID,
+          )
+          const usdc = usdcAsset ? Number(usdcAsset.amount) / 1e6 : 0
 
-        rawTxns.forEach((t: any) => {
-          const isAssetTransfer = t['tx-type'] === 'axfer' && t['asset-transfer-transaction']
-          const isPayment = t['tx-type'] === 'pay' && t['payment-transaction']
-          const decodedNote = decodeBase64Note(t.note)
-
-          if (isAssetTransfer) {
-            const xfer = t['asset-transfer-transaction']
-            const assetId = Number(xfer['asset-id'] || 0)
-            const amountUsdc = Number(xfer.amount || 0) / 1e6
-
-            if (assetId === USDC_ASA_ID) {
-              const isIncoming = xfer.receiver === RECEIVER_WALLET || (viewMode === 'user' && t.sender === targetAddress)
-              if (isIncoming && amountUsdc > 0) {
-                totalRev += amountUsdc
-                auditCount++
-              }
-
-              parsed.push({
-                id: t.id,
-                round: t['confirmed-round'] || 0,
-                timestamp: t['round-time'] ? new Date(t['round-time'] * 1000).toLocaleString() : 'Recent',
-                sender: t.sender || '',
-                receiver: xfer.receiver || '',
-                amountUsdc,
-                type: 'x402 Micropayment',
-                note: decodedNote || 'x402 Security Audit Micropayment',
-              })
-            }
-          } else if (isPayment) {
-            if (decodedNote.includes('adsec') || decodedNote.includes('sha256')) {
-              parsed.push({
-                id: t.id,
-                round: t['confirmed-round'] || 0,
-                timestamp: t['round-time'] ? new Date(t['round-time'] * 1000).toLocaleString() : 'Recent',
-                sender: t.sender || '',
-                receiver: t['payment-transaction']?.receiver || '',
-                amountUsdc: 0,
-                type: 'On-Chain Attestation',
-                note: decodedNote,
-              })
-            }
+          if (viewMode === 'user') {
+            setUserBalances({ algo, usdc })
+          } else {
+            setNetworkStats((prev) => ({
+              ...prev,
+              algoBalance: algo,
+              usdcBalance: usdc,
+            }))
           }
-        })
-
-        setTransactions(parsed)
-
-        if (viewMode !== 'user') {
-          setNetworkStats((prev) => ({
-            ...prev,
-            totalRevenue: totalRev,
-            totalAudits: auditCount,
-          }))
         }
+
+        // 2. Fetch Recent Transactions (Asset transfers + Payment receipts)
+        const txRes = await fetch(`${INDEXER_URL}/v2/accounts/${targetAddress}/transactions?limit=40`)
+        if (txRes.ok) {
+          const txData = await txRes.json()
+          const rawTxns = txData.transactions || []
+
+          let totalRev = 0
+          let auditCount = 0
+
+          const parsed: TxRecord[] = []
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped Algorand Indexer JSON
+          rawTxns.forEach((t: any) => {
+            const isAssetTransfer = t['tx-type'] === 'axfer' && t['asset-transfer-transaction']
+            const isPayment = t['tx-type'] === 'pay' && t['payment-transaction']
+            const decodedNote = decodeBase64Note(t.note)
+
+            if (isAssetTransfer) {
+              const xfer = t['asset-transfer-transaction']
+              const assetId = Number(xfer['asset-id'] || 0)
+              const amountUsdc = Number(xfer.amount || 0) / 1e6
+
+              if (assetId === USDC_ASA_ID) {
+                const isIncoming = xfer.receiver === RECEIVER_WALLET || (viewMode === 'user' && t.sender === targetAddress)
+                if (isIncoming && amountUsdc > 0) {
+                  totalRev += amountUsdc
+                  auditCount++
+                }
+
+                parsed.push({
+                  id: t.id,
+                  round: t['confirmed-round'] || 0,
+                  timestamp: t['round-time'] ? new Date(t['round-time'] * 1000).toLocaleString() : 'Recent',
+                  sender: t.sender || '',
+                  receiver: xfer.receiver || '',
+                  amountUsdc,
+                  type: 'x402 Micropayment',
+                  note: decodedNote || 'x402 Security Audit Micropayment',
+                })
+              }
+            } else if (isPayment) {
+              if (decodedNote.includes('adsec') || decodedNote.includes('sha256')) {
+                parsed.push({
+                  id: t.id,
+                  round: t['confirmed-round'] || 0,
+                  timestamp: t['round-time'] ? new Date(t['round-time'] * 1000).toLocaleString() : 'Recent',
+                  sender: t.sender || '',
+                  receiver: t['payment-transaction']?.receiver || '',
+                  amountUsdc: 0,
+                  type: 'On-Chain Attestation',
+                  note: decodedNote,
+                })
+              }
+            }
+          })
+
+          setTransactions(parsed)
+
+          if (viewMode !== 'user') {
+            setNetworkStats((prev) => ({
+              ...prev,
+              totalRevenue: totalRev,
+              totalAudits: auditCount,
+            }))
+          }
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console -- non-fatal indexer polling failure
+        console.warn('Indexer query notice:', err)
+      } finally {
+        setLoading(false)
+        setIsSyncing(false)
+        isFirstLoad.current = false
       }
-    } catch (err) {
-      console.warn('Indexer query notice:', err)
-    } finally {
-      setLoading(false)
-      setIsSyncing(false)
-      isFirstLoad.current = false
-    }
-  }, [activeAddress, viewMode])
+    },
+    [activeAddress, viewMode],
+  )
 
   // Initial fetch and auto-polling every 5 seconds
   useEffect(() => {
@@ -203,374 +212,276 @@ export const OnChainLedger: React.FC = () => {
   }, [fetchTransactions])
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* ═══ HEADER BAR ═══ */}
-      <div className="card" style={{ padding: '24px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+    <div className="max-w-6xl mx-auto p-4 space-y-6">
+      {/* Header Bar */}
+      <div className="bg-base-900/70 border border-base-800 rounded-2xl p-6 shadow-node flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-            <span className="badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className={`status-dot ${isSyncing ? 'status-dot-sync' : 'status-dot-live'}`} style={{ width: '6px', height: '6px' }}>
-                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: isSyncing ? '#f59e0b' : '#10b981' }} />
-              </span>
-              {isSyncing ? 'Syncing Indexer...' : 'Live Algorand TestNet Feed'}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="bg-accent/[0.08] text-accent text-xs font-mono px-2.5 py-1 rounded-md border border-accent/35 flex items-center gap-1.5 tnum">
+              <span className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-amber-400 animate-ping' : 'bg-accent animate-pulse'}`}></span>
+              <span>{isSyncing ? 'Syncing indexer…' : 'Live Algorand TestNet feed'}</span>
             </span>
-            <span className="badge-ghost">x402 USDC (ASA 10458941)</span>
+            <span className="bg-base-950 text-base-300 text-xs font-mono px-2.5 py-1 rounded-md border border-base-700 tnum">
+              x402 USDC (ASA 10458941)
+            </span>
           </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: 0 }}>On-Chain Settlement Ledger</h2>
-          <p style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: '6px' }}>
+          <h2 className="font-display text-2xl font-semibold text-base-100">On-chain settlement ledger</h2>
+          <p className="text-xs text-base-400 font-mono mt-1.5 max-w-lg">
             Verifiable real-time audit payments and attestation receipts queried from Algorand TestNet consensus.
           </p>
         </div>
 
         {/* View Mode Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="flex items-center gap-2">
           {viewMode === 'merchant' && isAdminUnlocked && (
             <button
               onClick={handleAdminLock}
-              style={{
-                fontSize: '11px',
-                background: 'rgba(239, 68, 68, 0.08)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: '#fca5a5',
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-md)',
-                fontFamily: 'var(--font-mono)',
-                cursor: 'pointer',
-                transition: 'all var(--transition-fast)',
-              }}
+              className="text-xs bg-red-500/[0.07] hover:bg-red-500/15 border border-red-500/30 text-red-300 px-3 py-1.5 rounded-md font-mono transition-all duration-200 focus-ring active:scale-[0.98] flex items-center gap-1.5"
             >
-              🔒 Lock Console
+              <IconLock size={12} />
+              Lock console
             </button>
           )}
 
-          <div style={{
-            display: 'flex',
-            background: '#080c14',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '4px',
-          }}>
-            {(['network', 'user', 'merchant'] as const).map(vm => (
+          <div className="flex bg-base-950 border border-base-800 rounded-xl p-1">
+            {(
+              [
+                { id: 'network', label: 'Network feed' },
+                { id: 'user', label: 'My receipts' },
+                { id: 'merchant', label: isAdminUnlocked ? 'Operator console' : 'Operator login' },
+              ] as const
+            ).map((t) => (
               <button
-                key={vm}
-                onClick={() => setViewMode(vm)}
-                style={{
-                  padding: '7px 14px',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  fontWeight: 700,
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-default)',
-                  background: viewMode === vm ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                  color: viewMode === vm ? '#000' : 'var(--text-muted)',
-                  boxShadow: viewMode === vm ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none',
-                }}
+                key={t.id}
+                onClick={() => setViewMode(t.id)}
+                aria-pressed={viewMode === t.id}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all duration-200 focus-ring active:scale-[0.98] ${
+                  viewMode === t.id ? 'bg-accent text-base-ink shadow-glow' : 'text-base-400 hover:text-base-100'
+                }`}
               >
-                {vm === 'network' ? 'Network Feed' : vm === 'user' ? 'My Receipts' : (isAdminUnlocked ? 'Operator Console' : 'Operator Login')}
+                {t.label}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* ═══ ADMIN GATE ═══ */}
+      {/* Admin Passcode Gate if merchant selected and not unlocked */}
       {viewMode === 'merchant' && !isAdminUnlocked ? (
-        <div className="card animate-scale-in" style={{ maxWidth: '420px', margin: '0 auto', padding: '40px', textAlign: 'center' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: 'var(--radius-xl)',
-            background: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid rgba(16, 185, 129, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 900,
-            color: '#6ee7b7',
-            letterSpacing: '0.1em',
-          }}>
-            AUTH
+        <div className="bg-base-900/70 border border-base-800 rounded-2xl p-8 max-w-md mx-auto text-center shadow-pop space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/35 flex items-center justify-center mx-auto text-accent">
+            <IconLock size={20} />
           </div>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 6px' }}>Operator Console</h3>
-          <p style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '24px' }}>
-            Enter operator passcode to view receiver analytics and treasury breakdown.
-          </p>
+          <div>
+            <h3 className="font-display text-xl font-semibold text-base-100">Operator console</h3>
+            <p className="text-xs text-base-400 font-mono mt-1.5">
+              Enter the operator passcode to view receiver analytics and treasury breakdown.
+            </p>
+          </div>
 
-          <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <form onSubmit={handleAdminLogin} className="space-y-3 pt-2">
             <input
               type="password"
               value={adminPassInput}
               onChange={(e) => setAdminPassInput(e.target.value)}
-              placeholder="Enter passcode (adsec2026)..."
-              style={{
-                width: '100%',
-                background: '#080c14',
-                border: '1px solid var(--border-strong)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '12px 16px',
-                textAlign: 'center',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '14px',
-                color: '#fff',
-                outline: 'none',
-                transition: 'border-color var(--transition-fast)',
-              }}
-              onFocus={(e) => (e.target.style.borderColor = 'rgba(16, 185, 129, 0.5)')}
-              onBlur={(e) => (e.target.style.borderColor = 'var(--border-strong)')}
+              placeholder="Operator passcode"
+              aria-label="Operator passcode"
+              className="w-full bg-base-ink border border-base-700 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-base-100 placeholder:text-base-600 focus:outline-none focus:border-accent/60 focus-ring"
             />
             {adminAuthError && (
-              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#f87171' }}>{adminAuthError}</div>
+              <div role="alert" className="text-xs font-mono text-red-400">
+                {adminAuthError}
+              </div>
             )}
-            <button type="submit" className="btn-primary" style={{ width: '100%' }}>
-              Unlock Console
+            <button
+              type="submit"
+              className="w-full bg-accent hover:bg-accent-bright text-base-ink font-semibold py-2.5 rounded-xl text-sm shadow-glow transition-all duration-200 active:scale-[0.98] focus-ring"
+            >
+              Unlock console
             </button>
           </form>
         </div>
       ) : (
         <>
-          {/* ═══ OVERVIEW CARDS ═══ */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {viewMode === 'user' ? (
               <>
-                <div className="card" style={{ padding: '20px' }}>
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Connected Account</div>
-                  <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#fff', marginTop: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="bg-base-900/70 border border-base-800 rounded-xl p-4">
+                  <div className="text-xs text-base-500 font-mono">Connected account</div>
+                  <div className="text-sm font-mono font-semibold text-base-100 mt-1.5 truncate tnum" title={activeAddress || undefined}>
                     {activeAddress || 'Wallet not connected'}
                   </div>
                 </div>
-                <div className="card" style={{ padding: '20px' }}>
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>TestNet ALGO Balance</div>
-                  <div style={{ fontSize: '1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#10b981', marginTop: '6px' }}>
+                <div className="bg-base-900/70 border border-base-800 rounded-xl p-4">
+                  <div className="text-xs text-base-500 font-mono">TestNet ALGO balance</div>
+                  <div className="text-xl font-display font-semibold text-accent mt-1.5 tnum">
                     {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '—'}
                   </div>
                 </div>
-                <div className="card" style={{ padding: '20px' }}>
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>TestNet USDC Balance</div>
-                  <div style={{ fontSize: '1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#f1f5f9', marginTop: '6px' }}>
+                <div className="bg-base-900/70 border border-base-800 rounded-xl p-4">
+                  <div className="text-xs text-base-500 font-mono">TestNet USDC balance</div>
+                  <div className="text-xl font-display font-semibold text-base-100 mt-1.5 tnum">
                     {userBalances ? `$${userBalances.usdc.toFixed(3)} USDC` : '—'}
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className="card" style={{ padding: '20px' }}>
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Settlement Address</div>
-                  <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#6ee7b7', marginTop: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={RECEIVER_WALLET}>
-                    {RECEIVER_WALLET.slice(0, 10)}...{RECEIVER_WALLET.slice(-8)}
+                <div className="bg-base-900/70 border border-base-800 rounded-xl p-4">
+                  <div className="text-xs text-base-500 font-mono">Settlement address</div>
+                  <div className="text-sm font-mono font-semibold text-accent mt-1.5 truncate tnum" title={RECEIVER_WALLET}>
+                    {RECEIVER_WALLET.slice(0, 10)}…{RECEIVER_WALLET.slice(-8)}
                   </div>
                 </div>
-                <div className="card" style={{ padding: '20px' }}>
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Total Settled Volume</div>
-                  <div style={{ fontSize: '1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#10b981', marginTop: '6px' }}>
+                <div className="bg-base-900/70 border border-base-800 rounded-xl p-4">
+                  <div className="text-xs text-base-500 font-mono">Total settled volume</div>
+                  <div className="text-xl font-display font-semibold text-accent mt-1.5 tnum">
                     ${networkStats.totalRevenue.toFixed(3)} USDC
                   </div>
                 </div>
-                <div className="card" style={{ padding: '20px' }}>
-                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Node Services & Capacity</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#10b981', marginTop: '6px' }}>
-                    <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
-                      <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-                    </span>
-                    Online (4 Paid Routes · {networkStats.totalAudits} Audits)
+                <div className="bg-base-900/70 border border-base-800 rounded-xl p-4">
+                  <div className="text-xs text-base-500 font-mono">Node services &amp; capacity</div>
+                  <div className="text-sm font-mono font-semibold text-accent mt-1.5 flex items-center gap-2 tnum">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+                    <span>Online · 4 paid routes · {networkStats.totalAudits} audits</span>
                   </div>
                 </div>
               </>
             )}
           </div>
 
-          {/* ═══ TRANSACTION TABLE ═══ */}
-          <div className="card" style={{ padding: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '1rem', color: '#fff', margin: 0, flexWrap: 'wrap' }}>
-                {viewMode === 'user' ? 'Your Verified Receipts' : viewMode === 'merchant' ? 'Operator Settlement History' : 'Live Node Settlement Stream'}
-                <span style={{
-                  fontSize: '10px',
-                  fontFamily: 'var(--font-mono)',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  color: 'var(--text-muted)',
-                  padding: '3px 10px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-subtle)',
-                }}>
-                  {transactions.length} record(s)
+          {/* Transaction List */}
+          <div className="bg-base-900/70 border border-base-800 rounded-2xl p-5 shadow-node space-y-4">
+            <div className="flex justify-between items-center flex-wrap gap-3">
+              <h3 className="font-semibold text-base text-base-100 flex items-center gap-2 flex-wrap">
+                <span>
+                  {viewMode === 'user'
+                    ? 'Your verified receipts'
+                    : viewMode === 'merchant'
+                      ? 'Operator settlement history'
+                      : 'Live node settlement stream'}
                 </span>
-                <span className="badge-emerald hide-mobile" style={{ fontSize: '9px' }}>
-                  <span className="status-dot status-dot-live" style={{ width: '5px', height: '5px' }}>
-                    <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-                  </span>
-                  auto-syncing 5s
+                <span className="text-xs bg-base-800 text-base-400 px-2 py-0.5 rounded-md font-mono tnum">
+                  {transactions.length} records
+                </span>
+                <span className="text-[11px] font-mono text-accent bg-accent/[0.08] border border-accent/30 px-2 py-0.5 rounded-md hidden sm:inline-flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-accent animate-pulse"></span>
+                  auto-sync 5s
                 </span>
               </h3>
               <button
                 onClick={() => fetchTransactions(true)}
                 disabled={loading}
-                style={{
-                  fontSize: '11px',
-                  color: '#10b981',
-                  fontWeight: 700,
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  padding: '6px 14px',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'transparent',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  transition: 'all var(--transition-fast)',
-                  fontFamily: 'var(--font-mono)',
-                }}
+                className="text-xs text-accent hover:text-accent-bright font-medium border border-accent/30 px-3 py-1.5 rounded-lg hover:bg-accent/[0.08] transition-all duration-200 focus-ring active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none flex items-center gap-1.5"
               >
-                {loading ? 'Refreshing...' : 'Refresh Now'}
+                <IconRefresh size={12} />
+                {loading ? 'Refreshing…' : 'Refresh now'}
               </button>
             </div>
 
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
-                <div style={{
-                  width: '28px',
-                  height: '28px',
-                  border: '2px solid #10b981',
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'spin-slow 1s linear infinite',
-                  margin: '0 auto 12px',
-                }} />
-                Querying Algorand TestNet Indexer...
+              /* Skeleton rows shaped like the table — no generic spinners */
+              <div className="space-y-2" role="status" aria-label="Loading transactions">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="grid grid-cols-[1.2fr_0.8fr_0.8fr_1fr_1fr] gap-4 items-center bg-base-950/60 border border-base-800/60 rounded-lg px-4 py-3.5"
+                  >
+                    <div className="skeleton h-3 w-24" style={{ animationDelay: `${i * 120}ms` }}></div>
+                    <div className="skeleton h-3 w-16" style={{ animationDelay: `${i * 120 + 60}ms` }}></div>
+                    <div className="skeleton h-3 w-14" style={{ animationDelay: `${i * 120 + 120}ms` }}></div>
+                    <div className="skeleton h-3 w-20 hidden sm:block" style={{ animationDelay: `${i * 120 + 180}ms` }}></div>
+                    <div className="skeleton h-5 w-20 ml-auto" style={{ animationDelay: `${i * 120 + 240}ms` }}></div>
+                  </div>
+                ))}
+                <div className="pt-1 text-center text-[11px] font-mono text-base-600">Querying Algorand TestNet indexer…</div>
               </div>
             ) : transactions.length === 0 ? (
-              <div style={{
-                textAlign: 'center',
-                padding: '48px 24px',
-                color: 'var(--text-muted)',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '12px',
-                background: '#080c14',
-                borderRadius: 'var(--radius-lg)',
-                border: '1px solid var(--border-default)',
-              }}>
+              <div className="text-center py-14 text-base-400 font-mono text-xs bg-base-950/60 rounded-xl border border-base-800 p-6 space-y-4">
                 {viewMode === 'user' && !activeAddress ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
-                    <div style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Wallet Not Connected</div>
-                    <div>Connect your Algorand wallet above to view your personal transaction receipts.</div>
+                  <>
+                    <IconWallet size={22} className="mx-auto text-base-500" />
+                    <div>
+                      <div className="text-base-200 font-semibold font-sans text-sm mb-1">Wallet not connected</div>
+                      <div>Connect your Algorand wallet to view your personal transaction receipts.</div>
+                    </div>
                     <button
                       onClick={() => setViewMode('network')}
-                      className="btn-primary"
-                      style={{ padding: '8px 20px', fontSize: '12px' }}
+                      className="px-4 py-2 rounded-lg bg-accent hover:bg-accent-bright text-base-ink font-semibold font-sans text-xs transition-all duration-200 focus-ring active:scale-[0.98]"
                     >
-                      View Live Network Feed Instead
+                      View live network feed instead
                     </button>
-                  </div>
+                  </>
                 ) : (
-                  <div>No on-chain transactions detected for this account yet.</div>
+                  <>
+                    <div className="text-base-300 font-semibold font-sans text-sm">No on-chain activity yet</div>
+                    <div>Transactions for this account will appear here as soon as they settle.</div>
+                  </>
                 )}
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', textAlign: 'left', fontSize: '12px', fontFamily: 'var(--font-mono)', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
-                      {['Transaction ID', 'Type', 'Amount', 'Settled At', 'Counterparty', 'Receipt / Note', 'Explorer'].map(h => (
-                        <th key={h} style={{
-                          padding: '12px 16px',
-                          fontSize: '10px',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.08em',
-                          color: 'var(--text-dim)',
-                          fontWeight: 700,
-                          background: 'rgba(0, 0, 0, 0.3)',
-                          whiteSpace: 'nowrap',
-                          ...(h === 'Explorer' ? { textAlign: 'right' } : {}),
-                        }}>{h}</th>
-                      ))}
+              <div className="overflow-x-auto thin-scroll">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-base-950/80 text-base-500 border-b border-base-800 uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="py-3 px-4 font-medium">Transaction ID</th>
+                      <th className="py-3 px-4 font-medium">Type</th>
+                      <th className="py-3 px-4 font-medium">Amount</th>
+                      <th className="py-3 px-4 font-medium">Settled at</th>
+                      <th className="py-3 px-4 font-medium">Counterparty</th>
+                      <th className="py-3 px-4 font-medium">Receipt / note</th>
+                      <th className="py-3 px-4 font-medium text-right">Explorer</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-base-800/60 tnum">
                     {transactions.map((tx) => (
-                      <tr
-                        key={tx.id}
-                        style={{
-                          borderBottom: '1px solid var(--border-subtle)',
-                          transition: 'background var(--transition-fast)',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      >
-                        <td style={{ padding: '12px 16px', fontWeight: 700, color: '#6ee7b7' }}>
+                      <tr key={tx.id} className="hover:bg-white/[0.03] transition-colors duration-150">
+                        <td className="py-3 px-4 font-semibold text-accent">
                           <button
                             onClick={() => copyToClipboard(tx.id, tx.id)}
+                            className="hover:underline text-left focus-ring rounded-sm"
                             title="Click to copy full TxID"
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#6ee7b7',
-                              cursor: 'pointer',
-                              fontFamily: 'var(--font-mono)',
-                              fontWeight: 700,
-                              fontSize: '12px',
-                              padding: 0,
-                              textAlign: 'left',
-                            }}
                           >
-                            {tx.id.slice(0, 8)}...{tx.id.slice(-6)}
+                            {tx.id.slice(0, 8)}…{tx.id.slice(-6)}
                           </button>
-                          {copiedTxId === tx.id && (
-                            <span style={{ marginLeft: '6px', fontSize: '9px', color: '#10b981', fontWeight: 800 }}>[Copied]</span>
-                          )}
+                          {copiedTxId === tx.id && <span className="ml-1.5 text-[10px] text-accent">[copied]</span>}
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <span style={{
-                            padding: '3px 10px',
-                            borderRadius: 'var(--radius-full)',
-                            fontSize: '9px',
-                            fontWeight: 700,
-                            letterSpacing: '0.03em',
-                            ...(tx.type === 'x402 Micropayment'
-                              ? { background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.15)' }
-                              : { background: 'rgba(16,185,129,0.08)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.25)' }),
-                          }}>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] border ${
+                              tx.type === 'x402 Micropayment'
+                                ? 'bg-base-800 text-base-200 border-base-700'
+                                : 'bg-accent/[0.08] text-accent border-accent/30'
+                            }`}
+                          >
                             {tx.type}
                           </span>
                         </td>
-                        <td style={{ padding: '12px 16px', fontWeight: 900, color: '#fff' }}>
+                        <td className="py-3 px-4 font-semibold text-base-100">
                           {tx.amountUsdc > 0 ? `$${tx.amountUsdc.toFixed(3)} USDC` : '0.000 ALGO'}
                         </td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{tx.timestamp}</td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tx.sender}>
+                        <td className="py-3 px-4 text-base-400 whitespace-nowrap">{tx.timestamp}</td>
+                        <td className="py-3 px-4 text-base-400 truncate max-w-[140px]" title={tx.sender}>
                           {viewMode === 'user'
                             ? tx.receiver === RECEIVER_WALLET
-                              ? 'Medusa Node'
-                              : `${tx.receiver.slice(0, 6)}...`
-                            : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
+                              ? 'Medusa node'
+                              : `${tx.receiver.slice(0, 6)}…`
+                            : `${tx.sender.slice(0, 6)}…${tx.sender.slice(-4)}`}
                         </td>
-                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tx.note}>
-                          <span style={{
-                            fontSize: '10px',
-                            fontFamily: 'var(--font-mono)',
-                            color: 'var(--text-secondary)',
-                            background: '#080c14',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--border-subtle)',
-                          }}>
-                            {tx.note || 'x402 Audit Proof'}
+                        <td className="py-3 px-4 text-base-400 max-w-[180px] truncate" title={tx.note}>
+                          <span className="text-base-300 text-[11px] font-mono bg-base-950 px-1.5 py-0.5 rounded-md border border-base-800">
+                            {tx.note || 'x402 audit proof'}
                           </span>
                         </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
                           <a
                             href={`https://lora.algokit.io/testnet/transaction/${tx.id}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="btn-primary"
-                            style={{
-                              padding: '5px 12px',
-                              fontSize: '10px',
-                              borderRadius: 'var(--radius-sm)',
-                              display: 'inline-flex',
-                            }}
+                            className="inline-flex items-center gap-1 border border-accent/35 hover:bg-accent/[0.1] text-accent px-2.5 py-1 rounded-md transition-all duration-200 focus-ring active:scale-[0.98] text-[11px] font-semibold"
                           >
-                            Lora Explorer
+                            Lora <IconExternal size={10} />
                           </a>
                         </td>
                       </tr>

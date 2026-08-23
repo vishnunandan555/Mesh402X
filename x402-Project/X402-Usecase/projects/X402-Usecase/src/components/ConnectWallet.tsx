@@ -1,6 +1,6 @@
 import { useWallet, Wallet, WalletId } from '@txnlab/use-wallet-react'
-import { useEffect } from 'react'
 import Account from './Account'
+import { IconX } from './icons'
 
 interface ConnectWalletInterface {
   openModal: boolean
@@ -12,167 +12,56 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
 
   const isKmd = (wallet: Wallet) => wallet.id === WalletId.KMD
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && openModal) {
-        closeModal()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [openModal, closeModal])
-
   return (
-    <dialog
-      id="connect_wallet_modal"
-      className={openModal ? 'modal-open' : ''}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) closeModal()
-      }}
-      style={{
-        display: openModal ? 'flex' : 'none',
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(0, 0, 0, 0.75)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        border: 'none',
-        width: '100%',
-        height: '100%',
-        padding: '16px',
-      }}
-    >
-      <div
-        className="card animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-
-          maxWidth: '420px',
-          width: '100%',
-          padding: '28px',
-          position: 'relative',
-          background: 'rgba(10, 14, 23, 0.95)',
-          boxShadow: '0 0 60px rgba(16, 185, 129, 0.1), var(--shadow-xl)',
-        }}
-      >
-        {/* Header */}
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <div style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: 'var(--radius-md)',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-              boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)',
-            }}>
-              🔗
-            </div>
-            <h3 style={{ fontSize: '1.125rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-              Connect Algorand Wallet
-            </h3>
+    <dialog id="connect_wallet_modal" className={`modal ${openModal ? 'modal-open' : ''}`}>
+      <form method="dialog" className="modal-box bg-base-900 text-base-200 border border-base-700 rounded-2xl shadow-pop max-w-md">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h3 className="font-display font-semibold text-xl text-base-100">Connect Algorand wallet</h3>
+            <p className="text-xs font-mono text-base-400 mt-1.5">Select a provider to sign x402 micropayments on TestNet.</p>
           </div>
-          <p style={{
-            fontSize: '12px',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--text-muted)',
-            margin: 0,
-          }}>
-            Select your wallet provider to sign x402 micropayments on TestNet.
-          </p>
+          <button
+            type="button"
+            aria-label="Close dialog"
+            data-test-id="close-wallet-modal"
+            onClick={closeModal}
+            className="shrink-0 p-1.5 rounded-lg text-base-500 hover:text-base-100 hover:bg-white/5 transition-all duration-200 focus-ring active:scale-[0.98]"
+          >
+            <IconX size={16} />
+          </button>
         </div>
 
-        {/* Connected account display */}
-        {activeAddress && (
-          <div style={{ marginBottom: '20px' }}>
-            <Account />
-          </div>
-        )}
+        <div className="pt-5 space-y-2">
+          {activeAddress && (
+            <div className="mb-4">
+              <Account />
+            </div>
+          )}
 
-        {/* Wallet provider buttons */}
-        {!activeAddress && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
-            {wallets?.map((wallet) => (
+          {!activeAddress &&
+            wallets?.map((wallet) => (
               <button
                 type="button"
                 data-test-id={`${wallet.id}-connect`}
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-base-700 bg-base-950/60 hover:bg-white/[0.05] hover:border-accent/50 text-base-100 font-medium text-sm transition-all duration-200 focus-ring active:scale-[0.99]"
                 key={`provider-${wallet.id}`}
-                onClick={() => wallet.connect()}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '14px 18px',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--border-default)',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  color: '#fff',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-default)',
-                  textAlign: 'left',
-                  width: '100%',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.06)'
-                  e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)'
-                  e.currentTarget.style.transform = 'translateY(-1px)'
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(16, 185, 129, 0.1)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)'
-                  e.currentTarget.style.borderColor = 'var(--border-default)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                  e.currentTarget.style.boxShadow = 'none'
+                onClick={() => {
+                  return wallet.connect()
                 }}
               >
                 {!isKmd(wallet) && (
-                  <img
-                    alt={`${wallet.metadata.name} icon`}
-                    src={wallet.metadata.icon}
-                    style={{ width: '28px', height: '28px', objectFit: 'contain', borderRadius: '6px' }}
-                  />
+                  <img alt="" aria-hidden="true" src={wallet.metadata.icon} className="w-6 h-6 object-contain rounded-md" />
                 )}
-                {isKmd(wallet) ? (
-                  <div style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
-                    background: 'rgba(255,255,255,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '14px',
-                  }}>🔧</div>
-                ) : null}
-                <span>{isKmd(wallet) ? 'LocalNet Sandbox Wallet' : wallet.metadata.name}</span>
+                <span>{isKmd(wallet) ? 'LocalNet sandbox wallet' : wallet.metadata.name}</span>
               </button>
             ))}
-          </div>
-        )}
+        </div>
 
-        {/* Action buttons */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-          <button
-            type="button"
-            data-test-id="close-wallet-modal"
-            onClick={closeModal}
-            className="btn-secondary"
-            style={{ padding: '8px 20px', fontSize: '12px' }}
-          >
-            Close
-          </button>
+        <div className="modal-action mt-6 flex justify-end gap-2">
           {activeAddress && (
             <button
               type="button"
-              className="btn-secondary"
+              className="px-5 py-2 rounded-xl text-xs font-semibold bg-red-500/[0.08] hover:bg-red-500/15 border border-red-500/30 text-red-300 transition-all duration-200 focus-ring active:scale-[0.98]"
               data-test-id="logout"
               onClick={async () => {
                 if (wallets) {
@@ -185,21 +74,13 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
                   }
                 }
               }}
-              style={{
-                padding: '8px 20px',
-                fontSize: '12px',
-                background: 'rgba(239, 68, 68, 0.08)',
-                borderColor: 'rgba(239, 68, 68, 0.3)',
-                color: '#fca5a5',
-              }}
             >
-              Disconnect Wallet
+              Disconnect wallet
             </button>
           )}
         </div>
-      </div>
+      </form>
     </dialog>
   )
 }
-
 export default ConnectWallet

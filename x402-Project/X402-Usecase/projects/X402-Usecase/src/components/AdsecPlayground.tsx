@@ -2,13 +2,23 @@ import React, { useEffect, useState } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
 import { executeAdsecRequestWithPayment, AdsecResponse } from '../utils/adsecApi'
 import AsciiTerminal, { TerminalPhase } from './AsciiTerminal'
-import { ENDPOINTS_META, ENDPOINT_ORDER, EndpointMode } from '../utils/adsecEndpoints'
+import { IconAlert, IconCheck, IconCopy, IconExternal, IconShieldCheck, IconWallet } from './icons'
+import { ENDPOINTS_META, EndpointMode } from '../utils/adsecEndpoints'
 
-const PRESETS = [
+type AuditLanguage = 'python' | 'javascript' | 'typescript' | 'solidity'
+
+interface CodePreset {
+  id: string
+  name: string
+  language: AuditLanguage
+  filename: string
+  code: string
+}
+
+const PRESETS: CodePreset[] = [
   {
     id: 'python-sqli-secret',
     name: 'Python: SQLi & Exposed Key',
-    icon: '🐍',
     language: 'python',
     filename: 'auth_service.py',
     code: `import os
@@ -32,8 +42,7 @@ def get_user_profile(user_id):
   },
   {
     id: 'typosquat-supply-chain',
-    name: 'Supply Chain Attack',
-    icon: '📦',
+    name: 'Supply Chain: Malicious Package',
     language: 'python',
     filename: 'scraper.py',
     code: `import sys
@@ -46,8 +55,7 @@ def fetch_data(target_url):
   },
   {
     id: 'algorand-contract',
-    name: 'Algorand: Unchecked ASA',
-    icon: '⛓️',
+    name: 'Algorand: Unchecked ASA Transfer',
     language: 'python',
     filename: 'asa_vault.py',
     code: `from pyteal import *
@@ -69,8 +77,7 @@ def approval_program():
   },
   {
     id: 'js-xss-eval',
-    name: 'JavaScript: Eval & XSS',
-    icon: '🌐',
+    name: 'JavaScript: Eval & XSS Injection',
     language: 'javascript',
     filename: 'render.js',
     code: `// Danger: Unsafe dynamic eval and XSS injection
@@ -83,7 +90,7 @@ function renderUserContent(userInput) {
 ]
 
 // Derived once at module load — avoids re-evaluation on every render
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com').replace(/\/+$/, '')
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
 
 export const AdsecPlayground: React.FC = () => {
   const { activeAddress, signTransactions } = useWallet()
@@ -91,7 +98,7 @@ export const AdsecPlayground: React.FC = () => {
   const [selectedPreset, setSelectedPreset] = useState(PRESETS[0].id)
   const [code, setCode] = useState(PRESETS[0].code)
   const [filename, setFilename] = useState(PRESETS[0].filename)
-  const [language, setLanguage] = useState<'python' | 'javascript' | 'typescript' | 'solidity'>('python')
+  const [language, setLanguage] = useState<AuditLanguage>('python')
 
   const [loading, setLoading] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
@@ -115,7 +122,7 @@ export const AdsecPlayground: React.FC = () => {
       setSelectedPreset(preset.id)
       setCode(preset.code)
       setFilename(preset.filename)
-      setLanguage(preset.language as 'python' | 'javascript' | 'typescript' | 'solidity')
+      setLanguage(preset.language)
       setAuditResponse(null)
       setError('')
       setHasStarted(false)
@@ -147,7 +154,7 @@ export const AdsecPlayground: React.FC = () => {
         pushLog(
           `Audit complete · Score: ${data.summary?.score ?? '—'}/100 · Findings: ${data.findings?.length ?? 0} · Proof recorded: ${
             data.attestation ? 'Yes' : 'No'
-          }`
+          }`,
         )
       }, 1400)
     } else {
@@ -201,17 +208,23 @@ export const AdsecPlayground: React.FC = () => {
           } else if (step === 'done') {
             pushLog('Payment confirmed on Algorand · Delivering results')
           }
-        }
+        },
       )
 
       finishSuccess(response)
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Audit request could not be completed.'
+    } catch (err) {
+      // eslint-disable-next-line no-console -- surfaces payment failures for debugging
       console.error('ADSEC execution error:', err)
-      setError(errorMessage)
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+            ? String((err as { message: unknown }).message)
+            : 'Audit request could not be completed.'
+      setError(message)
       setTerminalPhase('error')
       setLoading(false)
-      pushLog(`Error: ${errorMessage.slice(0, 52)}`)
+      pushLog(`Error: ${message.slice(0, 52)}`)
     }
   }
 
@@ -221,455 +234,247 @@ export const AdsecPlayground: React.FC = () => {
     setTimeout(() => setCopiedDiffIdx(null), 2000)
   }
 
-  const scoreColor = (score: number) => {
-    if (score >= 80) return '#10b981'
-    if (score >= 50) return '#f59e0b'
-    return '#ef4444'
-  }
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* ═══ EDITOR CARD ═══ */}
-      <div className="card" style={{ padding: '24px' }}>
-        {/* Preset Selector */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-            <label style={{
-              fontSize: '13px',
-              fontWeight: 700,
-              color: 'var(--text-secondary)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}>
-              <span style={{ color: '#10b981', fontFamily: 'var(--font-mono)' }}>▸</span>
-              Sample Vulnerability Presets:
-            </label>
-
-            {/* Endpoint Mode Selector */}
-            <div style={{
-              display: 'flex',
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid var(--border-default)',
-              borderRadius: 'var(--radius-md)',
-              padding: '3px',
-              gap: '2px',
-            }}>
-              {ENDPOINT_ORDER.map(ep => (
-                <button
-                  key={ep}
-                  onClick={() => setMode(ep)}
-                  style={{
-                    padding: '5px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    fontFamily: 'var(--font-mono)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all var(--transition-fast)',
-                    background: mode === ep ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                    color: mode === ep ? '#000' : 'var(--text-muted)',
-                    boxShadow: mode === ep ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none',
-                  }}
-                >
-                  {ENDPOINTS_META[ep].cardBadge}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Preset Buttons */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+    <div className="space-y-6">
+      {/* Preset Selector & Code Input */}
+      <div className="bg-base-900/70 border border-base-800 rounded-2xl p-5 shadow-node">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <label className="text-sm font-semibold text-base-200">Sample vulnerability presets</label>
+          <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleSelectPreset(p.id)}
-                style={{
-                  padding: '8px 14px',
-                  borderRadius: 'var(--radius-md)',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  border: selectedPreset === p.id
-                    ? '1px solid rgba(16, 185, 129, 0.5)'
-                    : '1px solid var(--border-default)',
-                  cursor: 'pointer',
-                  transition: 'all var(--transition-default)',
-                  background: selectedPreset === p.id
-                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05))'
-                    : 'transparent',
-                  color: selectedPreset === p.id ? '#6ee7b7' : 'var(--text-secondary)',
-                  boxShadow: selectedPreset === p.id ? '0 0 12px rgba(16, 185, 129, 0.1)' : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
+                aria-pressed={selectedPreset === p.id}
+                className={`text-xs px-3 py-1.5 rounded-md border transition-all duration-200 font-medium focus-ring active:scale-[0.98] ${
+                  selectedPreset === p.id
+                    ? 'bg-accent text-base-ink border-accent shadow-glow'
+                    : 'bg-transparent text-base-400 border-base-700 hover:border-base-500 hover:text-base-100'
+                }`}
               >
-                <span>{p.icon}</span>
                 {p.name}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Code Editor */}
-        <div className="terminal-chrome" style={{ borderRadius: 'var(--radius-lg)' }}>
-          {/* Editor header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '10px 16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            borderBottom: '1px solid var(--border-default)',
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-              <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{filename}</span>
+        {/* Editor Box */}
+        <div className="relative rounded-xl overflow-hidden border border-base-800 bg-base-ink focus-within:border-accent/50 transition-colors duration-200">
+          <div className="bg-base-900/70 px-4 py-2 flex justify-between items-center border-b border-base-800 text-xs font-mono text-base-400">
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
+              <span className="text-base-200 font-semibold">{filename}</span>
             </span>
-            <span style={{
-              textTransform: 'uppercase',
-              fontSize: '10px',
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              color: 'var(--text-muted)',
-              padding: '3px 10px',
-              borderRadius: 'var(--radius-full)',
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid var(--border-subtle)',
-            }}>{language}</span>
+            <span className="uppercase text-base-500 font-medium tracking-wide">{language}</span>
           </div>
-
-          {/* Code textarea */}
-          <div style={{ display: 'flex' }}>
-            {/* Line numbers */}
-            <div style={{
-              padding: '16px 0',
-              minWidth: '44px',
-              textAlign: 'right',
-              background: 'rgba(255, 255, 255, 0.015)',
-              borderRight: '1px solid var(--border-subtle)',
-              userSelect: 'none',
-            }}>
-              {code.split('\n').map((_, i) => (
-                <div key={i} style={{
-                  padding: '0 12px 0 0',
-                  fontSize: '12px',
-                  fontFamily: 'var(--font-mono)',
-                  lineHeight: '1.65',
-                  color: 'var(--text-dim)',
-                }}>{i + 1}</div>
-              ))}
-            </div>
-            <textarea
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              rows={12}
-              spellCheck={false}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                padding: '16px',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '13px',
-                color: 'var(--text-primary)',
-                border: 'none',
-                outline: 'none',
-                resize: 'vertical',
-                lineHeight: '1.65',
-                tabSize: 4,
-              }}
-              placeholder="Paste source code to audit..."
-            />
-          </div>
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            rows={12}
+            spellCheck={false}
+            aria-label={`Source code for ${filename}`}
+            className="w-full bg-base-ink p-4 font-mono text-sm text-base-200 resize-y leading-relaxed thin-scroll focus:outline-none"
+            placeholder="Paste source code to audit..."
+          />
         </div>
 
         {/* Action Bar */}
-        <div style={{
-          marginTop: '20px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          gap: '16px',
-        }}>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            Service: <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{ENDPOINTS_META[mode].name}</span>
-            {' '}({ENDPOINTS_META[mode].path}) · Cost:{' '}
-            <span style={{ fontWeight: 800, color: '#fbbf24' }}>{ENDPOINTS_META[mode].price}</span>
+        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="text-xs text-base-400 font-mono tnum">
+            Selected service: <span className="font-semibold text-base-200">{ENDPOINTS_META[mode].name}</span> ({ENDPOINTS_META[mode].path})
+            · Cost: <span className="text-accent font-semibold">{ENDPOINTS_META[mode].price}</span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
             <button
               onClick={handleExecuteAudit}
               disabled={loading || !activeAddress}
-              className="btn-primary"
-              style={{
-                ...(loading ? { background: 'rgba(100, 116, 139, 0.3)', cursor: 'not-allowed', boxShadow: 'none' } : {}),
-                ...(!activeAddress && !loading ? { background: 'rgba(100, 116, 139, 0.15)', cursor: 'not-allowed', boxShadow: 'none', color: 'var(--text-dim)' } : {}),
-              }}
+              className={`w-full sm:w-auto px-7 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 focus-ring ${
+                loading
+                  ? 'bg-base-700 cursor-not-allowed text-base-300'
+                  : !activeAddress
+                    ? 'bg-base-800 text-base-500 border border-base-700 cursor-not-allowed'
+                    : 'bg-accent hover:bg-accent-bright text-base-ink shadow-glow active:scale-[0.98]'
+              }`}
             >
               {loading ? (
                 <>
-                  <span className="animate-caret" style={{ fontFamily: 'var(--font-mono)' }}>█</span>
-                  <span>Processing x402 Audit...</span>
+                  <span className="animate-caret font-mono">█</span>
+                  <span>Processing x402 audit…</span>
                 </>
               ) : (
                 <>
-                  <span>Run Paid Audit</span>
-                  <span style={{
-                    fontSize: '10px',
-                    fontFamily: 'var(--font-mono)',
-                    background: 'rgba(0, 0, 0, 0.2)',
-                    padding: '3px 8px',
-                    borderRadius: '6px',
-                    fontWeight: 800,
-                  }}>
-                    {ENDPOINTS_META[mode].price}
-                  </span>
+                  <span>{activeAddress ? 'Run paid audit' : 'Run paid audit'}</span>
+                  <span className="text-xs bg-base-ink/25 px-2 py-0.5 rounded-md font-mono tnum">{ENDPOINTS_META[mode].price}</span>
                 </>
               )}
             </button>
             {!activeAddress && (
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                Connect wallet to authorize $0.001 USDC
+              <p className="text-xs text-base-400 flex items-center gap-1.5">
+                <IconWallet size={13} />
+                Connect a wallet to authorize $0.001 USDC
               </p>
             )}
           </div>
         </div>
       </div>
 
-      {/* ═══ TERMINAL ═══ */}
-      {hasStarted && (
-        <AsciiTerminal phase={terminalPhase} logs={terminalLogs} title={`Audit Telemetry — ${filename}`} />
-      )}
+      {/* Live ASCII Terminal */}
+      {hasStarted && <AsciiTerminal phase={terminalPhase} logs={terminalLogs} title={`Audit Telemetry — ${filename}`} />}
 
-      {/* ═══ ERROR ═══ */}
+      {/* Error Alert */}
       {error && (
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.03))',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '16px 20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          fontSize: '13px',
-          color: '#fca5a5',
-        }}>
-          <span style={{ fontWeight: 700, color: '#f87171' }}>Notice:</span>
-          <span>{error}</span>
+        <div role="alert" className="bg-red-500/[0.07] border border-red-500/30 rounded-xl p-4 text-red-200 text-sm flex items-start gap-3">
+          <IconAlert size={17} className="text-red-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-semibold">Request failed.</span> <span className="text-red-200/80">{error}</span>
+          </div>
         </div>
       )}
 
-      {/* ═══ RESULTS ═══ */}
+      {/* Results Section */}
       {auditResponse && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          {/* Score Card */}
+        <div className="space-y-6">
+          {/* Score Header Card */}
           {auditResponse.summary && (
-            <div className="card animate-fade-in" style={{
-              padding: '28px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '24px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                {/* Score Ring */}
-                <div style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: 'var(--radius-xl)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: `2px solid ${scoreColor(auditResponse.summary.score)}`,
-                  background: `${scoreColor(auditResponse.summary.score)}15`,
-                  boxShadow: `0 0 24px ${scoreColor(auditResponse.summary.score)}20`,
-                }}>
-                  <span style={{ fontSize: '1.75rem', fontWeight: 900, color: scoreColor(auditResponse.summary.score) }}>
-                    {auditResponse.summary.score}
-                  </span>
-                  <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.7, color: scoreColor(auditResponse.summary.score) }}>/ 100</span>
+            <div className="bg-base-900/70 border border-base-800 rounded-2xl p-6 shadow-node flex flex-col md:flex-row justify-between items-center gap-6">
+              <div className="flex items-center gap-5">
+                <div
+                  className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center font-display font-semibold text-3xl border tnum ${
+                    auditResponse.summary.score >= 80
+                      ? 'bg-accent/10 text-accent border-accent/50 shadow-glow'
+                      : auditResponse.summary.score >= 50
+                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/40'
+                        : 'bg-red-500/10 text-red-300 border-red-500/40'
+                  }`}
+                >
+                  <span>{auditResponse.summary.score}</span>
+                  <span className="text-[9px] font-mono tracking-widest uppercase opacity-75">/ 100</span>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: 0 }}>Security Health Rating</h3>
-                  <p style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  <h3 className="font-display text-xl font-semibold text-base-100">Security health rating</h3>
+                  <p className="text-xs text-base-400 font-mono mt-1 tnum">
                     Analyzed in {auditResponse.summary.durationMs}ms · {ENDPOINTS_META[mode].name}
                   </p>
                 </div>
               </div>
 
-              {/* Severity Counts */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                {[
-                  { label: 'Critical', count: auditResponse.summary.critical, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.08)', border: 'rgba(239, 68, 68, 0.25)' },
-                  { label: 'High', count: auditResponse.summary.high, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.08)', border: 'rgba(245, 158, 11, 0.25)' },
-                  { label: 'Medium', count: auditResponse.summary.medium, color: '#eab308', bg: 'rgba(234, 179, 8, 0.08)', border: 'rgba(234, 179, 8, 0.25)' },
-                  { label: 'Low', count: auditResponse.summary.low, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.06)', border: 'rgba(148, 163, 184, 0.15)' },
-                ].map(s => (
-                  <div key={s.label} style={{
-                    background: s.bg,
-                    border: `1px solid ${s.border}`,
-                    borderRadius: 'var(--radius-lg)',
-                    padding: '12px 16px',
-                    textAlign: 'center',
-                    minWidth: '70px',
-                  }}>
-                    <div style={{ fontSize: '1.25rem', fontWeight: 900, color: s.color }}>{s.count}</div>
-                    <div style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 700, color: s.color, opacity: 0.8, letterSpacing: '0.05em' }}>{s.label}</div>
-                  </div>
-                ))}
+              {/* Counts */}
+              <div className="grid grid-cols-4 gap-3 text-center w-full md:w-auto">
+                <div className="bg-red-500/[0.07] border border-red-500/25 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-display font-semibold text-red-400 tnum">{auditResponse.summary.critical}</div>
+                  <div className="text-[10px] uppercase font-medium text-red-300/70">Critical</div>
+                </div>
+                <div className="bg-amber-500/[0.07] border border-amber-500/25 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-display font-semibold text-amber-400 tnum">{auditResponse.summary.high}</div>
+                  <div className="text-[10px] uppercase font-medium text-amber-300/70">High</div>
+                </div>
+                <div className="bg-yellow-500/[0.07] border border-yellow-500/25 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-display font-semibold text-yellow-400 tnum">{auditResponse.summary.medium}</div>
+                  <div className="text-[10px] uppercase font-medium text-yellow-300/70">Medium</div>
+                </div>
+                <div className="bg-base-800/60 border border-base-700 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-display font-semibold text-base-300 tnum">{auditResponse.summary.low}</div>
+                  <div className="text-[10px] uppercase font-medium text-base-500">Low</div>
+                </div>
               </div>
             </div>
           )}
 
-          {/* On-Chain Attestation Certificate */}
+          {/* On-Chain Attestation Badge */}
           {auditResponse.attestation && (
-            <div className="animate-fade-in-delay-1" style={{
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(6, 182, 212, 0.04))',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: 'var(--radius-xl)',
-              padding: '24px',
-              boxShadow: '0 0 30px rgba(16, 185, 129, 0.08)',
-            }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: '#10b981', margin: 0, fontSize: '15px' }}>
-                  <span className="status-dot status-dot-live" style={{ width: '8px', height: '8px' }}>
-                    <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-                  </span>
-                  On-Chain Audit Certificate
+            <div className="bg-accent/[0.04] border border-accent/30 rounded-2xl p-5 shadow-node text-base-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <h4 className="font-semibold text-accent flex items-center gap-2.5">
+                  <IconShieldCheck size={16} />
+                  On-chain audit certificate
                 </h4>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="badge-emerald" style={{ fontWeight: 800 }}>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs bg-base-ink text-accent font-mono px-2.5 py-1 rounded-md border border-accent/35 tnum">
                     {auditResponse.attestation.status === 'VERIFIED_ON_CHAIN' ? 'Confirmed on Algorand' : auditResponse.attestation.status}
                   </span>
                   {auditResponse.attestation.txId && (
                     <a
-                      href={auditResponse.attestation.loraUrl || `https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
+                      href={
+                        auditResponse.attestation.loraUrl || `https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`
+                      }
                       target="_blank"
                       rel="noreferrer"
-                      className="btn-primary"
-                      style={{ padding: '6px 14px', fontSize: '11px', borderRadius: 'var(--radius-full)' }}
+                      className="text-xs hover:bg-accent/15 text-accent px-3 py-1 rounded-md transition-all duration-200 focus-ring flex items-center gap-1.5 font-mono"
                     >
-                      View on Lora Explorer ↗
+                      Lora explorer <IconExternal size={11} />
                     </a>
                   )}
                 </div>
               </div>
-              <div style={{
-                background: '#080c14',
-                padding: '16px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-default)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                fontSize: '12px',
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--text-secondary)',
-              }}>
-                <div><span style={{ color: 'var(--text-dim)' }}>SHA-256 Code Hash:</span> <span style={{ color: '#6ee7b7' }}>{auditResponse.attestation.codeHash}</span></div>
-                <div><span style={{ color: 'var(--text-dim)' }}>Note Format:</span> <span style={{ color: '#34d399' }}>{auditResponse.attestation.txNoteSchema}</span></div>
+              <div className="space-y-2 text-xs font-mono text-base-300 bg-base-ink p-3.5 rounded-xl border border-base-800 overflow-x-auto thin-scroll tnum">
+                <div>
+                  <span className="text-base-500">SHA-256 code hash:</span>{' '}
+                  <span className="text-accent">{auditResponse.attestation.codeHash}</span>
+                </div>
+                <div>
+                  <span className="text-base-500">Note format:</span>{' '}
+                  <span className="text-base-200">{auditResponse.attestation.txNoteSchema}</span>
+                </div>
                 {auditResponse.attestation.txId && (
                   <div>
-                    <span style={{ color: 'var(--text-dim)' }}>Transaction ID: </span>
+                    <span className="text-base-500">Transaction ID: </span>
                     <a
                       href={`https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
                       target="_blank"
                       rel="noreferrer"
-                      style={{ color: '#10b981', fontWeight: 700, textDecoration: 'none' }}
-                      onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                      onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                      className="text-accent hover:text-accent-bright hover:underline focus-ring rounded-sm font-medium break-all"
                     >
                       {auditResponse.attestation.txId}
                     </a>
                   </div>
                 )}
-                <div><span style={{ color: 'var(--text-dim)' }}>Verification Authority:</span> {auditResponse.attestation.attestationAuthority}</div>
+                <div>
+                  <span className="text-base-500">Verification authority:</span> {auditResponse.attestation.attestationAuthority}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Findings */}
+          {/* Detailed Findings List */}
           {auditResponse.findings && auditResponse.findings.length > 0 && (
-            <div className="card animate-fade-in-delay-2" style={{ padding: '24px' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-                <span style={{ color: '#f87171', fontFamily: 'var(--font-mono)' }}>●</span>
-                Identified Issues ({auditResponse.findings.length})
+            <div className="bg-base-900/70 border border-base-800 rounded-2xl p-5 shadow-node space-y-4">
+              <h3 className="font-display text-lg font-semibold text-base-100 flex items-center gap-2.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-400" aria-hidden="true"></span>
+                Identified issues ({auditResponse.findings.length})
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="space-y-3">
                 {auditResponse.findings.map((finding, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: '16px 20px',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-default)',
-                      background: 'rgba(8, 12, 20, 0.6)',
-                      borderLeft: `3px solid ${finding.severity === 'critical' ? '#ef4444' : finding.severity === 'high' ? '#f59e0b' : '#eab308'}`,
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{
-                          fontSize: '10px',
-                          fontWeight: 800,
-                          padding: '3px 10px',
-                          borderRadius: 'var(--radius-full)',
-                          textTransform: 'uppercase',
-                          fontFamily: 'var(--font-mono)',
-                          letterSpacing: '0.05em',
-                          ...(finding.severity === 'critical' ? { background: 'rgba(239, 68, 68, 0.12)', color: '#f87171', border: '1px solid rgba(239, 68, 68, 0.3)' }
-                            : finding.severity === 'high' ? { background: 'rgba(245, 158, 11, 0.12)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.3)' }
-                            : { background: 'rgba(234, 179, 8, 0.12)', color: '#facc15', border: '1px solid rgba(234, 179, 8, 0.3)' }),
-                        }}>
+                  <div key={idx} className="p-4 rounded-xl border border-base-800 bg-base-ink/70 space-y-2.5">
+                    <div className="flex justify-between items-start gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-md uppercase font-mono border ${
+                            finding.severity === 'critical'
+                              ? 'bg-red-500/[0.08] text-red-400 border-red-500/30'
+                              : finding.severity === 'high'
+                                ? 'bg-amber-500/[0.08] text-amber-400 border-amber-500/30'
+                                : 'bg-yellow-500/[0.08] text-yellow-400 border-yellow-500/30'
+                          }`}
+                        >
                           {finding.severity}
                         </span>
-                        <span style={{ fontWeight: 700, color: '#fff', fontSize: '13px' }}>{finding.title}</span>
+                        <span className="font-semibold text-base-100 text-sm">{finding.title}</span>
                       </div>
                       {finding.cweId && (
-                        <span style={{
-                          fontSize: '10px',
-                          fontFamily: 'var(--font-mono)',
-                          background: 'rgba(255, 255, 255, 0.06)',
-                          color: 'var(--text-secondary)',
-                          padding: '3px 8px',
-                          borderRadius: 'var(--radius-sm)',
-                          border: '1px solid var(--border-subtle)',
-                        }}>
-                          {finding.cweId}
-                        </span>
+                        <span className="text-xs font-mono bg-base-800 text-base-200 px-2 py-0.5 rounded-md tnum">{finding.cweId}</span>
                       )}
                     </div>
 
                     {finding.line && (
-                      <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                        Line {finding.line}: <code style={{
-                          background: 'rgba(255, 255, 255, 0.06)',
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          color: '#6ee7b7',
-                        }}>{finding.snippet}</code>
+                      <div className="text-xs font-mono text-base-400 tnum">
+                        Line {finding.line}: <code className="bg-base-800 px-1.5 py-0.5 rounded-md text-accent">{finding.snippet}</code>
                       </div>
                     )}
 
                     {finding.remediation && (
-                      <div style={{
-                        fontSize: '12px',
-                        color: 'var(--text-secondary)',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        padding: '10px 14px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-subtle)',
-                      }}>
-                        <span style={{ fontWeight: 700, color: '#10b981', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>Recommended Fix:</span>{' '}
-                        {finding.remediation}
+                      <div className="text-xs text-base-300 bg-base-900/70 p-2.5 rounded-lg border border-base-800">
+                        <span className="font-semibold text-accent font-mono">Recommended fix:</span> {finding.remediation}
                       </div>
                     )}
                   </div>
@@ -678,69 +483,38 @@ export const AdsecPlayground: React.FC = () => {
             </div>
           )}
 
-          {/* Git Diff Patches */}
+          {/* Actionable Unified Git Diff Fixes */}
           {auditResponse.fixes && auditResponse.fixes.length > 0 && (
-            <div className="card animate-fade-in-delay-3" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                  <span style={{ color: '#10b981', fontFamily: 'var(--font-mono)' }}>✓</span>
-                  Ready-to-Apply Git Patches ({auditResponse.fixes.length})
+            <div className="bg-base-900/70 border border-base-800 rounded-2xl p-5 shadow-node space-y-4">
+              <div className="flex justify-between items-center flex-wrap gap-2">
+                <h3 className="font-display text-lg font-semibold text-base-100 flex items-center gap-2.5">
+                  <IconCheck size={16} className="text-accent" />
+                  Ready-to-apply git patches ({auditResponse.fixes.length})
                 </h3>
-                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>Apply with `git apply`</span>
+                <span className="text-xs text-base-500 font-mono">Apply with `git apply`</span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="space-y-4">
                 {auditResponse.fixes.map((fix, idx) => (
-                  <div key={idx} className="terminal-chrome">
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '10px 16px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      borderBottom: '1px solid var(--border-default)',
-                    }}>
-                      <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                  <div key={idx} className="rounded-xl overflow-hidden border border-base-800 bg-base-ink">
+                    <div className="bg-base-900/70 px-4 py-2 flex justify-between items-center text-xs font-mono text-base-400 border-b border-base-800 tnum">
+                      <span>
                         Patch {idx + 1} of {auditResponse.fixes?.length}
                       </span>
                       <button
                         onClick={() => handleCopyDiff(fix.diff, idx)}
-                        style={{
-                          background: copiedDiffIdx === idx ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)',
-                          color: '#6ee7b7',
-                          padding: '5px 14px',
-                          borderRadius: 'var(--radius-sm)',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          border: '1px solid rgba(16, 185, 129, 0.3)',
-                          cursor: 'pointer',
-                          transition: 'all var(--transition-fast)',
-                          fontFamily: 'var(--font-mono)',
-                        }}
+                        className="flex items-center gap-1.5 bg-accent/10 hover:bg-accent text-accent hover:text-base-ink px-3 py-1 rounded-md transition-all duration-200 focus-ring active:scale-[0.98] text-xs font-medium"
                       >
-                        {copiedDiffIdx === idx ? 'Copied ✓' : 'Copy Patch'}
+                        {copiedDiffIdx === idx ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                        {copiedDiffIdx === idx ? 'Copied' : 'Copy patch'}
                       </button>
                     </div>
-                    <pre style={{
-                      padding: '16px 20px',
-                      margin: 0,
-                      fontSize: '12px',
-                      fontFamily: 'var(--font-mono)',
-                      color: '#6ee7b7',
-                      overflowX: 'auto',
-                      lineHeight: 1.7,
-                    }}>
+                    <pre className="p-4 text-xs font-mono text-accent/90 overflow-x-auto leading-relaxed thin-scroll">
                       <code>{fix.diff}</code>
                     </pre>
                     {fix.explanation && (
-                      <div style={{
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        padding: '12px 16px',
-                        borderTop: '1px solid var(--border-default)',
-                        fontSize: '12px',
-                        color: 'var(--text-muted)',
-                      }}>
-                        <span style={{ fontWeight: 700, color: '#10b981' }}>Why this fix works:</span> {fix.explanation}
+                      <div className="bg-base-900/50 p-3 border-t border-base-800 text-xs text-base-400 leading-relaxed">
+                        <span className="font-semibold text-accent">Why this fix works:</span> {fix.explanation}
                       </div>
                     )}
                   </div>
@@ -751,42 +525,31 @@ export const AdsecPlayground: React.FC = () => {
 
           {/* On-Chain Receipt */}
           {auditResponse.receipt && (
-            <div className="card" style={{
-              padding: '16px 20px',
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              gap: '12px',
-              fontSize: '12px',
-              fontFamily: 'var(--font-mono)',
-              color: 'var(--text-muted)',
-            }}>
+            <div className="bg-base-900/70 border border-base-800 rounded-xl p-4 text-xs font-mono text-base-400 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 tnum">
               <div>
-                Network: <span style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>{auditResponse.receipt.network || 'Algorand TestNet'}</span>
+                <span>Network: </span>
+                <span className="text-base-200 font-semibold">{auditResponse.receipt.network || 'Algorand TestNet'}</span>
                 {auditResponse.receipt.paidAmount && (
-                  <span className="badge-emerald" style={{ marginLeft: '8px', fontSize: '10px' }}>
+                  <span className="ml-2 bg-accent/10 text-accent px-2 py-0.5 rounded-md border border-accent/30">
                     Paid {auditResponse.receipt.paidAmount}
                   </span>
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                Settled via GoPlausible ·
+              <div className="flex items-center gap-2 flex-wrap">
+                Settled via GoPlausible facilitator ·
                 <a
                   href={
                     auditResponse.receipt.attestationTxId
                       ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.attestationTxId}`
                       : auditResponse.receipt.txId
-                      ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.txId}`
-                      : 'https://lora.algokit.io/testnet'
+                        ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.txId}`
+                        : 'https://lora.algokit.io/testnet'
                   }
                   target="_blank"
                   rel="noreferrer"
-                  style={{ color: '#10b981', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
-                  onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                  className="text-accent hover:text-accent-bright hover:underline focus-ring rounded-sm flex items-center gap-1.5 font-semibold"
                 >
-                  Verify Transaction on Lora ↗
+                  Verify transaction on Lora <IconExternal size={11} />
                 </a>
               </div>
             </div>

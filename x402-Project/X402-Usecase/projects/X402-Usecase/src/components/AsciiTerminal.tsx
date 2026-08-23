@@ -1,14 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
-export type TerminalPhase =
-  | 'idle'
-  | 'recon'
-  | 'challenge'
-  | 'signing'
-  | 'settling'
-  | 'patching'
-  | 'success'
-  | 'error'
+export type TerminalPhase = 'idle' | 'recon' | 'challenge' | 'signing' | 'settling' | 'patching' | 'success' | 'error'
 
 const W = 18
 
@@ -25,9 +17,7 @@ function attackFrames(): string[] {
     const rows = labels.map((l) => `[${l}] ${'.'.repeat(p)}=>${'>'.repeat(W - p)}`)
     frames.push([header, '', ...rows, ''].join('\n'))
   }
-  frames.push(
-    ['', '[✓] Static analysis & rule evaluation complete', '', ...labels.map((l) => `[${l}] ${'#'.repeat(W)}||`), ''].join('\n')
-  )
+  frames.push(['', '[✓] Static analysis & rule evaluation complete', '', ...labels.map((l) => `[${l}] ${'#'.repeat(W)}||`), ''].join('\n'))
   return frames
 }
 
@@ -36,7 +26,7 @@ function settleFrames(): string[] {
   const frames: string[] = []
   for (let i = 0; i <= total; i++) {
     const bar = `${'#'.repeat(i)}${i === total ? '' : '*'}${'.'.repeat(Math.max(0, total - i - 1))}`
-    const status = i === total ? 'CONFIRMED ON-CHAIN' : `Settling.. ${(i / total * 100).toFixed(0)}%`
+    const status = i === total ? 'CONFIRMED ON-CHAIN' : `Settling.. ${((i / total) * 100).toFixed(0)}%`
     frames.push(
       [
         'Client Wallet  ──>  Facilitator  ──>  Algorand TestNet',
@@ -45,7 +35,7 @@ function settleFrames(): string[] {
         `[${bar}]  ${status}`,
         '',
         'Settlement Protocol: x402 / USDC (ASA#10458941)',
-      ].join('\n')
+      ].join('\n'),
     )
   }
   return frames
@@ -183,98 +173,69 @@ const ERROR_FRAME = [
 interface PhaseTheme {
   label: string
   step: string
-  textColor: string
-  glowColor: string
-  chipBg: string
-  chipText: string
-  chipBorder: string
+  text: string
+  chip: string
 }
 
 const THEMES: Record<TerminalPhase, PhaseTheme> = {
-  idle: {
-    label: 'STANDBY',
-    step: 'Ready for request',
-    textColor: '#94a3b8',
-    glowColor: 'transparent',
-    chipBg: 'rgba(100, 116, 139, 0.1)',
-    chipText: '#94a3b8',
-    chipBorder: 'rgba(100, 116, 139, 0.3)',
-  },
+  idle: { label: 'STANDBY', step: 'Ready for request', text: 'text-base-400', chip: 'bg-base-800 text-base-300 border-base-700' },
   recon: {
     label: 'STATIC ANALYSIS',
     step: 'Step 1/5 · Analyzing code structure',
-    textColor: '#f87171',
-    glowColor: 'rgba(239, 68, 68, 0.08)',
-    chipBg: 'rgba(239, 68, 68, 0.1)',
-    chipText: '#fca5a5',
-    chipBorder: 'rgba(239, 68, 68, 0.3)',
+    text: 'text-red-400',
+    chip: 'bg-red-500/10 text-red-300 border-red-500/30',
   },
   challenge: {
     label: 'HTTP 402 CHALLENGE',
     step: 'Step 2/5 · Micropayment invoice generated',
-    textColor: '#fbbf24',
-    glowColor: 'rgba(245, 158, 11, 0.08)',
-    chipBg: 'rgba(245, 158, 11, 0.1)',
-    chipText: '#fcd34d',
-    chipBorder: 'rgba(245, 158, 11, 0.3)',
+    text: 'text-amber-300',
+    chip: 'bg-amber-500/10 text-amber-300 border-amber-500/30',
   },
   signing: {
     label: 'WALLET SIGNATURE',
     step: 'Step 3/5 · Awaiting user signature',
-    textColor: '#e2e8f0',
-    glowColor: 'rgba(255, 255, 255, 0.04)',
-    chipBg: 'rgba(255, 255, 255, 0.08)',
-    chipText: '#f1f5f9',
-    chipBorder: 'rgba(255, 255, 255, 0.2)',
+    text: 'text-base-200',
+    chip: 'bg-base-700 text-base-100 border-base-600',
   },
   settling: {
     label: 'ON-CHAIN SETTLEMENT',
     step: 'Step 4/5 · Confirming on Algorand TestNet',
-    textColor: '#6ee7b7',
-    glowColor: 'rgba(16, 185, 129, 0.08)',
-    chipBg: 'rgba(16, 185, 129, 0.1)',
-    chipText: '#6ee7b7',
-    chipBorder: 'rgba(16, 185, 129, 0.3)',
+    text: 'text-accent',
+    chip: 'bg-accent/10 text-accent border-accent/30',
   },
   patching: {
     label: 'PATCH GENERATION',
     step: 'Step 5/5 · Creating unified diffs',
-    textColor: '#6ee7b7',
-    glowColor: 'rgba(16, 185, 129, 0.08)',
-    chipBg: 'rgba(16, 185, 129, 0.1)',
-    chipText: '#6ee7b7',
-    chipBorder: 'rgba(16, 185, 129, 0.3)',
+    text: 'text-accent',
+    chip: 'bg-accent/10 text-accent border-accent/30',
   },
   success: {
     label: 'VERIFIED & DELIVERED',
     step: 'Complete · Audit report delivered',
-    textColor: '#34d399',
-    glowColor: 'rgba(16, 185, 129, 0.1)',
-    chipBg: 'rgba(16, 185, 129, 0.15)',
-    chipText: '#6ee7b7',
-    chipBorder: 'rgba(16, 185, 129, 0.4)',
+    text: 'text-accent',
+    chip: 'bg-accent/15 text-accent border-accent/40',
   },
-  error: {
-    label: 'INTERRUPTED',
-    step: 'Request halted',
-    textColor: '#f87171',
-    glowColor: 'rgba(239, 68, 68, 0.08)',
-    chipBg: 'rgba(239, 68, 68, 0.1)',
-    chipText: '#fca5a5',
-    chipBorder: 'rgba(239, 68, 68, 0.3)',
-  },
+  error: { label: 'INTERRUPTED', step: 'Request halted', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/30' },
 }
 
 function framesFor(phase: TerminalPhase): string[] {
   switch (phase) {
-    case 'idle': return IDLE_FRAMES
-    case 'recon': return RECON_FRAMES
-    case 'challenge': return CHALLENGE_FRAMES
-    case 'signing': return SIGNING_FRAMES
-    case 'settling': return SETTLE_FRAMES
-    case 'patching': return PATCH_FRAMES
-    case 'success': return [SUCCESS_FRAME]
-    case 'error': return [ERROR_FRAME]
+    case 'idle':
+      return IDLE_FRAMES
+    case 'recon':
+      return RECON_FRAMES
+    case 'challenge':
+      return CHALLENGE_FRAMES
+    case 'signing':
+      return SIGNING_FRAMES
+    case 'settling':
+      return SETTLE_FRAMES
+    case 'patching':
+      return PATCH_FRAMES
+    case 'success':
+      return [SUCCESS_FRAME]
+    case 'error':
+      return [ERROR_FRAME]
   }
 }
 
@@ -282,8 +243,10 @@ function delayFor(phase: TerminalPhase): number {
   switch (phase) {
     case 'recon':
     case 'settling':
-    case 'patching': return 110
-    default: return 520
+    case 'patching':
+      return 110
+    default:
+      return 520
   }
 }
 
@@ -315,139 +278,45 @@ export const AsciiTerminal: React.FC<AsciiTerminalProps> = ({
   }, [frames.length, phase])
 
   const visibleLogs = logs.slice(-3)
+  const glow =
+    phase === 'success'
+      ? 'shadow-emerald-500/20'
+      : phase === 'error'
+        ? 'shadow-red-500/20'
+        : phase === 'idle'
+          ? 'shadow-black/40'
+          : 'shadow-black/40'
 
   return (
-    <div
-      className={`terminal-chrome ${className}`}
-      style={{
-        boxShadow: `0 0 40px ${theme.glowColor}, var(--shadow-lg)`,
-        transition: 'box-shadow var(--transition-slow)',
-      }}
-    >
-      {/* Title bar with macOS dots */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 16px',
-        background: 'rgba(255, 255, 255, 0.03)',
-        borderBottom: '1px solid var(--border-default)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div className="terminal-dots">
-            <span className="terminal-dot terminal-dot-red" />
-            <span className="terminal-dot terminal-dot-yellow" />
-            <span className="terminal-dot terminal-dot-green" />
-          </div>
-          <span style={{
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--text-muted)',
-            letterSpacing: '0.04em',
-          }}>
-            {title}
+    <div className={`rounded-xl border border-base-800 bg-base-ink shadow-pop overflow-hidden font-mono ${glow} ${className}`}>
+      <div className="flex items-center justify-between px-4 py-2.5 bg-base-900/70 border-b border-base-800">
+        <div className="flex items-center gap-3">
+          <span className="relative flex w-2 h-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-60"></span>
+            <span className="relative inline-flex rounded-full w-2 h-2 bg-accent"></span>
           </span>
+          <span className="text-[11px] text-base-400 tracking-wide">{title}</span>
         </div>
-        <span style={{
-          fontSize: '10px',
-          fontFamily: 'var(--font-mono)',
-          padding: '3px 10px',
-          borderRadius: 'var(--radius-full)',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          fontWeight: 700,
-          background: theme.chipBg,
-          color: theme.chipText,
-          border: `1px solid ${theme.chipBorder}`,
-        }}>
-          {theme.label}
-        </span>
+        <span className={`text-[10px] px-2 py-0.5 rounded-md border tracking-widest uppercase ${theme.chip}`}>{theme.label}</span>
       </div>
 
-      {/* Terminal Content */}
-      <div style={{ position: 'relative' }}>
-        {/* CRT scanline overlay */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 150, 0.006) 2px, rgba(0, 255, 150, 0.006) 4px)',
-          pointerEvents: 'none',
-          zIndex: 2,
-        }} />
-
-        <pre
-          aria-hidden
-          style={{
-            padding: '16px 20px',
-            margin: 0,
-            fontSize: '11px',
-            lineHeight: '1.65',
-            minHeight: '220px',
-            whiteSpace: 'pre',
-            fontFamily: 'var(--font-mono)',
-            color: theme.textColor,
-            transition: 'color var(--transition-default)',
-            textShadow: `0 0 8px ${theme.glowColor}`,
-          }}
-        >
-{frames[idx % frames.length]}
+      <div className="relative">
+        <pre aria-hidden className={`px-4 py-3 text-[11px] sm:text-xs leading-snug min-h-[220px] whitespace-pre tnum ${theme.text}`}>
+          {frames[idx % frames.length]}
         </pre>
-
-        {/* Bottom fade */}
-        <div style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '24px',
-          background: 'linear-gradient(to top, #080c14, transparent)',
-          pointerEvents: 'none',
-        }} />
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-base-ink to-transparent"></div>
       </div>
 
-      {/* Log Footer */}
-      <div style={{
-        borderTop: '1px solid var(--border-default)',
-        background: 'rgba(0, 0, 0, 0.4)',
-        padding: '10px 16px',
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-          {visibleLogs.map((l, i) => (
-            <div
-              key={`${l}-${i}`}
-              className="animate-fade-in"
-              style={{
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                color: i === visibleLogs.length - 1 ? 'var(--text-secondary)' : 'var(--text-dim)',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span style={{ color: '#10b981', marginRight: '8px' }}>&gt;</span>
-              {l}
-            </div>
-          ))}
-        </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingTop: '6px',
-          marginTop: '4px',
-          borderTop: '1px solid var(--border-subtle)',
-        }}>
-          <span style={{
-            fontSize: '10px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            color: 'var(--text-dim)',
-            fontFamily: 'var(--font-mono)',
-          }}>
-            {theme.step}
-          </span>
-          <span className="animate-caret" style={{ color: theme.textColor, fontFamily: 'var(--font-mono)' }}>█</span>
+      <div className="border-t border-base-800 bg-base-950/70 px-4 py-2 space-y-0.5">
+        {visibleLogs.map((l, i) => (
+          <div key={`${l}-${i}`} className={`text-[11px] truncate ${i === visibleLogs.length - 1 ? 'text-base-300' : 'text-base-600'}`}>
+            <span className="text-accent mr-2">&gt;</span>
+            {l}
+          </div>
+        ))}
+        <div className="flex items-center justify-between pt-1">
+          <span className="text-[10px] uppercase tracking-widest text-base-500">{theme.step}</span>
+          <span className="animate-caret text-accent">█</span>
         </div>
       </div>
     </div>

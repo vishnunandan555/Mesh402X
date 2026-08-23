@@ -1,5 +1,6 @@
 import { useWallet } from '@txnlab/use-wallet-react'
 import { useMemo } from 'react'
+import { IconExternal } from './icons'
 import { getAlgodConfigFromViteEnvironment } from '../utils/network/getAlgoClientConfigs'
 
 const Account = () => {
@@ -11,49 +12,20 @@ const Account = () => {
   }, [algoConfig.network])
 
   return (
-    <div style={{
-      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(6, 182, 212, 0.04))',
-      border: '1px solid rgba(16, 185, 129, 0.25)',
-      borderRadius: 'var(--radius-lg)',
-      padding: '16px 18px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>
-          Connected Address:
-        </span>
-        <span className="badge-emerald" style={{ fontSize: '9px', fontWeight: 800 }}>
-          {networkName}
-        </span>
+    <div className="bg-base-950/70 border border-base-700 rounded-xl p-3.5 space-y-1.5 font-mono text-xs">
+      <div className="flex items-center justify-between text-base-400">
+        <span>Connected address</span>
+        <span className="text-[10px] px-2 py-0.5 rounded-md bg-accent/10 text-accent border border-accent/30">{networkName}</span>
       </div>
-      <div style={{
-        fontSize: '12px',
-        fontFamily: 'var(--font-mono)',
-        fontWeight: 700,
-        color: '#6ee7b7',
-        wordBreak: 'break-all',
-        lineHeight: 1.5,
-      }}>
-        {activeAddress}
-      </div>
-      <div style={{ paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', textAlign: 'right' }}>
+      <div className="text-accent font-semibold break-all tnum">{activeAddress}</div>
+      <div className="pt-1 text-right">
         <a
-          href={`https://lora.algokit.io/${networkName}/account/${activeAddress}/`}
+          className="inline-flex items-center gap-1 text-base-400 hover:text-accent transition-colors duration-200 text-[11px] focus-ring rounded-sm"
           target="_blank"
           rel="noreferrer"
-          style={{
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            color: 'var(--text-muted)',
-            textDecoration: 'none',
-            transition: 'color var(--transition-fast)',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#6ee7b7')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+          href={`https://lora.algokit.io/${networkName}/account/${activeAddress}/`}
         >
-          View Account on Lora Explorer ↗
+          View account on Lora explorer <IconExternal size={10} />
         </a>
       </div>
     </div>

@@ -2,64 +2,77 @@ import React, { useState } from 'react'
 import AsciiTerminal from './components/AsciiTerminal'
 import AdsecPlayground from './components/AdsecPlayground'
 import OnChainLedger from './components/OnChainLedger'
+import {
+  MedusaMark,
+  IconArrowDown,
+  IconArrowRight,
+  IconExternal,
+  IconFileDiff,
+  IconScan,
+  IconShieldCheck,
+  IconVault,
+  IconProps,
+} from './components/icons'
 import { ENDPOINTS_META, ENDPOINT_ORDER, setAdsecMode, EndpointMode } from './utils/adsecEndpoints'
 
 const THREATS = [
-  'SQL Injection',
-  'Command Injection',
-  'Hardcoded Secrets',
-  'XSS / Eval Sinks',
-  'Typosquatted Packages',
-  'Insecure Deserialization',
-  'Unchecked ASA Opt-In',
-  'OSV.dev Vulnerabilities',
+  'SQL injection',
+  'Command injection',
+  'Hardcoded secrets',
+  'XSS / eval sinks',
+  'Typosquatted packages',
+  'Insecure deserialization',
+  'Unchecked ASA opt-in',
+  'OSV.dev vulnerabilities',
 ]
 
 const PIPELINE = [
   {
     step: '01',
     glyph: '>_',
-    title: 'Send Code',
-    accentColor: '#e2e8f0',
-    accentBg: 'rgba(255, 255, 255, 0.06)',
-    accentBorder: 'rgba(255, 255, 255, 0.15)',
-    body: 'Submit source code over HTTP. No accounts, API tokens, or upfront subscriptions required — the request pays for itself.',
+    title: 'Send code',
+    chip: 'text-base-200 border-base-600 bg-base-800',
+    body: 'Submit source over HTTP. No accounts, API tokens, or subscriptions — the request pays for itself.',
     code: 'POST /adsec/audit\n{ "code": "...", "language": "py" }',
   },
   {
     step: '02',
     glyph: '[$]',
-    title: 'Authorize Micropayment',
-    accentColor: '#fbbf24',
-    accentBg: 'rgba(245, 158, 11, 0.08)',
-    accentBorder: 'rgba(245, 158, 11, 0.3)',
-    body: 'The server challenges with HTTP 402 Payment Required. Sign a $0.001 TestNet USDC transfer in your Algorand wallet.',
+    title: 'Authorize micropayment',
+    chip: 'text-amber-300 border-amber-500/30 bg-amber-500/[0.07]',
+    body: 'The node challenges with HTTP 402. Sign a $0.001 TestNet USDC transfer — your wallet settles it in about half a second.',
     code: 'HTTP/1.1 402 PAYMENT REQUIRED\nX-PRICE: 0.001 USDC (ASA#10458941)',
   },
   {
     step: '03',
     glyph: '{=}',
-    title: 'Receive Patches & Proof',
-    accentColor: '#6ee7b7',
-    accentBg: 'rgba(16, 185, 129, 0.08)',
-    accentBorder: 'rgba(16, 185, 129, 0.3)',
-    body: 'Once payment settles on Algorand, receive AST diagnostics, ready-to-apply git diffs, and an immutable SHA-256 attestation.',
+    title: 'Receive patches & proof',
+    chip: 'text-accent border-accent/30 bg-accent/10',
+    body: 'Once payment settles on Algorand, get AST diagnostics, ready-to-apply git diffs, and an immutable SHA-256 attestation.',
     code: '200 OK -> findings[] fixes[] attestation',
   },
 ]
 
 const STATS = [
-  { value: '$0.001', label: 'Per Audit Call', color: '#f1f5f9' },
-  { value: '< 2s', label: 'Turnaround Time', color: '#6ee7b7' },
-  { value: '100%', label: 'On-Chain Verified', color: '#6ee7b7' },
-  { value: '0', label: 'Subscriptions or Keys', color: '#f1f5f9' },
+  { value: '$0.001', label: 'per paid audit' },
+  { value: '< 1.4s', label: 'settlement window' },
+  { value: '42', label: 'deterministic detectors' },
+  { value: '0', label: 'keys or logins' },
 ]
 
-const ENDPOINT_ICONS: Record<EndpointMode, string> = {
-  scan: '🔍',
-  remediate: '🛠️',
-  attest: '📜',
-  audit: '🛡️',
+const ENDPOINT_ICONS: Record<EndpointMode, React.FC<IconProps>> = {
+  scan: IconScan,
+  remediate: IconFileDiff,
+  attest: IconShieldCheck,
+  audit: IconVault,
+}
+
+// Bento placement — Full Audit dominates, attestation runs as a wide strip
+const ENDPOINT_SPAN: Record<EndpointMode, string> = {
+  audit: 'lg:col-span-2 lg:row-span-2',
+  scan: '',
+  remediate: '',
+  attest: 'lg:col-span-3',
 }
 
 export const AdsecHome: React.FC = () => {
@@ -72,205 +85,95 @@ export const AdsecHome: React.FC = () => {
   }
 
   return (
-    <div style={{ background: 'var(--bg-deep)', color: 'var(--text-primary)' }}>
-      {/* ═══ HERO ═══ */}
-      <section className="relative overflow-hidden grid-bg">
-        {/* Background orbs */}
-        <div style={{
-          position: 'absolute',
-          top: '-120px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '800px',
-          height: '500px',
-          background: 'radial-gradient(ellipse, rgba(16, 185, 129, 0.12) 0%, transparent 70%)',
-          filter: 'blur(80px)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '200px',
-          right: '-100px',
-          width: '400px',
-          height: '400px',
-          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '0',
-          left: '-50px',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(139, 92, 246, 0.06) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }} />
+    <div className="bg-base-950 text-base-300">
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 grid-bg pointer-events-none" aria-hidden="true" />
+        <div
+          className="absolute inset-x-0 -top-64 h-[560px] pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 62% 55% at 52% 45%, rgba(52,185,138,0.13), transparent 70%)' }}
+          aria-hidden="true"
+        />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6" style={{
-          paddingTop: '80px',
-          paddingBottom: '72px',
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gap: '48px',
-          alignItems: 'center',
-        }}>
-          <div className="lg:hidden" style={{ textAlign: 'center' }}>
-            {/* Badges */}
-            <div className="animate-fade-in" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginBottom: '28px' }}>
-              <span className="badge-emerald">
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', animation: 'radar-ping 2s cubic-bezier(0,0,0.2,1) infinite', position: 'relative', display: 'inline-block' }}>
-                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-                </span>
-                ALGORAND TESTNET ACTIVE
+        <div className="relative max-w-shell mx-auto px-4 pt-20 pb-16 lg:pt-28 lg:pb-24 grid lg:grid-cols-12 gap-14 items-center">
+          <div className="lg:col-span-7">
+            <div className="flex flex-wrap items-center gap-2 mb-7">
+              <span className="inline-flex items-center gap-2 text-xs font-mono px-2.5 py-1 rounded-md border border-accent/35 bg-accent/[0.08] text-accent">
+                <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+                Algorand TestNet · live
               </span>
-              <span className="badge-ghost">X402 PROTOCOL</span>
-              <span className="badge-ghost" style={{ color: 'var(--text-muted)' }}>ZERO SUBSCRIPTIONS</span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded-md border border-base-700 bg-base-900 text-base-300">
+                x402 protocol
+              </span>
+              <span className="text-xs font-mono px-2.5 py-1 rounded-md border border-base-800 text-base-400">pay per request</span>
             </div>
+
+            <h1 className="font-display text-4xl sm:text-5xl xl:text-[4rem] font-semibold leading-[1.04] tracking-[-0.03em] text-base-50">
+              Autonomous code security.
+              <br />
+              <span className="text-accent">Settled on-chain, instantly.</span>
+            </h1>
+
+            <p className="mt-7 text-base-400 text-base sm:text-lg leading-relaxed max-w-[60ch]">
+              Medusa lets AI agents and developers audit source code, generate ready-to-merge patches, and record cryptographic proof on
+              Algorand — charged per request at $0.001 USDC over HTTP 402.
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <a
+                href="#playground"
+                onClick={() => setCurrentView('playground')}
+                className="px-6 py-3.5 rounded-xl font-semibold bg-accent hover:bg-accent-bright text-base-ink shadow-glow transition-all duration-200 active:scale-[0.98] focus-ring flex items-center gap-2"
+              >
+                Run an audit
+                <IconArrowDown size={15} />
+              </a>
+              <a
+                href="#pipeline"
+                className="px-5 py-3 rounded-xl font-medium text-sm border border-base-700 hover:border-base-500 hover:bg-white/[0.04] transition-all duration-200 active:scale-[0.98] focus-ring text-base-200"
+              >
+                How it works
+              </a>
+              <button
+                onClick={() => {
+                  setCurrentView('ledger')
+                  document.getElementById('playground')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="group font-medium text-sm text-base-300 hover:text-accent transition-colors duration-200 focus-ring rounded-md flex items-center gap-1.5"
+              >
+                Settlement ledger
+                <IconArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              </button>
+            </div>
+
+            <dl className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 border-t border-base-800 pt-8">
+              {STATS.map((s) => (
+                <div key={s.label}>
+                  <dt className="sr-only">{s.label}</dt>
+                  <dd className="font-display text-2xl font-semibold text-base-100 tnum">{s.value}</dd>
+                  <dd className="mt-1 text-[11px] text-base-500 font-mono lowercase tracking-wide">{s.label}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '48px', alignItems: 'center' }}>
-            {/* Left Column */}
-            <div>
-              <div className="animate-fade-in hidden lg:flex" style={{ flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
-                <span className="badge-emerald">
-                  <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
-                    <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-                  </span>
-                  ALGORAND TESTNET ACTIVE
-                </span>
-                <span className="badge-ghost">X402 PROTOCOL</span>
-                <span className="badge-ghost" style={{ color: 'var(--text-muted)' }}>ZERO SUBSCRIPTIONS</span>
-              </div>
-
-              <h1 className="animate-fade-in-delay-1" style={{
-                fontSize: 'clamp(2.25rem, 5vw, 3.75rem)',
-                fontWeight: 900,
-                letterSpacing: '-0.03em',
-                lineHeight: 1.08,
-                margin: 0,
-              }}>
-                Autonomous code security.
-                <br />
-                <span className="text-gradient">Instant on-chain settlement.</span>
-              </h1>
-
-              <p className="animate-fade-in-delay-2" style={{
-                marginTop: '24px',
-                color: 'var(--text-secondary)',
-                fontSize: 'clamp(1rem, 2vw, 1.125rem)',
-                lineHeight: 1.7,
-                maxWidth: '560px',
-              }}>
-                Medusa lets AI agents and developers audit source code, generate ready-to-merge patches, and record cryptographic proof on Algorand — charged per request at $0.001 USDC via HTTP 402.
-              </p>
-
-              {/* CTAs */}
-              <div className="animate-fade-in-delay-3" style={{ marginTop: '36px', display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-                <a
-                  href="#playground"
-                  onClick={() => setCurrentView('playground')}
-                  className="btn-primary"
-                >
-                  Run an audit ↓
-                </a>
-                <button
-                  onClick={() => {
-                    setCurrentView('ledger')
-                    document.getElementById('playground')?.scrollIntoView({ behavior: 'smooth' })
-                  }}
-                  className="btn-secondary"
-                  style={currentView === 'ledger' ? {
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    borderColor: 'rgba(16, 185, 129, 0.5)',
-                    color: '#6ee7b7',
-                  } : {}}
-                >
-                  📜 Audit Ledger
-                </button>
-                <a href="#pipeline" className="btn-secondary">
-                  How it works
-                </a>
-              </div>
-
-              {/* Stats */}
-              <dl className="animate-fade-in-delay-3" style={{
-                marginTop: '48px',
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))',
-                gap: '16px',
-              }}>
-                {STATS.map((s) => (
-                  <div key={s.label} style={{
-                    borderLeft: '2px solid rgba(16, 185, 129, 0.3)',
-                    paddingLeft: '14px',
-                  }}>
-                    <dt className="sr-only">{s.label}</dt>
-                    <dd style={{ fontSize: '1.5rem', fontWeight: 900, color: s.color, margin: 0 }}>{s.value}</dd>
-                    <dd style={{
-                      fontSize: '10px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.12em',
-                      color: 'var(--text-dim)',
-                      fontFamily: 'var(--font-mono)',
-                      marginTop: '4px',
-                    }}>{s.label}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-
-            {/* Right Column — Terminal */}
-            <div className="animate-float-y">
-              <AsciiTerminal title="Security Node — Live Telemetry" phase="idle" />
-              <p style={{
-                marginTop: '14px',
-                textAlign: 'center',
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                color: 'var(--text-dim)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.12em',
-              }}>
-                Live service status · interactive test environment below ↓
-              </p>
-            </div>
+          <div className="lg:col-span-5 animate-float-y">
+            <AsciiTerminal title="Security node — live telemetry" phase="idle" />
+            <p className="mt-4 text-center text-[11px] font-mono text-base-500 tracking-wide">
+              Live service status · interactive environment below ↓
+            </p>
           </div>
         </div>
       </section>
-
-      {/* ═══ THREAT TICKER ═══ */}
-      <section aria-label="Detected vulnerability categories" style={{
-        borderTop: '1px solid var(--border-subtle)',
-        borderBottom: '1px solid var(--border-subtle)',
-        background: 'var(--bg-deep)',
-        padding: '14px 0',
-        overflow: 'hidden',
-        position: 'relative',
-      }}>
-        {/* Edge fade left */}
-        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to right, var(--bg-deep), transparent)', zIndex: 2, pointerEvents: 'none' }} />
-        {/* Edge fade right */}
-        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '80px', background: 'linear-gradient(to left, var(--bg-deep), transparent)', zIndex: 2, pointerEvents: 'none' }} />
-
-        <div className="flex whitespace-nowrap animate-marquee w-max">
+      {/* THREAT TICKER */}
+      <section aria-label="Detected vulnerability categories" className="border-y border-base-800 bg-base-900/40 py-3 overflow-hidden">
+        <div className="flex whitespace-nowrap animate-marquee w-max" aria-hidden="true">
           {[0, 1].map((copy) => (
             <div key={copy} className="flex items-center">
               {THREATS.map((t) => (
-                <span key={`${copy}-${t}`} style={{
-                  margin: '0 28px',
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.12em',
-                  color: 'var(--text-muted)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '28px',
-                }}>
+                <span key={`${copy}-${t}`} className="mx-5 text-xs font-mono text-base-400 flex items-center gap-5 lowercase">
                   {t}
-                  <span style={{ color: '#10b981', opacity: 0.5 }}>//</span>
+                  <span className="text-accent/70">·</span>
                 </span>
               ))}
             </div>
@@ -278,143 +181,136 @@ export const AdsecHome: React.FC = () => {
         </div>
       </section>
 
-      {/* ═══ PIPELINE ═══ */}
-      <section id="pipeline" className="scroll-mt-20" style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 16px' }}>
-        <div style={{ marginBottom: '52px', textAlign: 'center' }}>
-          <p className="animate-fade-in" style={{
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.3em',
-            color: '#10b981',
-            marginBottom: '12px',
-          }}>Protocol Sequence</p>
-          <h2 className="animate-fade-in-delay-1" style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.02em' }}>
+      {/* PIPELINE — connected vertical sequence */}
+      <section id="pipeline" className="max-w-shell mx-auto px-4 pt-24 pb-28 scroll-mt-20">
+        <div className="mb-14 max-w-2xl">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="h-px w-8 bg-accent/70" aria-hidden="true"></span>
+            <p className="text-xs font-mono text-accent tracking-wide">Protocol sequence</p>
+          </div>
+          <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-base-50 leading-[1.1]">
             Three steps from request to verified fix
           </h2>
-          <p className="animate-fade-in-delay-2" style={{ marginTop: '12px', color: 'var(--text-secondary)', maxWidth: '600px', margin: '12px auto 0' }}>
-            Every audit follows a deterministic verification lifecycle settled directly on Algorand.
-          </p>
+          <p className="mt-4 text-base-400 leading-relaxed">Every audit follows a deterministic lifecycle settled directly on Algorand.</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px', position: 'relative' }}>
-          {/* Connecting line */}
-          <div className="hidden md:block" style={{
-            position: 'absolute',
-            top: '50%',
-            left: '16%',
-            right: '16%',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2), transparent)',
-            zIndex: 0,
-          }} />
+        <ol className="relative ml-2 md:ml-4 border-l border-base-800 space-y-12">
+          {PIPELINE.map((p) => (
+            <li key={p.step} className="relative pl-8 md:pl-14">
+              {/* spine node */}
+              <span
+                className="absolute -left-[9px] top-1 w-[18px] h-[18px] rounded-full bg-base-950 border-2 border-accent/60 flex items-center justify-center"
+                aria-hidden="true"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+              </span>
 
-          {PIPELINE.map((p, i) => (
-            <div
-              key={p.step}
-              className="card card-interactive animate-fade-in"
-              style={{
-                position: 'relative',
-                zIndex: 1,
-                padding: '28px',
-                animationDelay: `${i * 0.1}s`,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <span style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: p.accentBg,
-                  color: p.accentColor,
-                  border: `1px solid ${p.accentBorder}`,
-                }}>{p.glyph}</span>
-                <span style={{ fontSize: '3rem', fontWeight: 900, color: 'rgba(255,255,255,0.04)', userSelect: 'none', lineHeight: 1 }}>{p.step}</span>
+              <div className="grid md:grid-cols-12 gap-6 md:gap-10 items-start">
+                <div className="md:col-span-7">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className={`font-mono text-xs px-2 py-0.5 rounded-md border ${p.chip}`}>{p.glyph}</span>
+                    <span className="font-mono text-xs text-base-500 tnum">{p.step}</span>
+                  </div>
+                  <h3 className="font-display text-xl font-semibold text-base-100">{p.title}</h3>
+                  <p className="mt-2.5 text-sm text-base-400 leading-relaxed max-w-[52ch]">{p.body}</p>
+                </div>
+                <pre className="md:col-span-5 text-[11px] font-mono text-accent/90 bg-base-ink border border-base-800 rounded-lg p-4 overflow-x-auto thin-scroll shadow-node">
+                  {p.code}
+                </pre>
               </div>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>{p.title}</h3>
-              <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '16px' }}>{p.body}</p>
-              <pre style={{
-                fontSize: '11px',
-                fontFamily: 'var(--font-mono)',
-                color: '#6ee7b7',
-                background: '#080c14',
-                border: '1px solid var(--border-default)',
-                borderRadius: 'var(--radius-md)',
-                padding: '12px 16px',
-                margin: 0,
-                overflowX: 'auto',
-              }}>
-{p.code}
-              </pre>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
-      {/* ═══ ENDPOINTS ═══ */}
-      <section id="endpoints" className="scroll-mt-20" style={{
-        borderTop: '1px solid var(--border-subtle)',
-        background: 'linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-surface) 100%)',
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '80px 16px' }}>
-          <div style={{ marginBottom: '52px', textAlign: 'center' }}>
-            <p style={{
-              fontSize: '11px',
-              fontFamily: 'var(--font-mono)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.3em',
-              color: '#06b6d4',
-              marginBottom: '12px',
-            }}>Available Endpoints</p>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.02em' }}>
-              Pick a service to inspect
-            </h2>
-            <p style={{ marginTop: '12px', color: 'var(--text-secondary)', maxWidth: '560px', margin: '12px auto 0' }}>
+      {/* ENDPOINTS — asymmetric bento */}
+      <section id="endpoints" className="border-y border-base-800 bg-base-900/30 scroll-mt-20">
+        <div className="max-w-shell mx-auto px-4 py-24">
+          <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="h-px w-8 bg-accent/70" aria-hidden="true"></span>
+                <p className="text-xs font-mono text-accent tracking-wide">Available endpoints</p>
+              </div>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-base-50 leading-[1.1]">
+                Pick a service to inspect
+              </h2>
+            </div>
+            <p className="text-sm text-base-400 max-w-sm sm:text-right">
               Each endpoint is a dedicated x402 resource with fixed, transparent pricing.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
-            {ENDPOINT_ORDER.map((key, i) => {
+          <div className="grid lg:grid-cols-3 gap-4 auto-rows-fr">
+            {ENDPOINT_ORDER.map((key) => {
               const meta = ENDPOINTS_META[key]
+              const Icon = ENDPOINT_ICONS[key]
+              const isWide = key === 'attest'
+              const isHero = key === 'audit'
               return (
                 <button
                   key={key}
                   onClick={() => handleSelectEndpoint(key)}
-                  className="card card-interactive"
-                  style={{
-                    padding: '24px',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    animationDelay: `${i * 0.08}s`,
-                  }}
+                  className={`group text-left bg-base-900/80 border border-base-800 rounded-2xl p-6 transition-all duration-200 hover:border-accent/50 hover:bg-base-900 hover:shadow-pop active:scale-[0.99] focus-ring ${ENDPOINT_SPAN[key]} ${
+                    isWide ? 'flex flex-col sm:flex-row sm:items-center gap-5' : 'flex flex-col'
+                  }`}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <span style={{ fontSize: '24px' }}>{ENDPOINT_ICONS[key]}</span>
-                    <span style={{
-                      fontSize: '10px',
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: 800,
-                      letterSpacing: '0.1em',
-                      color: '#fbbf24',
-                    }}>{meta.price}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontWeight: 700, color: '#fff', fontSize: '0.9375rem' }}>{meta.name}</span>
-                  </div>
-                  <code style={{
-                    display: 'block',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    color: 'var(--text-dim)',
-                    marginBottom: '8px',
-                  }}>{meta.path}</code>
-                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '16px' }}>{meta.desc}</p>
-                  <span className="badge-emerald" style={{ fontSize: '10px' }}>
-                    {meta.cardBadge} →
-                  </span>
+                  {isHero ? (
+                    <>
+                      <div className="flex items-center justify-between mb-5">
+                        <span className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 text-accent flex items-center justify-center">
+                          <Icon size={19} />
+                        </span>
+                        <span className="font-display text-lg font-semibold text-accent tnum">
+                          {meta.price.replace(' USDC', '')}
+                          <span className="text-xs font-mono font-medium text-base-400 ml-1">USDC</span>
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono tracking-widest text-accent/80 uppercase">{meta.cardBadge}</span>
+                      <h3 className="mt-2 font-display text-2xl font-semibold text-base-50 group-hover:text-accent-bright transition-colors duration-200">
+                        {meta.name}
+                      </h3>
+                      <code className="block mt-2 text-[11px] font-mono text-base-500">{meta.path}</code>
+                      <p className="mt-3 text-sm text-base-400 leading-relaxed max-w-[48ch]">{meta.desc}</p>
+                      <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-xs font-mono text-accent group-hover:text-accent-bright transition-colors duration-200">
+                        Open in editor
+                        <IconArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                      </span>
+                    </>
+                  ) : isWide ? (
+                    <>
+                      <span className="shrink-0 w-10 h-10 rounded-xl bg-base-950 border border-base-700 text-base-300 flex items-center justify-center group-hover:border-accent/40 group-hover:text-accent transition-colors duration-200">
+                        <Icon size={18} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-[10px] font-mono tracking-widest text-base-500 uppercase">{meta.cardBadge}</span>
+                          <code className="text-[11px] font-mono text-base-600 hidden md:inline">{meta.path}</code>
+                        </div>
+                        <h3 className="mt-1 font-semibold text-base-100 group-hover:text-accent-bright transition-colors duration-200">
+                          {meta.name}
+                        </h3>
+                        <p className="mt-1 text-xs text-base-400 leading-relaxed line-clamp-2">{meta.desc}</p>
+                      </div>
+                      <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-mono text-accent tnum mt-3 sm:mt-0">
+                        {meta.price}
+                        <IconArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-4">
+                        <Icon size={17} className="text-base-400 group-hover:text-accent transition-colors duration-200" />
+                        <span className="text-xs font-mono font-semibold text-accent tnum">{meta.price}</span>
+                      </div>
+                      <span className="text-[10px] font-mono tracking-widest text-base-500 uppercase">{meta.cardBadge}</span>
+                      <h3 className="mt-1.5 font-semibold text-base-100 group-hover:text-accent-bright transition-colors duration-200">
+                        {meta.name}
+                      </h3>
+                      <code className="block mt-1 text-[11px] font-mono text-base-600">{meta.path}</code>
+                      <p className="mt-2.5 text-xs text-base-400 leading-relaxed line-clamp-3">{meta.desc}</p>
+                    </>
+                  )}
                 </button>
               )
             })}
@@ -422,95 +318,56 @@ export const AdsecHome: React.FC = () => {
         </div>
       </section>
 
-      {/* ═══ PLAYGROUND & LEDGER ═══ */}
-      <section id="playground" className="scroll-mt-20" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '64px 16px' }}>
-          <div style={{
-            marginBottom: '40px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
-          }}>
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div>
-                <p style={{
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.3em',
-                  color: '#10b981',
-                  marginBottom: '12px',
-                }}>
-                  {currentView === 'playground' ? 'Interactive Workspace' : 'On-Chain Ledger'}
-                </p>
-                <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 900, letterSpacing: '-0.02em' }}>
-                  {currentView === 'playground' ? 'Run a Security Audit' : 'Algorand TestNet Ledger'}
-                </h2>
-                <p style={{ marginTop: '12px', color: 'var(--text-secondary)', maxWidth: '560px' }}>
-                  {currentView === 'playground'
-                    ? 'Choose a code preset or write your own to run a live scan, negotiate an x402 payment challenge, and generate verified patches.'
-                    : 'Immutable record of verified x402 payment settlements and SHA-256 code attestations on Algorand TestNet.'}
+      {/* PLAYGROUND & LEDGER */}
+      <section id="playground" className="scroll-mt-20">
+        <div className="max-w-shell mx-auto px-4 py-20">
+          <div className="mb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="h-px w-8 bg-accent/70" aria-hidden="true"></span>
+                <p className="text-xs font-mono text-accent tracking-wide">
+                  {currentView === 'playground' ? 'Interactive workspace' : 'On-chain ledger'}
                 </p>
               </div>
+              <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-base-50 leading-[1.1]">
+                {currentView === 'playground' ? 'Run a security audit' : 'Algorand TestNet ledger'}
+              </h2>
+              <p className="mt-3 text-base-400 leading-relaxed">
+                {currentView === 'playground'
+                  ? 'Choose a code preset or write your own to run a live scan, negotiate an x402 payment challenge, and generate verified patches.'
+                  : 'Immutable record of verified x402 payment settlements and SHA-256 code attestations on Algorand TestNet.'}
+              </p>
+            </div>
 
-              <div className="flex items-center gap-3">
-                {/* View Toggle */}
-                <div style={{
-                  display: 'flex',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '4px',
-                }}>
-                  <button
-                    onClick={() => setCurrentView('playground')}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all var(--transition-default)',
-                      background: currentView === 'playground' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                      color: currentView === 'playground' ? '#000' : 'var(--text-muted)',
-                      boxShadow: currentView === 'playground' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
-                    }}
-                  >
-                    Interactive Auditor
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('ledger')}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'all var(--transition-default)',
-                      background: currentView === 'ledger' ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
-                      color: currentView === 'ledger' ? '#000' : 'var(--text-muted)',
-                      boxShadow: currentView === 'ledger' ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
-                    }}
-                  >
-                    📜 On-Chain Ledger
-                  </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex bg-base-900 border border-base-800 rounded-xl p-1 text-xs font-medium">
+                <button
+                  onClick={() => setCurrentView('playground')}
+                  aria-pressed={currentView === 'playground'}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all duration-200 focus-ring active:scale-[0.98] ${
+                    currentView === 'playground' ? 'bg-accent text-base-ink shadow-glow' : 'text-base-400 hover:text-base-100'
+                  }`}
+                >
+                  Auditor
+                </button>
+                <button
+                  onClick={() => setCurrentView('ledger')}
+                  aria-pressed={currentView === 'ledger'}
+                  className={`px-3.5 py-1.5 rounded-lg transition-all duration-200 focus-ring active:scale-[0.98] ${
+                    currentView === 'ledger' ? 'bg-accent text-base-ink shadow-glow' : 'text-base-400 hover:text-base-100'
+                  }`}
+                >
+                  Ledger
+                </button>
+              </div>
+
+              <div className="hidden xl:block text-xs font-mono text-base-500 bg-base-900 border border-base-800 rounded-xl px-4 py-3 shrink-0 tnum">
+                <div>
+                  target :{' '}
+                  <span className="text-base-300">{`${import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'}`}</span>
                 </div>
-
-                {/* Server info */}
-                <div className="hidden md:block" style={{
-                  fontSize: '11px',
-                  fontFamily: 'var(--font-mono)',
-                  color: 'var(--text-dim)',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px solid var(--border-default)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '12px 16px',
-                  flexShrink: 0,
-                }}>
-                  <div>target : <span style={{ color: 'var(--text-secondary)' }}>{`${import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'}`}</span></div>
-                  <div style={{ marginTop: '4px' }}>network : <span style={{ color: '#10b981' }}>algorand testnet</span></div>
+                <div className="mt-1">
+                  network : <span className="text-accent">algorand testnet</span>
                 </div>
               </div>
             </div>
@@ -520,91 +377,87 @@ export const AdsecHome: React.FC = () => {
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
-      <footer style={{ borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-deep)' }}>
-        {/* Gradient separator */}
-        <div className="animate-gradient" style={{
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.3), rgba(139, 92, 246, 0.2), transparent)',
-          backgroundSize: '200% 200%',
-        }} />
-
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '32px' }}>
-          {/* Brand */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <div style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px',
-              }}>🐍</div>
-              <span style={{ fontWeight: 900, letterSpacing: '0.06em', color: '#fff' }}>
-                MEDUSA<span style={{ color: '#10b981' }}>.</span>
-              </span>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>v1.0.0 · TestNet</span>
+      {/* FOOTER */}
+      <footer className="border-t border-base-800 bg-base-900/30">
+        <div className="max-w-shell mx-auto px-4 py-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-10 text-sm">
+          <div className="lg:col-span-2 max-w-sm">
+            <div className="flex items-center gap-2.5 mb-3">
+              <MedusaMark size={26} />
+              <span className="font-display font-semibold text-base-100">Medusa</span>
+              <span className="text-xs font-mono text-base-500 tnum">v1.0.0 · TestNet</span>
             </div>
-            <p style={{ color: 'var(--text-dim)', fontSize: '12px', lineHeight: 1.7, maxWidth: '280px' }}>
-              Autonomous security node for machine-to-machine commerce. Powered by the x402 open standard on Algorand.
+            <p className="text-base-500 text-xs leading-relaxed">
+              Autonomous security node for machine-to-machine commerce, powered by the x402 open standard on Algorand.
             </p>
-          </div>
-
-          {/* Links */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-dim)', fontSize: '10px', fontFamily: 'var(--font-mono)', fontWeight: 700, marginBottom: '8px' }}>Protocol & Explorer</div>
-            {[
-              { label: 'x402 Specification', url: 'https://www.x402.org' },
-              { label: 'Algorand Lora Explorer', url: 'https://lora.algokit.io/testnet' },
-              { label: 'GoPlausible Facilitator', url: 'https://facilitator.goplausible.xyz' },
-            ].map(link => (
-              <a
-                key={link.label}
-                className="text-sm"
-                href={link.url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  color: 'var(--text-muted)',
-                  fontSize: '12px',
-                  fontFamily: 'var(--font-mono)',
-                  textDecoration: 'none',
-                  transition: 'color var(--transition-fast)',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#6ee7b7')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-              >
-                {link.label} ↗
-              </a>
-            ))}
-          </div>
-
-          {/* Status */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-dim)', fontSize: '10px', fontFamily: 'var(--font-mono)', fontWeight: 700, marginBottom: '8px' }}>Service Status</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
-              <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
-                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-              </span>
-              Accepting requests
+            <div className="mt-4 flex items-center gap-2 text-xs text-base-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> Accepting requests
             </div>
-            <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>Settlement: GoPlausible Facilitator</div>
-            <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>Asset: TestNet USDC (ASA#10458941)</div>
+          </div>
+
+          <nav aria-label="Site" className="space-y-2.5 text-xs">
+            <div className="text-base-600 font-mono mb-3 lowercase tracking-wide">Site</div>
+            <a
+              href="#pipeline"
+              className="block w-fit text-base-400 hover:text-accent transition-colors duration-200 focus-ring rounded-sm"
+            >
+              How it works
+            </a>
+            <a
+              href="#endpoints"
+              className="block w-fit text-base-400 hover:text-accent transition-colors duration-200 focus-ring rounded-sm"
+            >
+              Endpoints &amp; pricing
+            </a>
+            <a
+              href="#playground"
+              className="block w-fit text-base-400 hover:text-accent transition-colors duration-200 focus-ring rounded-sm"
+            >
+              Live auditor
+            </a>
+          </nav>
+
+          <div className="space-y-2.5 text-xs">
+            <div className="text-base-600 font-mono mb-3 lowercase tracking-wide">Protocol</div>
+            <a
+              className="flex w-fit items-center gap-1.5 text-base-400 hover:text-accent transition-colors duration-200 focus-ring rounded-sm"
+              href="https://www.x402.org"
+              target="_blank"
+              rel="noreferrer"
+            >
+              x402 specification <IconExternal size={11} />
+            </a>
+            <a
+              className="flex w-fit items-center gap-1.5 text-base-400 hover:text-accent transition-colors duration-200 focus-ring rounded-sm"
+              href="https://lora.algokit.io/testnet"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Lora explorer <IconExternal size={11} />
+            </a>
+            <a
+              className="flex w-fit items-center gap-1.5 text-base-400 hover:text-accent transition-colors duration-200 focus-ring rounded-sm"
+              href="https://facilitator.goplausible.xyz"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GoPlausible facilitator <IconExternal size={11} />
+            </a>
+            <div className="pt-1 text-base-600 font-mono">Settlement asset · TestNet USDC (ASA#10458941)</div>
           </div>
         </div>
 
-        <div style={{
-          borderTop: '1px solid var(--border-subtle)',
-          padding: '24px 16px',
-          textAlign: 'center',
-          fontSize: '11px',
-          color: 'var(--text-dim)',
-          fontFamily: 'var(--font-mono)',
-        }}>
-          © 2026 Medusa Security Labs — Live on Algorand TestNet · x402 Protocol
+        <div className="border-t border-base-800">
+          <div className="max-w-shell mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-base-600 tnum">
+            <div>© 2026 Medusa Security Labs — live on Algorand TestNet</div>
+            <a
+              href="https://github.com/vishnunandan555/Mesh402X"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 hover:text-base-300 transition-colors duration-200 focus-ring rounded-sm"
+            >
+              Source &amp; licensing <IconExternal size={11} />
+            </a>
+          </div>
         </div>
       </footer>
     </div>

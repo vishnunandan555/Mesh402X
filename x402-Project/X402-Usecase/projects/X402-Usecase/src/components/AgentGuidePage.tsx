@@ -1,130 +1,88 @@
 import React, { useState, useEffect } from 'react'
+import { IconScan, IconFileDiff, IconShieldCheck, IconVault, IconLedger, IconCopy, IconCheck, IconArrowRight, IconGlobe } from './icons'
 
-interface TierItem {
-  id: string
-  name: string
-  price: string
-  priceMicro: string
-  endpoint: string
-  script: string
-  badge: string
-  badgeColor: string
-  badgeBg: string
-  badgeBorder: string
-  description: string
-  icon: string
-  featured?: boolean
-}
-
-const TIERS: TierItem[] = [
+const TIERS = [
   {
     id: 'scan',
-    name: 'Pre-Flight Scanner',
+    name: 'Pre-flight scanner',
     price: '$0.001 USDC',
-    priceMicro: '1,000 microUSDC',
     endpoint: 'POST /adsec/scan',
     script: 'npx tsx medusa-scripts/audit-scan.ts <file>',
-    badge: '⚡ Fast Deterministic',
-    badgeColor: '#e2e8f0',
-    badgeBg: 'rgba(255, 255, 255, 0.06)',
-    badgeBorder: 'rgba(255, 255, 255, 0.15)',
-    description: 'Scans for hardcoded secrets, AST syntax hazard patterns, typosquatted dependency packages, and live OSV.dev CVE database matches.',
-    icon: '🔍',
+    badge: 'fast · deterministic',
+    Icon: IconScan,
+    description: 'Scans for hardcoded secrets, AST hazard patterns, typosquatted dependency packages, and live OSV.dev CVE matches.',
   },
   {
     id: 'remediate',
-    name: 'Auto-Remediator',
+    name: 'Auto-remediator',
     price: '$0.001 USDC',
-    priceMicro: '1,000 microUSDC',
     endpoint: 'POST /adsec/remediate',
     script: 'npx tsx medusa-scripts/audit-remediate.ts <file>',
-    badge: '🩹 Git Diff Patch',
-    badgeColor: '#e2e8f0',
-    badgeBg: 'rgba(255, 255, 255, 0.06)',
-    badgeBorder: 'rgba(255, 255, 255, 0.15)',
-    description: 'Generates language-aware, unified Git diff patches that can be applied cleanly with `git apply audit.patch` to automatically fix security flaws.',
-    icon: '🛠️',
+    badge: 'git diff patch',
+    Icon: IconFileDiff,
+    description:
+      'Generates language-aware unified git diffs that apply cleanly with `git apply audit.patch` to fix security flaws automatically.',
   },
   {
     id: 'attest',
-    name: 'On-Chain Attestation',
+    name: 'On-chain attestation',
     price: '$0.001 USDC',
-    priceMicro: '1,000 microUSDC',
     endpoint: 'POST /adsec/attest',
     script: 'npx tsx medusa-scripts/audit-attest.ts <file>',
-    badge: '⛓️ Algorand Proof',
-    badgeColor: '#94a3b8',
-    badgeBg: 'rgba(100, 116, 139, 0.08)',
-    badgeBorder: 'rgba(100, 116, 139, 0.25)',
-    description: 'Computes cryptographic SHA-256 code hash and broadcasts an immutable proof-of-audit transaction note on Algorand TestNet.',
-    icon: '📜',
+    badge: 'algorand proof',
+    Icon: IconShieldCheck,
+    description:
+      'Computes a cryptographic SHA-256 code hash and broadcasts an immutable proof-of-audit transaction note on Algorand TestNet.',
   },
   {
     id: 'audit',
-    name: 'Full All-in-One Suite',
+    name: 'Full audit suite',
     price: '$0.001 USDC',
-    priceMicro: '1,000 microUSDC',
     endpoint: 'POST /adsec/audit',
     script: 'npx tsx medusa-scripts/audit-full.ts <file>',
-    badge: '🚀 Complete Pipeline',
-    badgeColor: '#6ee7b7',
-    badgeBg: 'rgba(16, 185, 129, 0.08)',
-    badgeBorder: 'rgba(16, 185, 129, 0.25)',
-    description: 'Runs deterministic scan + LLM logic review + generates unified Git diffs + issues verifiable on-chain attestation on Lora Explorer.',
-    icon: '🛡️',
-    featured: true,
+    badge: 'complete pipeline',
+    recommended: true,
+    Icon: IconVault,
+    description: 'Deterministic scan + LLM logic review + unified git diffs + verifiable on-chain attestation, end to end.',
   },
   {
     id: 'history',
-    name: 'Financial Ledger & History',
-    price: '$0.000',
-    priceMicro: 'On-Chain Query',
+    name: 'Financial ledger & history',
+    price: 'free query',
     endpoint: 'Algorand TestNet Indexer',
     script: 'npx tsx medusa-scripts/wallet-history.ts',
-    badge: '📊 Spending History',
-    badgeColor: '#6ee7b7',
-    badgeBg: 'rgba(16, 185, 129, 0.08)',
-    badgeBorder: 'rgba(16, 185, 129, 0.25)',
-    description: 'Queries the Algorand blockchain to display on-chain audit micropayments, attestation receipts, and total USDC spent.',
-    icon: '📊',
+    badge: 'spending history',
+    Icon: IconLedger,
+    description: 'Queries Algorand to display on-chain audit micropayments, attestation receipts, and total USDC spent.',
   },
 ]
-
-type GuideTab = 'install' | 'agent' | 'bazaar' | 'architecture'
 
 export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({ onSwitchToPlayground }) => {
   const [copiedInstall, setCopiedInstall] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
-  const [activeTab, setActiveTab] = useState<GuideTab>('install')
+  const [activeTab, setActiveTab] = useState<'install' | 'agent' | 'bazaar' | 'architecture'>('install')
   const [bazaarStatus, setBazaarStatus] = useState<{ loading: boolean; count?: number; verified?: boolean; error?: string }>({
     loading: true,
   })
 
   useEffect(() => {
-    let isMounted = true
     // Check live GoPlausible Bazaar registry status
     fetch('https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000')
       .then((r) => r.json())
       .then((data) => {
-        if (!isMounted) return
         const items = data.items || data.resources || []
         const hasMedusa = items.some(
-          (i: unknown) => JSON.stringify(i).toLowerCase().includes('adsec') || JSON.stringify(i).includes('mesh402x')
+          (i: unknown) => JSON.stringify(i).toLowerCase().includes('adsec') || JSON.stringify(i).includes('mesh402x'),
         )
         setBazaarStatus({
           loading: false,
-          count: items.length || 1500,
+          count: items.length || undefined,
           verified: hasMedusa,
         })
       })
       .catch(() => {
-        if (!isMounted) return
-        setBazaarStatus({ loading: false, count: 1524, verified: true })
+        setBazaarStatus({ loading: false, error: 'Registry unreachable' })
       })
-
-    return () => {
-      isMounted = false
-    }
   }, [])
 
   const copyInstallCommand = () => {
@@ -134,333 +92,221 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
   }
 
   const copyPromptText = () => {
-    navigator.clipboard.writeText('Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof.')
+    navigator.clipboard.writeText(
+      'Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof.',
+    )
     setCopiedPrompt(true)
     setTimeout(() => setCopiedPrompt(false), 2500)
   }
 
-  const tabs = [
-    { id: 'install', label: '1. How It Works', icon: '🔄' },
-    { id: 'agent', label: '2. Tiers & Pricing', icon: '💰' },
-    { id: 'bazaar', label: '3. Bazaar Discovery', icon: '🌐' },
-    { id: 'architecture', label: '4. Prompt Your Agent', icon: '💬' },
-  ]
-
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 16px', display: 'flex', flexDirection: 'column', gap: '64px' }}>
-      {/* ═══ HERO BANNER ═══ */}
-      <section className="animate-fade-in" style={{
-        position: 'relative',
-        overflow: 'hidden',
-        borderRadius: 'var(--radius-2xl)',
-        border: '1px solid var(--border-default)',
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(6,8,13,1) 40%, rgba(16,185,129,0.06) 100%)',
-        padding: 'clamp(32px, 5vw, 56px)',
-      }}>
-        {/* Background orb */}
-        <div style={{
-          position: 'absolute',
-          top: '-60px',
-          right: '-60px',
-          width: '400px',
-          height: '400px',
-          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-40px',
-          left: '-40px',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          pointerEvents: 'none',
-        }} />
-
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '720px' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-            <span className="badge-emerald">
-              <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
-                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-              </span>
-              AGENT-TO-AGENT ACTIVE
+    <div className="max-w-shell mx-auto px-4 sm:px-6 py-12 space-y-20">
+      {/* HERO */}
+      <section className="relative overflow-hidden rounded-3xl border border-base-800 bg-base-900/50 p-8 sm:p-14 shadow-pop">
+        <div
+          className="absolute -top-48 -right-24 w-[480px] h-[480px] pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(52,185,138,0.14), transparent 65%)' }}
+          aria-hidden="true"
+        />
+        <div className="relative z-10 max-w-3xl">
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono bg-accent/[0.08] text-accent border border-accent/35">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+              agent-to-agent · active
             </span>
-            <span className="badge-emerald">x402 STANDARD</span>
-            <span className="badge-ghost">ALGORAND TESTNET</span>
+            <span className="px-2.5 py-1 rounded-md text-xs font-mono bg-base-950 text-base-300 border border-base-700">x402 standard</span>
+            <span className="px-2.5 py-1 rounded-md text-xs font-mono text-base-400 border border-base-800">algorand testnet</span>
           </div>
 
-          <h1 style={{
-            fontSize: 'clamp(1.75rem, 4vw, 3rem)',
-            fontWeight: 900,
-            letterSpacing: '-0.03em',
-            lineHeight: 1.12,
-            margin: 0,
-          }}>
-            How Any External AI Agent <br />
-            <span className="text-gradient">Discovers & Hires Medusa</span>
+          <h1 className="font-display text-3xl sm:text-5xl font-semibold tracking-[-0.02em] leading-[1.06] text-base-50">
+            How any external AI agent discovers &amp; hires Medusa
           </h1>
 
-          <p style={{
-            marginTop: '20px',
-            color: 'var(--text-secondary)',
-            fontSize: 'clamp(0.9375rem, 2vw, 1.0625rem)',
-            lineHeight: 1.7,
-          }}>
-            No accounts, no API keys, no subscriptions. Autonomous AI agents discover Medusa on the decentralized GoPlausible Bazaar, pay $0.001 USDC via HTTP 402, receive AST/CVE diagnostics, and apply Git diff patches automatically.
+          <p className="mt-5 text-base-400 text-base sm:text-lg leading-relaxed max-w-[62ch]">
+            No accounts, no API keys, no subscriptions. Autonomous agents discover Medusa on the decentralized GoPlausible Bazaar, pay
+            $0.001 USDC via HTTP 402, receive AST/CVE diagnostics, and apply git patches automatically.
           </p>
 
-          <div style={{ marginTop: '32px', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-            <button onClick={copyInstallCommand} className="btn-primary">
-              {copiedInstall ? '✓ Command Copied!' : '📋 Copy 1-Line Installer'}
+          <div className="mt-9 flex flex-wrap gap-x-6 gap-y-4 items-center">
+            <button
+              onClick={copyInstallCommand}
+              className={`px-6 py-3.5 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] focus-ring flex items-center gap-2 ${
+                copiedInstall ? 'bg-accent-bright text-base-ink shadow-glow' : 'bg-accent hover:bg-accent-bright text-base-ink shadow-glow'
+              }`}
+            >
+              {copiedInstall ? <IconCheck size={15} /> : <IconCopy size={15} />}
+              <span>{copiedInstall ? 'Installer copied' : 'Copy one-line installer'}</span>
             </button>
-            <button onClick={onSwitchToPlayground} className="btn-secondary">
-              ⚡ Try Web Playground →
+            <button
+              onClick={onSwitchToPlayground}
+              className="px-5 py-3 rounded-xl font-medium text-sm border border-base-700 hover:border-base-500 hover:bg-white/[0.04] transition-all duration-200 active:scale-[0.98] focus-ring text-base-200 flex items-center gap-2"
+            >
+              Try the web playground
+              <IconArrowRight size={14} />
             </button>
           </div>
         </div>
       </section>
 
-      {/* ═══ INSTALLER BOX ═══ */}
-      <section className="card animate-fade-in-delay-1" style={{ padding: 'clamp(24px, 3vw, 36px)' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
+      {/* ONE-LINE INSTALLER */}
+      <section className="rounded-2xl border border-base-800 bg-base-900/60 p-6 sm:p-8 shadow-node">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
           <div>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-              <span style={{ color: '#10b981' }}>⚡</span> 1-Line Universal Installer for Any Repo
-            </h2>
-            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
-              Run this in any repository to install x402 dependencies, modular audit scripts, and the agent skill manifest.
+            <h2 className="font-display text-xl font-semibold text-base-100">One-line universal installer</h2>
+            <p className="text-xs sm:text-sm text-base-400 mt-1.5 max-w-xl">
+              Run this in any repository to install x402 dependencies, the modular audit scripts, and the agent skill manifest.
             </p>
           </div>
           <button
             onClick={copyInstallCommand}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 'var(--radius-md)',
-              fontSize: '11px',
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 700,
-              background: 'rgba(16, 185, 129, 0.1)',
-              color: '#6ee7b7',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              cursor: 'pointer',
-              transition: 'all var(--transition-fast)',
-              flexShrink: 0,
-            }}
+            className="px-4 py-2 rounded-lg text-xs font-mono font-medium bg-accent/10 text-accent border border-accent/40 hover:bg-accent hover:text-base-ink transition-all duration-200 active:scale-[0.98] focus-ring flex items-center gap-2 shrink-0 self-start sm:self-auto"
           >
-            {copiedInstall ? '✓ Copied to clipboard' : 'Copy Bash Command'}
+            {copiedInstall ? <IconCheck size={13} /> : <IconCopy size={13} />}
+            {copiedInstall ? 'Copied' : 'Copy command'}
           </button>
         </div>
 
-        <div style={{
-          borderRadius: 'var(--radius-md)',
-          background: '#080c14',
-          border: '1px solid var(--border-default)',
-          padding: '16px 20px',
-          fontFamily: 'var(--font-mono)',
-          fontSize: 'clamp(12px, 2vw, 14px)',
-          color: '#6ee7b7',
-          overflowX: 'auto',
-          userSelect: 'all',
-        }}>
+        <div className="rounded-xl bg-base-ink border border-base-800 p-4 font-mono text-xs sm:text-sm text-accent overflow-x-auto thin-scroll select-all tnum">
           curl -fsSL https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main/install.sh | bash
         </div>
 
-        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '10px' }}>
-          {[
-            { check: 'Installs @x402-avm/fetch & algosdk', code: true },
-            { check: 'Sets up medusa-scripts/ & .env', code: true },
-            { check: 'Configures Medusa_Skill.md for AI Agent', code: true },
-          ].map((item, i) => (
-            <div key={i} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '11px',
-              color: 'var(--text-muted)',
-              background: '#080c14',
-              padding: '10px 14px',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--border-default)',
-            }}>
-              <span style={{ color: '#10b981', fontWeight: 700 }}>✓</span>
-              {item.check}
-            </div>
-          ))}
-        </div>
+        <ul className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-base-400">
+          <li className="flex items-start gap-2 bg-base-950/70 p-3 rounded-lg border border-base-800">
+            <IconCheck size={13} className="text-accent shrink-0 mt-0.5" />
+            <span>
+              Installs <code className="text-accent">@x402-avm/fetch</code> &amp; <code className="text-accent">algosdk</code>
+            </span>
+          </li>
+          <li className="flex items-start gap-2 bg-base-950/70 p-3 rounded-lg border border-base-800">
+            <IconCheck size={13} className="text-accent shrink-0 mt-0.5" />
+            <span>
+              Sets up <code className="text-accent">medusa-scripts/</code> &amp; <code className="text-accent">.env</code>
+            </span>
+          </li>
+          <li className="flex items-start gap-2 bg-base-950/70 p-3 rounded-lg border border-base-800">
+            <IconCheck size={13} className="text-accent shrink-0 mt-0.5" />
+            <span>
+              Configures <code className="text-accent">Medusa_Skill.md</code> for your agent
+            </span>
+          </li>
+        </ul>
       </section>
-
-      {/* ═══ INTERACTIVE GUIDE TABS ═══ */}
-      <section style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        {/* Tab bar */}
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          borderBottom: '1px solid var(--border-default)',
-          overflowX: 'auto',
-          paddingBottom: '0',
-        }}>
-          {tabs.map((t) => (
+      {/* INTERACTIVE GUIDE TABS */}
+      <section className="space-y-8">
+        <div className="flex border-b border-base-800 overflow-x-auto gap-1 thin-scroll">
+          {(
+            [
+              { id: 'install', label: 'How it works' },
+              { id: 'agent', label: 'Tiers & pricing' },
+              { id: 'bazaar', label: 'Bazaar discovery' },
+              { id: 'architecture', label: 'Prompting your agent' },
+            ] as const
+          ).map((t, i) => (
             <button
               key={t.id}
-              onClick={() => setActiveTab(t.id as GuideTab)}
-              style={{
-                padding: '14px 20px',
-                fontSize: '13px',
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                border: 'none',
-                borderBottom: `2px solid ${activeTab === t.id ? '#10b981' : 'transparent'}`,
-                cursor: 'pointer',
-                transition: 'all var(--transition-default)',
-                background: activeTab === t.id ? 'rgba(16, 185, 129, 0.06)' : 'transparent',
-                color: activeTab === t.id ? '#6ee7b7' : 'var(--text-muted)',
-                borderRadius: activeTab === t.id ? 'var(--radius-sm) var(--radius-sm) 0 0' : '0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
+              onClick={() => setActiveTab(t.id)}
+              aria-selected={activeTab === t.id}
+              role="tab"
+              className={`px-4 sm:px-5 py-3 text-xs sm:text-sm font-medium border-b-2 whitespace-nowrap transition-all duration-200 focus-ring ${
+                activeTab === t.id
+                  ? 'border-accent text-accent'
+                  : 'border-transparent text-base-400 hover:text-base-200 hover:border-base-600'
+              }`}
             >
-              <span>{t.icon}</span>
-              <span className="hide-mobile">{t.label}</span>
+              <span className="font-mono text-base-600 mr-2 tnum">0{i + 1}</span>
+              {t.label}
             </button>
           ))}
         </div>
 
-        {/* TAB 1: AGENT-TO-AGENT WORKFLOW */}
+        {/* TAB 1: AGENT-TO-AGENT WORKFLOW — open flow, no card boxes */}
         {activeTab === 'install' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
-            {[
-              {
-                step: '01',
-                title: 'Autonomous Discovery',
-                desc: 'The external agent queries the GoPlausible Bazaar registry at runtime. It finds Medusa\'s endpoint, inspects OpenAPI schemas, and matches capability without hardcoded URLs.',
-                footer: 'GET /discovery/resources ➔ Discovered Medusa Node ($0.001)',
-                color: '#10b981',
-              },
-              {
-                step: '02',
-                title: 'x402 Micropayment',
-                desc: 'Medusa returns an HTTP 402 challenge. The agent\'s local wallet automatically signs the $0.001 USDC Algorand transaction in code in ~0.5s without human popups.',
-                footer: 'HTTP 402 ➔ Signs 1,000 microUSDC ➔ Settle on Algorand',
-                color: '#e2e8f0',
-              },
-              {
-                step: '03',
-                title: 'Auto-Patch & Attestation',
-                desc: 'Medusa replies with findings, health score, and unified Git diffs. The agent applies git apply audit.patch to self-heal the codebase with on-chain proof.',
-                footer: '200 OK ➔ Score: 95/100 ➔ Lora Explorer TxID',
-                color: '#10b981',
-              },
-            ].map((card, i) => (
-              <div key={card.step} className="card card-interactive animate-fade-in" style={{
-                padding: '28px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                animationDelay: `${i * 0.1}s`,
-              }}>
-                <div>
-                  <div style={{
-                    width: '44px',
-                    height: '44px',
-                    borderRadius: 'var(--radius-lg)',
-                    background: `${card.color}12`,
-                    border: `1px solid ${card.color}30`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: 800,
-                    fontSize: '14px',
-                    color: card.color,
-                    marginBottom: '20px',
-                  }}>
-                    {card.step}
+          <div className="relative">
+            <div className="hidden md:block absolute top-[22px] left-[6%] right-[6%] h-px bg-base-800" aria-hidden="true"></div>
+            <ol className="relative grid md:grid-cols-3 gap-10 md:gap-8">
+              {[
+                {
+                  n: '01',
+                  title: 'Autonomous discovery',
+                  body: 'The external agent queries the GoPlausible Bazaar registry at runtime. It finds Medusa’s endpoint, inspects OpenAPI schemas, and matches capability without hardcoded URLs.',
+                  code: 'GET /discovery/resources → Medusa node ($0.001)',
+                },
+                {
+                  n: '02',
+                  title: 'x402 micropayment',
+                  body: 'Medusa returns an HTTP 402 challenge. The agent’s local wallet signs the $0.001 USDC Algorand transaction in code in roughly half a second — no popups.',
+                  code: 'HTTP 402 → sign 1,000 microUSDC → settle',
+                },
+                {
+                  n: '03',
+                  title: 'Auto-patch & attestation',
+                  body: 'Medusa replies with findings, a health score, and unified git diffs. The agent applies `git apply audit.patch` to self-heal the codebase with on-chain proof.',
+                  code: '200 OK → score 95/100 → Lora TxID',
+                },
+              ].map((s) => (
+                <li key={s.n}>
+                  <span className="relative z-10 w-11 h-11 rounded-xl bg-base-900 border border-base-700 flex items-center justify-center font-mono text-sm text-accent tnum shadow-node">
+                    {s.n}
+                  </span>
+                  <h3 className="mt-5 font-display text-lg font-semibold text-base-100">{s.title}</h3>
+                  <p className="mt-2 text-xs text-base-400 leading-relaxed max-w-[44ch]">{s.body}</p>
+                  <div className="mt-4 inline-block p-3 rounded-lg bg-base-ink border border-base-800 font-mono text-[11px] text-accent/90 tnum">
+                    {s.code}
                   </div>
-                  <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '10px' }}>{card.title}</h3>
-                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.7 }}>{card.desc}</p>
-                </div>
-                <div style={{
-                  marginTop: '20px',
-                  padding: '12px 16px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: '#080c14',
-                  border: '1px solid var(--border-default)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '11px',
-                  color: 'var(--text-muted)',
-                }}>
-                  {card.footer}
-                </div>
-              </div>
-            ))}
+                </li>
+              ))}
+            </ol>
           </div>
         )}
 
         {/* TAB 2: TIERS & PRICING */}
         {activeTab === 'agent' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '16px' }}>
-            {TIERS.map((tier, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {TIERS.map((tier) => (
               <div
                 key={tier.id}
-                className={`card ${tier.featured ? 'glow-border-emerald' : ''} card-interactive animate-fade-in`}
-                style={{
-                  padding: '24px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  animationDelay: `${i * 0.08}s`,
-                  ...(tier.featured ? { border: '1px solid rgba(16, 185, 129, 0.4)' } : {}),
-                }}
+                className={`rounded-2xl border p-5 transition-all duration-200 flex flex-col ${
+                  tier.recommended
+                    ? 'border-accent/45 bg-accent/[0.05] shadow-glow'
+                    : 'border-base-800 bg-base-900/60 hover:border-base-700'
+                }`}
               >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '1.25rem' }}>{tier.icon}</span>
-                      <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', margin: 0 }}>{tier.name}</h3>
-                    </div>
-                    <span style={{
-                      fontSize: '9px',
-                      fontFamily: 'var(--font-mono)',
-                      fontWeight: 800,
-                      padding: '3px 10px',
-                      borderRadius: 'var(--radius-full)',
-                      background: tier.badgeBg,
-                      color: tier.badgeColor,
-                      border: `1px solid ${tier.badgeBorder}`,
-                      whiteSpace: 'nowrap',
-                    }}>{tier.badge}</span>
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${
+                        tier.recommended ? 'bg-accent/15 border-accent/40 text-accent' : 'bg-base-950 border-base-700 text-base-300'
+                      }`}
+                    >
+                      <tier.Icon size={17} />
+                    </span>
+                    <h3 className="font-display font-semibold text-base-100">{tier.name}</h3>
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '20px' }}>{tier.description}</p>
+                  {tier.recommended && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded border border-accent/50 bg-accent/10 text-accent shrink-0">
+                      recommended
+                    </span>
+                  )}
                 </div>
 
-                <div style={{
-                  borderTop: '1px solid var(--border-subtle)',
-                  paddingTop: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Price per call:</span>
-                    <span style={{ fontWeight: 800, color: '#10b981' }}>{tier.price}</span>
+                <span className="self-start text-[10px] font-mono px-2 py-0.5 rounded border border-base-700 text-base-400 mb-3 lowercase tracking-wide">
+                  {tier.badge}
+                </span>
+
+                <p className="text-xs text-base-400 leading-relaxed mb-5">{tier.description}</p>
+
+                <div className="mt-auto space-y-2 pt-4 border-t border-base-800/80">
+                  <div className="flex items-center justify-between text-xs font-mono tnum">
+                    <span className="text-base-500">Price per call</span>
+                    <span className={`font-semibold ${tier.recommended || tier.price !== '$0.001 USDC' ? 'text-accent' : 'text-base-200'}`}>
+                      {tier.price}
+                    </span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Endpoint:</span>
-                    <span style={{ color: '#34d399' }}>{tier.endpoint}</span>
+                  <div className="flex items-center justify-between text-xs font-mono tnum">
+                    <span className="text-base-500">Endpoint</span>
+                    <span className="text-base-300">{tier.endpoint}</span>
                   </div>
-                  <div style={{
-                    padding: '10px 14px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: '#080c14',
-                    border: '1px solid var(--border-default)',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '11px',
-                    color: 'var(--text-secondary)',
-                    overflowX: 'auto',
-                  }}>
+                  <div className="p-2.5 rounded-lg bg-base-ink border border-base-800 font-mono text-[11px] text-base-300 overflow-x-auto thin-scroll">
                     {tier.script}
                   </div>
                 </div>
@@ -471,52 +317,49 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
 
         {/* TAB 3: BAZAAR DISCOVERY */}
         {activeTab === 'bazaar' && (
-          <div className="card animate-fade-in" style={{ padding: '28px' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
+          <div className="rounded-2xl border border-base-800 bg-base-900/60 p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                  🌐 Live GoPlausible Bazaar Registry Status
+                <h3 className="font-display text-lg font-semibold text-base-100 flex items-center gap-2.5">
+                  <IconGlobe size={18} className="text-accent" />
+                  Live GoPlausible Bazaar registry
                 </h3>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                  Public catalog where autonomous agents worldwide discover Medusa capabilities.
+                <p className="text-xs text-base-400 mt-1.5 max-w-lg">
+                  The public catalog where autonomous agents discover Medusa capabilities.
                 </p>
               </div>
-              <div className="badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
-                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
-                </span>
-                Registry: {bazaarStatus.loading ? 'Querying...' : `${bazaarStatus.count} Nodes Active`}
+
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-base-ink border border-base-800 text-xs font-mono tnum self-start">
+                {bazaarStatus.loading ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-base-500 animate-pulse"></span> Querying registry…
+                  </>
+                ) : bazaarStatus.error ? (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    <span className="text-amber-300/90">{bazaarStatus.error} — record below is the last known registration</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+                    {bazaarStatus.count ?? '?'} nodes active{bazaarStatus.verified ? ' · Medusa listed' : ''}
+                  </>
+                )}
               </div>
             </div>
 
-            <div style={{
-              borderRadius: 'var(--radius-md)',
-              background: '#080c14',
-              border: '1px solid var(--border-default)',
-              padding: '20px',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '12px',
-              color: 'var(--text-secondary)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px',
-            }}>
-              <div style={{ color: 'var(--text-dim)' }}># Query Live Decentralized Discovery Catalog:</div>
-              <div style={{ color: '#6ee7b7' }}>curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000"</div>
+            <div className="rounded-xl bg-base-ink border border-base-800 p-4 font-mono text-xs text-base-300 space-y-3">
+              <div className="text-base-600"># query the decentralized discovery catalog</div>
+              <div className="text-accent overflow-x-auto thin-scroll whitespace-nowrap">
+                curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000"
+              </div>
 
-              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
-                <div style={{ color: '#10b981', fontWeight: 700, marginBottom: '8px' }}>✓ Live Registered Record:</div>
-                <pre style={{
-                  fontSize: '11px',
-                  color: 'var(--text-secondary)',
-                  overflowX: 'auto',
-                  background: 'rgba(0,0,0,0.3)',
-                  padding: '14px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid var(--border-default)',
-                  margin: 0,
-                }}>
-{`{
+              <div className="pt-2 border-t border-base-800/80 text-base-400">
+                <div className="text-accent font-medium mb-1.5 flex items-center gap-1.5">
+                  <IconCheck size={12} /> Registered record
+                </div>
+                <pre className="text-[11px] text-base-300 overflow-x-auto thin-scroll bg-base-950/80 p-3 rounded-lg border border-base-800 tnum">
+                  {`{
   "resourceUrl": "https://mesh402x.onrender.com/adsec/audit",
   "method": "POST",
   "description": "ADSEC Full Security Audit Suite ($0.001 USDC)",
@@ -536,80 +379,61 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
 
         {/* TAB 4: PROMPTING YOUR AGENT */}
         {activeTab === 'architecture' && (
-          <div className="card animate-fade-in" style={{ padding: '28px' }}>
-            <div style={{ marginBottom: '24px' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', margin: 0 }}>💬 How to Prompt Your AI Assistant</h3>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
-                Once <code style={{ color: '#6ee7b7', fontFamily: 'var(--font-mono)' }}>install.sh</code> is run, simply prompt Antigravity, Cursor, or Claude Code in natural English.
+          <div className="rounded-2xl border border-base-800 bg-base-900/60 p-6 space-y-6">
+            <div>
+              <h3 className="font-display text-lg font-semibold text-base-100">How to prompt your AI assistant</h3>
+              <p className="text-xs text-base-400 mt-1.5 max-w-xl">
+                Once <code className="text-accent">install.sh</code> has run, prompt Antigravity, Cursor, or Claude Code in plain English.
               </p>
             </div>
 
-            <div style={{
-              borderRadius: 'var(--radius-md)',
-              background: '#080c14',
-              border: '1px solid var(--border-default)',
-              padding: '20px',
-              marginBottom: '24px',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>Example Chat Prompt</span>
+            <div className="rounded-xl bg-base-ink border border-base-800 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-base-500 tracking-wide">Example chat prompt</span>
                 <button
                   onClick={copyPromptText}
-                  style={{
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    color: '#10b981',
-                    fontWeight: 700,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
+                  className="text-xs font-mono text-accent hover:text-accent-bright transition-colors duration-200 focus-ring rounded-sm flex items-center gap-1.5"
                 >
-                  {copiedPrompt ? '✓ Copied' : 'Copy Prompt'}
+                  {copiedPrompt ? <IconCheck size={12} /> : <IconCopy size={12} />}
+                  {copiedPrompt ? 'Copied' : 'Copy prompt'}
                 </button>
               </div>
-              <div style={{
-                fontSize: '14px',
-                fontFamily: 'var(--font-mono)',
-                color: '#6ee7b7',
-                background: 'rgba(0,0,0,0.3)',
-                padding: '16px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-default)',
-                userSelect: 'all',
-                lineHeight: 1.6,
-              }}>
-                "Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof."
-              </div>
+              <blockquote className="font-mono text-sm text-accent bg-base-950 p-3.5 rounded-lg border border-base-800 select-all">
+                “Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof.”
+              </blockquote>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
-              <div style={{
-                padding: '20px',
-                borderRadius: 'var(--radius-md)',
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid var(--border-default)',
-              }}>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: '13px', marginBottom: '12px' }}>What the Agent Does:</div>
-                <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  <li>Reads <code style={{ color: '#6ee7b7', fontFamily: 'var(--font-mono)' }}>Medusa_Skill.md</code></li>
-                  <li>Executes the right modular script</li>
-                  <li>Signs $0.001 USDC in code</li>
-                  <li>Applies git diff patches</li>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 rounded-xl bg-base-950/60 border border-base-800">
+                <div className="font-semibold text-base-100 mb-2.5">What the agent does</div>
+                <ul className="space-y-1.5 text-base-400">
+                  {[
+                    'Reads `Medusa_Skill.md`',
+                    'Executes the right modular script',
+                    'Signs $0.001 USDC in code',
+                    'Applies git diff patches',
+                  ].map((li) => (
+                    <li key={li} className="flex items-start gap-2">
+                      <span className="text-accent mt-px">·</span>
+                      <span>{li}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
-              <div style={{
-                padding: '20px',
-                borderRadius: 'var(--radius-md)',
-                background: 'rgba(255, 255, 255, 0.02)',
-                border: '1px solid var(--border-default)',
-              }}>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: '13px', marginBottom: '12px' }}>What You Receive:</div>
-                <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                  <li>Health Score (0-100)</li>
-                  <li>Categorized CVEs & AST findings</li>
-                  <li>Verified Lora Explorer transaction link</li>
-                  <li>Self-healed clean repository</li>
+              <div className="p-4 rounded-xl bg-base-950/60 border border-base-800">
+                <div className="font-semibold text-base-100 mb-2.5">What you receive</div>
+                <ul className="space-y-1.5 text-base-400">
+                  {[
+                    'Health score (0–100)',
+                    'Categorized CVE & AST findings',
+                    'Verified Lora explorer transaction link',
+                    'Self-healed clean repository',
+                  ].map((li) => (
+                    <li key={li} className="flex items-start gap-2">
+                      <span className="text-accent mt-px">·</span>
+                      <span>{li}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -617,23 +441,17 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
         )}
       </section>
 
-      {/* ═══ STATS FOOTER ═══ */}
-      <section style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
-        gap: '12px',
-        paddingTop: '24px',
-        borderTop: '1px solid var(--border-default)',
-      }}>
+      {/* STAT STRIP */}
+      <section className="border-t border-base-800 pt-8 grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6">
         {[
-          { value: '$0.001', label: 'Per Paid Audit', color: '#f1f5f9' },
-          { value: '< 1.5s', label: 'On-Chain Settlement', color: '#10b981' },
-          { value: '0', label: 'API Keys / Logins', color: '#10b981' },
-          { value: '100%', label: 'Lora Explorer Verified', color: '#f1f5f9' },
-        ].map(stat => (
-          <div key={stat.label} className="card" style={{ padding: '20px', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: stat.color }}>{stat.value}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>{stat.label}</div>
+          { v: '$0.001', l: 'per paid audit' },
+          { v: '< 1.5s', l: 'on-chain settlement' },
+          { v: '0', l: 'API keys or logins' },
+          { v: 'SHA-256', l: 'attestation standard' },
+        ].map((s) => (
+          <div key={s.l}>
+            <div className="font-display text-2xl font-semibold text-base-100 tnum">{s.v}</div>
+            <div className="mt-1 text-[11px] font-mono text-base-500 lowercase tracking-wide">{s.l}</div>
           </div>
         ))}
       </section>

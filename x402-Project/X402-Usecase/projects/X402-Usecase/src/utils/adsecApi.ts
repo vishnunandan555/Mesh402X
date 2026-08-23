@@ -70,6 +70,7 @@ export interface AdsecResponse {
 /**
  * Creates an x402-enabled fetch wrapper linked to the connected Algorand wallet
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic @txnlab/use-wallet signer shape
 export async function createAdsecX402Fetch(walletSigner: any) {
   const client = new x402Client()
   let originalTxns: Uint8Array[] = []
@@ -81,7 +82,7 @@ export async function createAdsecX402Fetch(walletSigner: any) {
       const walletResult = await walletSigner.signTransactions(txns)
 
       if (Array.isArray(walletResult)) {
-        return walletResult.map((item: any, i: number) => {
+        return walletResult.map((item: unknown, i: number) => {
           if (item === null || item === undefined) return originalTxns[i]
           if (item instanceof Uint8Array) return item
           if (typeof item === 'string') {
@@ -110,8 +111,9 @@ export async function createAdsecX402Fetch(walletSigner: any) {
 export async function executeAdsecRequestWithPayment(
   endpointUrl: string,
   payload: AdsecAuditPayload,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic @txnlab/use-wallet signer shape
   walletSigner: any,
-  onStepChange?: (step: 'challenging' | 'signing' | 'settling' | 'done') => void
+  onStepChange?: (step: 'challenging' | 'signing' | 'settling' | 'done') => void,
 ): Promise<AdsecResponse> {
   onStepChange?.('challenging')
 
