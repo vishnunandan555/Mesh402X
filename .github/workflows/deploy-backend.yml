@@ -1,0 +1,48 @@
+name: 🚀 Deploy Backend to Render
+
+on:
+  workflow_dispatch: # Manual "Run workflow" button in GitHub Actions
+  push:
+    branches: [ main ]
+    paths:
+      - 'x402-Project/x402-demo-server/**'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  test-and-deploy-backend:
+    name: 🛡️ Verify Engine & Deploy Render Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: 'x402-Project/x402-demo-server/package.json'
+
+      - name: 📦 Install Backend Dependencies
+        run: |
+          cd x402-Project/x402-demo-server
+          npm ci || npm install
+
+      - name: 🧪 Run Security Engine Audit Tests
+        run: |
+          cd x402-Project/x402-demo-server
+          npm run audit
+
+      - name: 📡 Trigger Render Backend Deployment
+        if: github.ref == 'refs/heads/main'
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "⚠️ Secret RENDER_DEPLOY_HOOK is not set. Add it in GitHub Repo Settings -> Secrets -> Actions."
+          else
+            echo "Triggering Render backend deploy hook..."
+            curl -X POST "$RENDER_DEPLOY_HOOK"
+            echo "✅ Render deploy hook triggered successfully!"
+          fi

@@ -1,0 +1,48 @@
+name: ⚡ Deploy Frontend to Vercel
+
+on:
+  workflow_dispatch: # Manual "Run workflow" button in GitHub Actions
+  push:
+    branches: [ main ]
+    paths:
+      - 'x402-Project/X402-Usecase/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+jobs:
+  build-and-deploy-frontend:
+    name: 🎨 Verify React App & Deploy Vercel Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: 'x402-Project/X402-Usecase/projects/X402-Usecase/package.json'
+
+      - name: 📦 Install Frontend Dependencies
+        run: |
+          cd x402-Project/X402-Usecase/projects/X402-Usecase
+          npm ci || npm install
+
+      - name: 🏗️ Verify Production Vite Build
+        run: |
+          cd x402-Project/X402-Usecase/projects/X402-Usecase
+          npx tsc --noEmit && npx vite build
+
+      - name: ⚡ Trigger Vercel Frontend Deployment
+        if: github.ref == 'refs/heads/main'
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK" ]; then
+            echo "⚠️ Secret VERCEL_DEPLOY_HOOK is not set. Add it in GitHub Repo Settings -> Secrets -> Actions."
+          else
+            echo "Triggering Vercel frontend deploy hook..."
+            curl -X POST "$VERCEL_DEPLOY_HOOK"
+            echo "✅ Vercel deploy hook triggered successfully!"
+          fi

@@ -1,6 +1,9 @@
-# 🌐 ADSEC — Complete Cloud Hosting & Auto-Deploy Guide
+# 🌐 ADSEC — Separate Backend (Render) & Frontend (Vercel) Deployment Guide
 
-> **Goal:** Deploy the ADSEC Hono backend (`x402-demo-server`) and React frontend (`X402-Usecase`) to free cloud hosting with automated GitHub Actions deployment.
+> **Architecture:**  
+> • **Backend:** Render Web Service (`x402-demo-server` Hono Node.js Server)  
+> • **Frontend:** Vercel Static Site (`X402-Usecase` React Vite App)  
+> • **CI/CD:** 2 Separate GitHub Actions (`deploy-backend.yml` & `deploy-frontend.yml`)
 
 ---
 
@@ -9,100 +12,119 @@
 ```mermaid
 flowchart TD
     subgraph GitHub["GitHub Repository (vishnunandan555/Mesh402X)"]
-        A["git push origin main"] --> B["GitHub Action (.github/workflows/deploy.yml)"]
-        B -->|Manual / Push Trigger| C["Run Engine Tests & Vite Build"]
+        A["🚀 Action 1: Deploy Backend (.github/workflows/deploy-backend.yml)"]
+        B["⚡ Action 2: Deploy Frontend (.github/workflows/deploy-frontend.yml)"]
     end
 
-    subgraph BackendHost["Backend (Render / Railway / Koyeb)"]
-        C -->|Trigger Deploy Hook| D["Render Web Service (x402-demo-server)"]
-        D --> E["Public URL: https://adsec-backend.onrender.com"]
+    subgraph RenderHost["Backend Node (Render Web Service)"]
+        A -->|Triggers RENDER_DEPLOY_HOOK| C["Render Web Service (x402-demo-server)"]
+        C --> D["Public API URL: https://adsec-backend.onrender.com"]
     end
 
-    subgraph FrontendHost["Frontend (Vercel / Netlify / Render)"]
-        C -->|Trigger Deploy Hook| F["Vercel / Render Static App (X402-Usecase)"]
-        F --> G["Public URL: https://adsec-app.vercel.app"]
+    subgraph VercelHost["Frontend Node (Vercel CDN)"]
+        B -->|Triggers VERCEL_DEPLOY_HOOK| E["Vercel Production (X402-Usecase)"]
+        E --> F["Public Web URL: https://adsec-app.vercel.app"]
     end
+
+    F -->|x402 Micro-Payments & Audits| D
 ```
 
 ---
 
-## ⚡ STEP 1: Deploy Backend (`x402-demo-server`) to Render (Free Tier)
+## 🛠️ STEP 1: Deploy Backend (`x402-demo-server`) on Render
 
-Render provides free Node.js Web Service hosting that automatically connects to your GitHub repository.
+Render hosts the long-running Hono Node.js server with unlimited execution time for LLM calls and OSV.dev queries.
 
-### Steps:
-1. Go to [dashboard.render.com](https://dashboard.render.com/) and log in with GitHub.
+### 1.1 Create Web Service on Render:
+1. Log into [dashboard.render.com](https://dashboard.render.com/) with GitHub.
 2. Click **New +** ➔ **Web Service**.
-3. Select your repository: **`vishnunandan555/Mesh402X`**.
-4. Configure the settings:
-   * **Name:** `adsec-backend` (or your choice)
+3. Connect your repository: **`vishnunandan555/Mesh402X`**.
+4. Fill in the build parameters:
+   * **Name:** `adsec-backend`
    * **Region:** Oregon (US West) or Frankfurt (EU)
    * **Branch:** `main`
    * **Root Directory:** `x402-Project/x402-demo-server`
    * **Runtime:** `Node`
    * **Build Command:** `npm install`
-   * **Start Command:** `npm start` (or `npx tsx index.ts`)
+   * **Start Command:** `npm start`
    * **Instance Type:** `Free`
 
-5. **Set Environment Variables in Render:**
-   Scroll down to **Environment Variables** and add:
-   ```env
-   AVM_ADDRESS=YOUR_ALGORAND_TESTNET_RECEIVER_ADDRESS
-   FACILITATOR_URL=https://facilitator.goplausible.xyz
-   PORT=4021
-   GROQ_API_KEY=optional_groq_key_here
-   GEMINI_API_KEY=optional_gemini_key_here
-   ```
-6. Click **Create Web Service**.
-7. Copy your backend URL (e.g. `https://adsec-backend.onrender.com`).
+### 1.2 Add Environment Variables in Render:
+Scroll down to **Environment Variables** and click **Add Environment Variable**:
+
+| Variable Name | Value | Required / Optional |
+| :--- | :--- | :--- |
+| **`AVM_ADDRESS`** | Your friend's Receiver Algorand TestNet Public Address | **REQUIRED** |
+| **`FACILITATOR_URL`** | `https://facilitator.goplausible.xyz` | **REQUIRED** |
+| **`PORT`** | `4021` | **REQUIRED** |
+| **`GROQ_API_KEY`** | `gsk_...` (Free at [console.groq.com](https://console.groq.com)) | *Optional (Fast <300ms LLM)* |
+| **`GEMINI_API_KEY`** | `AIza...` (Free at Google AI Studio) | *Optional (Gemini 1.5 Flash)* |
+| **`OPENAI_API_KEY`** | `sk-...` | *Optional (GPT-4o-mini)* |
+
+5. Click **Create Web Service**.
+6. Once deployed, copy your Live Backend URL (e.g. `https://adsec-backend.onrender.com`).
 
 ---
 
-## ⚡ STEP 2: Deploy Frontend (`X402-Usecase`) to Vercel / Netlify / Render
+## ⚡ STEP 2: Deploy Frontend (`X402-Usecase`) on Vercel
 
-### Option A: Vercel (Recommended — Sub-second CDN)
-1. Go to [vercel.com/new](https://vercel.com/new) and log in with GitHub.
-2. Import repository **`vishnunandan555/Mesh402X`**.
-3. Configure project settings:
+Vercel serves the React UI across edge CDNs in <50ms.
+
+### 2.1 Import Project into Vercel:
+1. Log into [vercel.com/new](https://vercel.com/new) with GitHub.
+2. Select your repository: **`vishnunandan555/Mesh402X`**.
+3. Configure the framework settings:
    * **Framework Preset:** `Vite`
    * **Root Directory:** `x402-Project/X402-Usecase/projects/X402-Usecase`
    * **Build Command:** `npx vite build`
    * **Output Directory:** `dist`
-4. **Set Environment Variables:**
-   ```env
-   VITE_ALGOD_SERVER=https://testnet-api.algonode.cloud
-   VITE_ALGOD_NETWORK=testnet
-   VITE_API_BASE_URL=https://adsec-backend.onrender.com
-   VITE_FACILITATOR_URL=https://facilitator.goplausible.xyz
-   ```
-5. Click **Deploy**.
+
+### 2.2 Add Environment Variables in Vercel:
+Add the following under **Environment Variables**:
+
+| Variable Name | Value |
+| :--- | :--- |
+| **`VITE_API_BASE_URL`** | `https://adsec-backend.onrender.com` (Your Render backend URL) |
+| **`VITE_FACILITATOR_URL`** | `https://facilitator.goplausible.xyz` |
+| **`VITE_ALGOD_SERVER`** | `https://testnet-api.algonode.cloud` |
+| **`VITE_ALGOD_NETWORK`** | `testnet` |
+
+4. Click **Deploy**.
+5. Copy your Live Web App URL (e.g. `https://adsec-app.vercel.app`).
 
 ---
 
-## ⚡ STEP 3: Setup GitHub Actions Auto-Deploy ("Run Action" Button)
+## 🔑 STEP 3: Setup 2 Separate GitHub Actions Deploy Hooks
 
-To enable automatic deployment when pushing code or clicking **"Run workflow"** in GitHub:
+To enable manual **"Run workflow"** buttons under GitHub Actions for both backend and frontend:
 
-1. **Get Render Deploy Hook URL:**
-   * In your Render dashboard (`adsec-backend`), go to **Settings** ➔ scroll down to **Deploy Hook**.
-   * Copy the URL (e.g. `https://api.render.com/deploy/srv-c123456?key=abc...`).
-2. **Add Secret to GitHub:**
-   * Go to your GitHub repository: `https://github.com/vishnunandan555/Mesh402X/settings/secrets/actions`
-   * Click **New repository secret**.
+### 3.1 Get Render Deploy Hook (Backend):
+1. In Render Dashboard (`adsec-backend`), go to **Settings** ➔ scroll to **Deploy Hook**.
+2. Copy the hook URL (e.g. `https://api.render.com/deploy/srv-c123456?key=abc...`).
+3. In GitHub Repo: `Settings` ➔ `Secrets and variables` ➔ `Actions` ➔ **New repository secret**.
    * **Name:** `RENDER_DEPLOY_HOOK`
-   * **Secret:** Paste the Render deploy hook URL.
-   * Click **Add secret**.
+   * **Secret:** Paste the Render URL.
 
-Now, whenever you click **"Run workflow"** under GitHub Actions tab or push to `main`, GitHub Actions will verify tests and trigger cloud deployment automatically!
+### 3.2 Get Vercel Deploy Hook (Frontend):
+1. In Vercel Dashboard (`adsec-app`), go to **Settings** ➔ **Git** ➔ **Deploy Hooks**.
+2. Click **Create Hook** (Name: `github-actions-deploy`, Branch: `main`).
+3. Copy the hook URL (e.g. `https://api.vercel.com/v1/integrations/deploy/prj_123...`).
+4. In GitHub Repo: `Settings` ➔ `Secrets and variables` ➔ `Actions` ➔ **New repository secret**.
+   * **Name:** `VERCEL_DEPLOY_HOOK`
+   * **Secret:** Paste the Vercel URL.
+
+Now under the **Actions** tab in GitHub, you will see **2 separate deployment actions**:
+* 🚀 **`Deploy Backend to Render`**
+* ⚡ **`Deploy Frontend to Vercel`**
 
 ---
 
 ## ⏰ STEP 4: Keep-Alive Ping (Prevent Render Cold Starts)
 
-Render's free tier sleeps after 15 minutes of inactivity. To keep your live server awake during hackathon demos:
+Render free tier sleeps after 15 minutes. Keep it 100% active for judges:
 
 1. Open [cron-job.org](https://cron-job.org/en/) (Free).
-2. Create a new cron job:
+2. Create cron job:
    * **URL:** `https://adsec-backend.onrender.com/health`
    * **Schedule:** Every 10 minutes.
-3. Your server will stay 100% active and respond in <200ms instantly!
+3. Your server will stay warm and respond instantly during live pitch Q&A!
