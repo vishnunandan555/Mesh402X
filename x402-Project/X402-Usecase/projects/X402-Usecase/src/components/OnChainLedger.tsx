@@ -203,265 +203,372 @@ export const OnChainLedger: React.FC = () => {
   }, [fetchTransactions])
 
   return (
-    <div className="max-w-6xl mx-auto p-4 space-y-6">
-      {/* Header Bar */}
-      <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* ═══ HEADER BAR ═══ */}
+      <div className="card" style={{ padding: '24px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="bg-emerald-500/15 text-emerald-300 text-xs font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`}></span>
-              <span>{isSyncing ? 'Syncing Indexer...' : 'Live Algorand TestNet Feed'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+            <span className="badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span className={`status-dot ${isSyncing ? 'status-dot-sync' : 'status-dot-live'}`} style={{ width: '6px', height: '6px' }}>
+                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: isSyncing ? '#f59e0b' : '#10b981' }} />
+              </span>
+              {isSyncing ? 'Syncing Indexer...' : 'Live Algorand TestNet Feed'}
             </span>
-            <span className="bg-white/5 text-neutral-300 text-xs px-3 py-1 rounded-full border border-white/15">
-              x402 USDC (ASA 10458941)
-            </span>
+            <span className="badge-ghost">x402 USDC (ASA 10458941)</span>
           </div>
-          <h2 className="text-2xl font-bold text-white">On-Chain Settlement Ledger</h2>
-          <p className="text-xs text-neutral-400 font-mono mt-1">
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', margin: 0 }}>On-Chain Settlement Ledger</h2>
+          <p style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginTop: '6px' }}>
             Verifiable real-time audit payments and attestation receipts queried from Algorand TestNet consensus.
           </p>
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {viewMode === 'merchant' && isAdminUnlocked && (
             <button
               onClick={handleAdminLock}
-              className="text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-300 px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1"
+              style={{
+                fontSize: '11px',
+                background: 'rgba(239, 68, 68, 0.08)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#fca5a5',
+                padding: '6px 14px',
+                borderRadius: 'var(--radius-md)',
+                fontFamily: 'var(--font-mono)',
+                cursor: 'pointer',
+                transition: 'all var(--transition-fast)',
+              }}
             >
               🔒 Lock Console
             </button>
           )}
 
-          <div className="flex bg-black border border-white/10 rounded-xl p-1">
-            <button
-              onClick={() => setViewMode('network')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
-                viewMode === 'network'
-                  ? 'bg-emerald-500 text-black shadow shadow-emerald-500/25'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              Network Feed
-            </button>
-            <button
-              onClick={() => setViewMode('user')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
-                viewMode === 'user'
-                  ? 'bg-emerald-500 text-black shadow shadow-emerald-500/25'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              My Receipts
-            </button>
-            <button
-              onClick={() => setViewMode('merchant')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
-                viewMode === 'merchant'
-                  ? 'bg-emerald-500 text-black shadow shadow-emerald-500/25'
-                  : 'text-neutral-400 hover:text-white'
-              }`}
-            >
-              {isAdminUnlocked ? 'Operator Console' : 'Operator Login'}
-            </button>
+          <div style={{
+            display: 'flex',
+            background: '#080c14',
+            border: '1px solid var(--border-default)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '4px',
+          }}>
+            {(['network', 'user', 'merchant'] as const).map(vm => (
+              <button
+                key={vm}
+                onClick={() => setViewMode(vm)}
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: '11px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all var(--transition-default)',
+                  background: viewMode === vm ? 'linear-gradient(135deg, #10b981, #059669)' : 'transparent',
+                  color: viewMode === vm ? '#000' : 'var(--text-muted)',
+                  boxShadow: viewMode === vm ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none',
+                }}
+              >
+                {vm === 'network' ? 'Network Feed' : vm === 'user' ? 'My Receipts' : (isAdminUnlocked ? 'Operator Console' : 'Operator Login')}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Admin Passcode Gate if merchant selected and not unlocked */}
+      {/* ═══ ADMIN GATE ═══ */}
       {viewMode === 'merchant' && !isAdminUnlocked ? (
-        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 max-w-md mx-auto text-center shadow-2xl space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center mx-auto text-emerald-300 font-bold text-xs tracking-widest">
+        <div className="card animate-scale-in" style={{ maxWidth: '420px', margin: '0 auto', padding: '40px', textAlign: 'center' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: 'var(--radius-xl)',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            fontSize: '11px',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 900,
+            color: '#6ee7b7',
+            letterSpacing: '0.1em',
+          }}>
             AUTH
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-white">Operator Console</h3>
-            <p className="text-xs text-neutral-400 font-mono mt-1">
-              Enter operator passcode to view receiver analytics and treasury breakdown.
-            </p>
-          </div>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 6px' }}>Operator Console</h3>
+          <p style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)', marginBottom: '24px' }}>
+            Enter operator passcode to view receiver analytics and treasury breakdown.
+          </p>
 
-          <form onSubmit={handleAdminLogin} className="space-y-3 pt-2">
+          <form onSubmit={handleAdminLogin} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <input
               type="password"
               value={adminPassInput}
               onChange={(e) => setAdminPassInput(e.target.value)}
               placeholder="Enter passcode (adsec2026)..."
-              className="w-full bg-black border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/70"
+              style={{
+                width: '100%',
+                background: '#080c14',
+                border: '1px solid var(--border-strong)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '12px 16px',
+                textAlign: 'center',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '14px',
+                color: '#fff',
+                outline: 'none',
+                transition: 'border-color var(--transition-fast)',
+              }}
+              onFocus={(e) => (e.target.style.borderColor = 'rgba(16, 185, 129, 0.5)')}
+              onBlur={(e) => (e.target.style.borderColor = 'var(--border-strong)')}
             />
             {adminAuthError && (
-              <div className="text-xs font-mono text-red-400">{adminAuthError}</div>
+              <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#f87171' }}>{adminAuthError}</div>
             )}
-            <button
-              type="submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-95"
-            >
+            <button type="submit" className="btn-primary" style={{ width: '100%' }}>
               Unlock Console
             </button>
           </form>
         </div>
       ) : (
         <>
-          {/* Overview Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* ═══ OVERVIEW CARDS ═══ */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px' }}>
             {viewMode === 'user' ? (
               <>
-                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
-                  <div className="text-xs text-neutral-400 font-mono uppercase">Connected Account</div>
-                  <div className="text-sm font-mono font-bold text-white mt-1 truncate">
+                <div className="card" style={{ padding: '20px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Connected Account</div>
+                  <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#fff', marginTop: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {activeAddress || 'Wallet not connected'}
                   </div>
                 </div>
-                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
-                  <div className="text-xs text-neutral-400 font-mono uppercase">TestNet ALGO Balance</div>
-                  <div className="text-xl font-mono font-black text-emerald-400 mt-1">
+                <div className="card" style={{ padding: '20px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>TestNet ALGO Balance</div>
+                  <div style={{ fontSize: '1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#10b981', marginTop: '6px' }}>
                     {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '—'}
                   </div>
                 </div>
-                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
-                  <div className="text-xs text-neutral-400 font-mono uppercase">TestNet USDC Balance</div>
-                  <div className="text-xl font-mono font-black text-white mt-1">
+                <div className="card" style={{ padding: '20px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>TestNet USDC Balance</div>
+                  <div style={{ fontSize: '1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#f1f5f9', marginTop: '6px' }}>
                     {userBalances ? `$${userBalances.usdc.toFixed(3)} USDC` : '—'}
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
-                  <div className="text-xs text-neutral-400 font-mono uppercase">Settlement Address</div>
-                  <div className="text-sm font-mono font-bold text-emerald-300 mt-1 truncate" title={RECEIVER_WALLET}>
+                <div className="card" style={{ padding: '20px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Settlement Address</div>
+                  <div style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#6ee7b7', marginTop: '6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={RECEIVER_WALLET}>
                     {RECEIVER_WALLET.slice(0, 10)}...{RECEIVER_WALLET.slice(-8)}
                   </div>
                 </div>
-                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
-                  <div className="text-xs text-neutral-400 font-mono uppercase">Total Settled Volume</div>
-                  <div className="text-xl font-mono font-black text-emerald-400 mt-1">
+                <div className="card" style={{ padding: '20px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Total Settled Volume</div>
+                  <div style={{ fontSize: '1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 900, color: '#10b981', marginTop: '6px' }}>
                     ${networkStats.totalRevenue.toFixed(3)} USDC
                   </div>
                 </div>
-                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
-                  <div className="text-xs text-neutral-400 font-mono uppercase">Node Services & Capacity</div>
-                  <div className="text-sm font-mono font-bold text-emerald-400 mt-1 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>Online (4 Paid Routes · {networkStats.totalAudits} Audits)</span>
+                <div className="card" style={{ padding: '20px' }}>
+                  <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.08em' }}>Node Services & Capacity</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#10b981', marginTop: '6px' }}>
+                    <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
+                      <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
+                    </span>
+                    Online (4 Paid Routes · {networkStats.totalAudits} Audits)
                   </div>
                 </div>
               </>
             )}
           </div>
 
-          {/* Transaction List */}
-          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 shadow-xl text-white space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-base text-white flex items-center gap-2">
-                <span>
-                  {viewMode === 'user'
-                    ? 'Your Verified Receipts'
-                    : viewMode === 'merchant'
-                    ? 'Operator Settlement History'
-                    : 'Live Node Settlement Stream'}
-                </span>
-                <span className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-mono">
+          {/* ═══ TRANSACTION TABLE ═══ */}
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '8px' }}>
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '1rem', color: '#fff', margin: 0, flexWrap: 'wrap' }}>
+                {viewMode === 'user' ? 'Your Verified Receipts' : viewMode === 'merchant' ? 'Operator Settlement History' : 'Live Node Settlement Stream'}
+                <span style={{
+                  fontSize: '10px',
+                  fontFamily: 'var(--font-mono)',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  color: 'var(--text-muted)',
+                  padding: '3px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-subtle)',
+                }}>
                   {transactions.length} record(s)
                 </span>
-                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="badge-emerald hide-mobile" style={{ fontSize: '9px' }}>
+                  <span className="status-dot status-dot-live" style={{ width: '5px', height: '5px' }}>
+                    <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
+                  </span>
                   auto-syncing 5s
                 </span>
               </h3>
               <button
                 onClick={() => fetchTransactions(true)}
                 disabled={loading}
-                className="text-xs text-emerald-400 hover:text-emerald-300 font-bold border border-emerald-500/30 px-3 py-1.5 rounded-lg hover:bg-emerald-500/10 transition-all flex items-center gap-1.5"
+                style={{
+                  fontSize: '11px',
+                  color: '#10b981',
+                  fontWeight: 700,
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  padding: '6px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'transparent',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  transition: 'all var(--transition-fast)',
+                  fontFamily: 'var(--font-mono)',
+                }}
               >
                 {loading ? 'Refreshing...' : 'Refresh Now'}
               </button>
             </div>
 
             {loading ? (
-              <div className="text-center py-12 text-neutral-500 font-mono text-xs space-y-2">
-                <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <div>Querying Algorand TestNet Indexer...</div>
+              <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
+                <div style={{
+                  width: '28px',
+                  height: '28px',
+                  border: '2px solid #10b981',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin-slow 1s linear infinite',
+                  margin: '0 auto 12px',
+                }} />
+                Querying Algorand TestNet Indexer...
               </div>
             ) : transactions.length === 0 ? (
-              <div className="text-center py-12 text-neutral-400 font-mono text-xs bg-black rounded-xl border border-white/10 p-6 space-y-3">
+              <div style={{
+                textAlign: 'center',
+                padding: '48px 24px',
+                color: 'var(--text-muted)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '12px',
+                background: '#080c14',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border-default)',
+              }}>
                 {viewMode === 'user' && !activeAddress ? (
-                  <>
-                    <div className="text-neutral-300 font-bold">Wallet Not Connected</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--text-secondary)' }}>Wallet Not Connected</div>
                     <div>Connect your Algorand wallet above to view your personal transaction receipts.</div>
                     <button
                       onClick={() => setViewMode('network')}
-                      className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs"
+                      className="btn-primary"
+                      style={{ padding: '8px 20px', fontSize: '12px' }}
                     >
                       View Live Network Feed Instead
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <div>No on-chain transactions detected for this account yet.</div>
                 )}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-mono">
-                  <thead className="bg-black/60 text-neutral-400 border-b border-white/10 uppercase text-[10px]">
-                    <tr>
-                      <th className="py-3 px-4">Transaction ID</th>
-                      <th className="py-3 px-4">Type</th>
-                      <th className="py-3 px-4">Amount</th>
-                      <th className="py-3 px-4">Settled At</th>
-                      <th className="py-3 px-4">Counterparty</th>
-                      <th className="py-3 px-4">Receipt / Note</th>
-                      <th className="py-3 px-4 text-right">Explorer</th>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', textAlign: 'left', fontSize: '12px', fontFamily: 'var(--font-mono)', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
+                      {['Transaction ID', 'Type', 'Amount', 'Settled At', 'Counterparty', 'Receipt / Note', 'Explorer'].map(h => (
+                        <th key={h} style={{
+                          padding: '12px 16px',
+                          fontSize: '10px',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          color: 'var(--text-dim)',
+                          fontWeight: 700,
+                          background: 'rgba(0, 0, 0, 0.3)',
+                          whiteSpace: 'nowrap',
+                          ...(h === 'Explorer' ? { textAlign: 'right' } : {}),
+                        }}>{h}</th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody>
                     {transactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-white/5 transition-colors">
-                        <td className="py-3 px-4 font-bold text-emerald-300">
+                      <tr
+                        key={tx.id}
+                        style={{
+                          borderBottom: '1px solid var(--border-subtle)',
+                          transition: 'background var(--transition-fast)',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <td style={{ padding: '12px 16px', fontWeight: 700, color: '#6ee7b7' }}>
                           <button
                             onClick={() => copyToClipboard(tx.id, tx.id)}
-                            className="hover:underline text-left"
                             title="Click to copy full TxID"
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#6ee7b7',
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 700,
+                              fontSize: '12px',
+                              padding: 0,
+                              textAlign: 'left',
+                            }}
                           >
                             {tx.id.slice(0, 8)}...{tx.id.slice(-6)}
                           </button>
                           {copiedTxId === tx.id && (
-                            <span className="ml-1 text-[10px] text-emerald-400 font-bold">[Copied]</span>
+                            <span style={{ marginLeft: '6px', fontSize: '9px', color: '#10b981', fontWeight: 800 }}>[Copied]</span>
                           )}
                         </td>
-                        <td className="py-3 px-4">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] border ${
-                              tx.type === 'x402 Micropayment'
-                                ? 'bg-white/10 text-white border-white/25'
-                                : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                            }`}
-                          >
+                        <td style={{ padding: '12px 16px' }}>
+                          <span style={{
+                            padding: '3px 10px',
+                            borderRadius: 'var(--radius-full)',
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            letterSpacing: '0.03em',
+                            ...(tx.type === 'x402 Micropayment'
+                              ? { background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', border: '1px solid rgba(255,255,255,0.15)' }
+                              : { background: 'rgba(16,185,129,0.08)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.25)' }),
+                          }}>
                             {tx.type}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-black text-white">
+                        <td style={{ padding: '12px 16px', fontWeight: 900, color: '#fff' }}>
                           {tx.amountUsdc > 0 ? `$${tx.amountUsdc.toFixed(3)} USDC` : '0.000 ALGO'}
                         </td>
-                        <td className="py-3 px-4 text-neutral-400 whitespace-nowrap">{tx.timestamp}</td>
-                        <td className="py-3 px-4 text-neutral-400 truncate max-w-[140px]" title={tx.sender}>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{tx.timestamp}</td>
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tx.sender}>
                           {viewMode === 'user'
                             ? tx.receiver === RECEIVER_WALLET
                               ? 'Medusa Node'
                               : `${tx.receiver.slice(0, 6)}...`
                             : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
                         </td>
-                        <td className="py-3 px-4 text-neutral-400 max-w-[180px] truncate" title={tx.note}>
-                          <span className="text-neutral-300 text-[11px] font-mono bg-black px-1.5 py-0.5 rounded border border-white/10">
+                        <td style={{ padding: '12px 16px', color: 'var(--text-muted)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={tx.note}>
+                          <span style={{
+                            fontSize: '10px',
+                            fontFamily: 'var(--font-mono)',
+                            color: 'var(--text-secondary)',
+                            background: '#080c14',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--border-subtle)',
+                          }}>
                             {tx.note || 'x402 Audit Proof'}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <td style={{ padding: '12px 16px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                           <a
                             href={`https://lora.algokit.io/testnet/transaction/${tx.id}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="bg-emerald-500 hover:bg-emerald-400 text-black px-2.5 py-1 rounded-md transition-all text-[11px] font-bold inline-flex items-center gap-1"
+                            className="btn-primary"
+                            style={{
+                              padding: '5px 12px',
+                              fontSize: '10px',
+                              borderRadius: 'var(--radius-sm)',
+                              display: 'inline-flex',
+                            }}
                           >
                             Lora Explorer
                           </a>

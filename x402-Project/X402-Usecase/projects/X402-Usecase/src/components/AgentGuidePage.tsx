@@ -9,7 +9,9 @@ const TIERS = [
     endpoint: 'POST /adsec/scan',
     script: 'npx tsx medusa-scripts/audit-scan.ts <file>',
     badge: '⚡ Fast Deterministic',
-    badgeColor: 'bg-white/10 text-white border-white/25',
+    badgeColor: '#e2e8f0',
+    badgeBg: 'rgba(255, 255, 255, 0.06)',
+    badgeBorder: 'rgba(255, 255, 255, 0.15)',
     description: 'Scans for hardcoded secrets, AST syntax hazard patterns, typosquatted dependency packages, and live OSV.dev CVE database matches.',
     icon: '🔍',
   },
@@ -21,7 +23,9 @@ const TIERS = [
     endpoint: 'POST /adsec/remediate',
     script: 'npx tsx medusa-scripts/audit-remediate.ts <file>',
     badge: '🩹 Git Diff Patch',
-    badgeColor: 'bg-white/10 text-white border-white/25',
+    badgeColor: '#e2e8f0',
+    badgeBg: 'rgba(255, 255, 255, 0.06)',
+    badgeBorder: 'rgba(255, 255, 255, 0.15)',
     description: 'Generates language-aware, unified Git diff patches that can be applied cleanly with `git apply audit.patch` to automatically fix security flaws.',
     icon: '🛠️',
   },
@@ -33,7 +37,9 @@ const TIERS = [
     endpoint: 'POST /adsec/attest',
     script: 'npx tsx medusa-scripts/audit-attest.ts <file>',
     badge: '⛓️ Algorand Proof',
-    badgeColor: 'bg-neutral-500/10 text-neutral-300 border-neutral-500/40',
+    badgeColor: '#94a3b8',
+    badgeBg: 'rgba(100, 116, 139, 0.08)',
+    badgeBorder: 'rgba(100, 116, 139, 0.25)',
     description: 'Computes cryptographic SHA-256 code hash and broadcasts an immutable proof-of-audit transaction note on Algorand TestNet.',
     icon: '📜',
   },
@@ -45,9 +51,12 @@ const TIERS = [
     endpoint: 'POST /adsec/audit',
     script: 'npx tsx medusa-scripts/audit-full.ts <file>',
     badge: '🚀 Complete Pipeline',
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    badgeColor: '#6ee7b7',
+    badgeBg: 'rgba(16, 185, 129, 0.08)',
+    badgeBorder: 'rgba(16, 185, 129, 0.25)',
     description: 'Runs deterministic scan + LLM logic review + generates unified Git diffs + issues verifiable on-chain attestation on Lora Explorer.',
     icon: '🛡️',
+    featured: true,
   },
   {
     id: 'history',
@@ -57,7 +66,9 @@ const TIERS = [
     endpoint: 'Algorand TestNet Indexer',
     script: 'npx tsx medusa-scripts/wallet-history.ts',
     badge: '📊 Spending History',
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    badgeColor: '#6ee7b7',
+    badgeBg: 'rgba(16, 185, 129, 0.08)',
+    badgeBorder: 'rgba(16, 185, 129, 0.25)',
     description: 'Queries the Algorand blockchain to display on-chain audit micropayments, attestation receipts, and total USDC spent.',
     icon: '📊',
   },
@@ -103,226 +114,383 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
     setTimeout(() => setCopiedPrompt(false), 2500)
   }
 
+  const tabs = [
+    { id: 'install', label: '1. How It Works', icon: '🔄' },
+    { id: 'agent', label: '2. Tiers & Pricing', icon: '💰' },
+    { id: 'bazaar', label: '3. Bazaar Discovery', icon: '🌐' },
+    { id: 'architecture', label: '4. Prompt Your Agent', icon: '💬' },
+  ]
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-16">
-      {/* HERO BANNER */}
-      <section className="relative overflow-hidden rounded-3xl border border-neutral-800 bg-gradient-to-br from-white/[0.05] via-black to-emerald-950/40 p-8 sm:p-12">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/15 blur-[100px] pointer-events-none"></div>
-        <div className="relative z-10 max-w-3xl">
-          <div className="flex flex-wrap items-center gap-2 mb-4">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 16px', display: 'flex', flexDirection: 'column', gap: '64px' }}>
+      {/* ═══ HERO BANNER ═══ */}
+      <section className="animate-fade-in" style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 'var(--radius-2xl)',
+        border: '1px solid var(--border-default)',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(6,8,13,1) 40%, rgba(16,185,129,0.06) 100%)',
+        padding: 'clamp(32px, 5vw, 56px)',
+      }}>
+        {/* Background orb */}
+        <div style={{
+          position: 'absolute',
+          top: '-60px',
+          right: '-60px',
+          width: '400px',
+          height: '400px',
+          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute',
+          bottom: '-40px',
+          left: '-40px',
+          width: '300px',
+          height: '300px',
+          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%)',
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '720px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+            <span className="badge-emerald">
+              <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
+                <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
+              </span>
               AGENT-TO-AGENT ACTIVE
             </span>
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
-              x402 STANDARD
-            </span>
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-neutral-800 text-neutral-300 border border-neutral-700">
-              ALGORAND TESTNET
-            </span>
+            <span className="badge-emerald">x402 STANDARD</span>
+            <span className="badge-ghost">ALGORAND TESTNET</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
+          <h1 style={{
+            fontSize: 'clamp(1.75rem, 4vw, 3rem)',
+            fontWeight: 900,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.12,
+            margin: 0,
+          }}>
             How Any External AI Agent <br />
             <span className="text-gradient">Discovers & Hires Medusa</span>
           </h1>
 
-          <p className="mt-4 text-neutral-300 text-base sm:text-lg leading-relaxed">
+          <p style={{
+            marginTop: '20px',
+            color: 'var(--text-secondary)',
+            fontSize: 'clamp(0.9375rem, 2vw, 1.0625rem)',
+            lineHeight: 1.7,
+          }}>
             No accounts, no API keys, no subscriptions. Autonomous AI agents discover Medusa on the decentralized GoPlausible Bazaar, pay $0.001 USDC via HTTP 402, receive AST/CVE diagnostics, and apply Git diff patches automatically.
           </p>
 
-          {/* Quick CTAs */}
-          <div className="mt-8 flex flex-wrap gap-4 items-center">
-            <button
-              onClick={copyInstallCommand}
-              className="px-6 py-3.5 rounded-xl font-bold bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/25 transition-all active:scale-95 flex items-center gap-2"
-            >
-              <span>{copiedInstall ? '✓ Command Copied!' : '📋 Copy 1-Line Installer'}</span>
+          <div style={{ marginTop: '32px', display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+            <button onClick={copyInstallCommand} className="btn-primary">
+              {copiedInstall ? '✓ Command Copied!' : '📋 Copy 1-Line Installer'}
             </button>
-            <button
-              onClick={onSwitchToPlayground}
-              className="px-6 py-3.5 rounded-xl font-bold bg-white/5 hover:bg-white/10 text-white border border-white/15 transition-all flex items-center gap-2"
-            >
-              <span>⚡ Try Web Playground (Manual) →</span>
+            <button onClick={onSwitchToPlayground} className="btn-secondary">
+              ⚡ Try Web Playground →
             </button>
           </div>
         </div>
       </section>
 
-      {/* 1-COMMAND INSTALLER BOX */}
-      <section className="rounded-2xl border border-emerald-500/25 bg-white/[0.03] p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+      {/* ═══ INSTALLER BOX ═══ */}
+      <section className="card animate-fade-in-delay-1" style={{ padding: 'clamp(24px, 3vw, 36px)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="text-emerald-400">⚡</span> 1-Line Universal Installer for Any External Repo
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+              <span style={{ color: '#10b981' }}>⚡</span> 1-Line Universal Installer for Any Repo
             </h2>
-            <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>
               Run this in any repository to install x402 dependencies, modular audit scripts, and the agent skill manifest.
             </p>
           </div>
           <button
             onClick={copyInstallCommand}
-            className="px-4 py-2 rounded-lg text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500 hover:text-black transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto"
+            style={{
+              padding: '8px 16px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '11px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              background: 'rgba(16, 185, 129, 0.1)',
+              color: '#6ee7b7',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)',
+              flexShrink: 0,
+            }}
           >
             {copiedInstall ? '✓ Copied to clipboard' : 'Copy Bash Command'}
           </button>
         </div>
 
-        <div className="relative rounded-xl bg-black border border-white/10 p-4 font-mono text-xs sm:text-sm text-emerald-300 overflow-x-auto select-all">
+        <div style={{
+          borderRadius: 'var(--radius-md)',
+          background: '#080c14',
+          border: '1px solid var(--border-default)',
+          padding: '16px 20px',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'clamp(12px, 2vw, 14px)',
+          color: '#6ee7b7',
+          overflowX: 'auto',
+          userSelect: 'all',
+        }}>
           curl -fsSL https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main/install.sh | bash
         </div>
 
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-neutral-400">
-          <div className="flex items-center gap-2 bg-black p-2.5 rounded-lg border border-white/10">
-            <span className="text-emerald-400">✓</span> Installs <code className="text-emerald-300">@x402-avm/fetch</code> & <code className="text-emerald-300">algosdk</code>
-          </div>
-          <div className="flex items-center gap-2 bg-black p-2.5 rounded-lg border border-white/10">
-            <span className="text-emerald-400">✓</span> Sets up <code className="text-emerald-300">medusa-scripts/</code> & <code className="text-emerald-300">.env</code>
-          </div>
-          <div className="flex items-center gap-2 bg-black p-2.5 rounded-lg border border-white/10">
-            <span className="text-emerald-400">✓</span> Configures <code className="text-emerald-300">Medusa_Skill.md</code> for AI Agent
-          </div>
+        <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '10px' }}>
+          {[
+            { check: 'Installs @x402-avm/fetch & algosdk', code: true },
+            { check: 'Sets up medusa-scripts/ & .env', code: true },
+            { check: 'Configures Medusa_Skill.md for AI Agent', code: true },
+          ].map((item, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '11px',
+              color: 'var(--text-muted)',
+              background: '#080c14',
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border-default)',
+            }}>
+              <span style={{ color: '#10b981', fontWeight: 700 }}>✓</span>
+              {item.check}
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* INTERACTIVE GUIDE TABS */}
-      <section className="space-y-6">
-        <div className="flex border-b border-neutral-800 overflow-x-auto gap-2">
-          {[
-            { id: 'install', label: '1. How It Works (Agent-to-Agent)' },
-            { id: 'agent', label: '2. Medusa Tiers & Pricing' },
-            { id: 'bazaar', label: '3. Decentralized Bazaar Discovery' },
-            { id: 'architecture', label: '4. Prompting Your AI Agent' },
-          ].map((t) => (
+      {/* ═══ INTERACTIVE GUIDE TABS ═══ */}
+      <section style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        {/* Tab bar */}
+        <div style={{
+          display: 'flex',
+          gap: '4px',
+          borderBottom: '1px solid var(--border-default)',
+          overflowX: 'auto',
+          paddingBottom: '0',
+        }}>
+          {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
-              className={`px-5 py-3 text-xs sm:text-sm font-bold border-b-2 whitespace-nowrap transition-all ${
-                activeTab === t.id
-                  ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10 rounded-t-lg'
-                  : 'border-transparent text-neutral-400 hover:text-neutral-200 hover:border-neutral-700'
-              }`}
+              style={{
+                padding: '14px 20px',
+                fontSize: '13px',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                border: 'none',
+                borderBottom: `2px solid ${activeTab === t.id ? '#10b981' : 'transparent'}`,
+                cursor: 'pointer',
+                transition: 'all var(--transition-default)',
+                background: activeTab === t.id ? 'rgba(16, 185, 129, 0.06)' : 'transparent',
+                color: activeTab === t.id ? '#6ee7b7' : 'var(--text-muted)',
+                borderRadius: activeTab === t.id ? 'var(--radius-sm) var(--radius-sm) 0 0' : '0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
             >
-              {t.label}
+              <span>{t.icon}</span>
+              <span className="hide-mobile">{t.label}</span>
             </button>
           ))}
         </div>
 
         {/* TAB 1: AGENT-TO-AGENT WORKFLOW */}
         {activeTab === 'install' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 flex flex-col justify-between hover:border-white/20 transition-colors">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-bold flex items-center justify-center mb-4">
-                  01
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
+            {[
+              {
+                step: '01',
+                title: 'Autonomous Discovery',
+                desc: 'The external agent queries the GoPlausible Bazaar registry at runtime. It finds Medusa\'s endpoint, inspects OpenAPI schemas, and matches capability without hardcoded URLs.',
+                footer: 'GET /discovery/resources ➔ Discovered Medusa Node ($0.001)',
+                color: '#10b981',
+              },
+              {
+                step: '02',
+                title: 'x402 Micropayment',
+                desc: 'Medusa returns an HTTP 402 challenge. The agent\'s local wallet automatically signs the $0.001 USDC Algorand transaction in code in ~0.5s without human popups.',
+                footer: 'HTTP 402 ➔ Signs 1,000 microUSDC ➔ Settle on Algorand',
+                color: '#e2e8f0',
+              },
+              {
+                step: '03',
+                title: 'Auto-Patch & Attestation',
+                desc: 'Medusa replies with findings, health score, and unified Git diffs. The agent applies git apply audit.patch to self-heal the codebase with on-chain proof.',
+                footer: '200 OK ➔ Score: 95/100 ➔ Lora Explorer TxID',
+                color: '#10b981',
+              },
+            ].map((card, i) => (
+              <div key={card.step} className="card card-interactive animate-fade-in" style={{
+                padding: '28px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                animationDelay: `${i * 0.1}s`,
+              }}>
+                <div>
+                  <div style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: 'var(--radius-lg)',
+                    background: `${card.color}12`,
+                    border: `1px solid ${card.color}30`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 800,
+                    fontSize: '14px',
+                    color: card.color,
+                    marginBottom: '20px',
+                  }}>
+                    {card.step}
+                  </div>
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', marginBottom: '10px' }}>{card.title}</h3>
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.7 }}>{card.desc}</p>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Autonomous Discovery</h3>
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  The external agent queries the GoPlausible Bazaar registry at runtime. It finds Medusa’s endpoint, inspects OpenAPI schemas, and matches capability without hardcoded URLs.
-                </p>
-              </div>
-              <div className="mt-4 p-3 rounded-lg bg-black border border-white/10 font-mono text-[11px] text-neutral-400">
-                GET /discovery/resources ➔ Discovered Medusa Node ($0.001)
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 flex flex-col justify-between hover:border-white/20 transition-colors">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/25 text-white font-bold flex items-center justify-center mb-4">
-                  02
+                <div style={{
+                  marginTop: '20px',
+                  padding: '12px 16px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: '#080c14',
+                  border: '1px solid var(--border-default)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '11px',
+                  color: 'var(--text-muted)',
+                }}>
+                  {card.footer}
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">x402 Micropayment</h3>
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  Medusa returns an HTTP 402 challenge. The agent’s local wallet automatically signs the $0.001 USDC Algorand transaction in code in ~0.5s without human popups.
-                </p>
               </div>
-              <div className="mt-4 p-3 rounded-lg bg-black border border-white/10 font-mono text-[11px] text-neutral-300">
-                HTTP 402 ➔ Signs 1,000 microUSDC ➔ Settle on Algorand
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 flex flex-col justify-between hover:border-white/20 transition-colors">
-              <div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-bold flex items-center justify-center mb-4">
-                  03
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Auto-Patch & Attestation</h3>
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  Medusa replies with findings, health score, and unified Git diffs. The agent applies <code className="text-emerald-300">git apply audit.patch</code> to self-heal the codebase with on-chain proof.
-                </p>
-              </div>
-              <div className="mt-4 p-3 rounded-lg bg-black border border-white/10 font-mono text-[11px] text-emerald-400">
-                200 OK ➔ Score: 95/100 ➔ Lora Explorer TxID
-              </div>
-            </div>
+            ))}
           </div>
         )}
 
         {/* TAB 2: TIERS & PRICING */}
         {activeTab === 'agent' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {TIERS.map((tier) => (
-                <div key={tier.id} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-emerald-500/50 hover:bg-white/[0.05] transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{tier.icon}</span>
-                        <h3 className="text-base font-bold text-white">{tier.name}</h3>
-                      </div>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${tier.badgeColor}`}>
-                        {tier.badge}
-                      </span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '16px' }}>
+            {TIERS.map((tier, i) => (
+              <div
+                key={tier.id}
+                className={`card ${(tier as any).featured ? 'glow-border-emerald' : ''} card-interactive animate-fade-in`}
+                style={{
+                  padding: '24px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  animationDelay: `${i * 0.08}s`,
+                  ...((tier as any).featured ? { border: '1px solid rgba(16, 185, 129, 0.4)' } : {}),
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '1.25rem' }}>{tier.icon}</span>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#fff', margin: 0 }}>{tier.name}</h3>
                     </div>
-
-                    <p className="text-xs text-neutral-300 mb-4 leading-relaxed">{tier.description}</p>
+                    <span style={{
+                      fontSize: '9px',
+                      fontFamily: 'var(--font-mono)',
+                      fontWeight: 800,
+                      padding: '3px 10px',
+                      borderRadius: 'var(--radius-full)',
+                      background: tier.badgeBg,
+                      color: tier.badgeColor,
+                      border: `1px solid ${tier.badgeBorder}`,
+                      whiteSpace: 'nowrap',
+                    }}>{tier.badge}</span>
                   </div>
+                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '20px' }}>{tier.description}</p>
+                </div>
 
-                  <div className="space-y-2 pt-3 border-t border-neutral-800/80">
-                    <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-neutral-400">Price per call:</span>
-                      <span className="font-bold text-emerald-400">{tier.price}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-neutral-400">Endpoint:</span>
-                      <span className="text-emerald-300">{tier.endpoint}</span>
-                    </div>
-                    <div className="p-2 rounded bg-black border border-white/10 font-mono text-[11px] text-neutral-300 overflow-x-auto">
-                      {tier.script}
-                    </div>
+                <div style={{
+                  borderTop: '1px solid var(--border-subtle)',
+                  paddingTop: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Price per call:</span>
+                    <span style={{ fontWeight: 800, color: '#10b981' }}>{tier.price}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
+                    <span style={{ color: 'var(--text-muted)' }}>Endpoint:</span>
+                    <span style={{ color: '#34d399' }}>{tier.endpoint}</span>
+                  </div>
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: '#080c14',
+                    border: '1px solid var(--border-default)',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '11px',
+                    color: 'var(--text-secondary)',
+                    overflowX: 'auto',
+                  }}>
+                    {tier.script}
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* TAB 3: BAZAAR DISCOVERY */}
         {activeTab === 'bazaar' && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="card animate-fade-in" style={{ padding: '28px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', marginBottom: '24px' }}>
               <div>
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                   🌐 Live GoPlausible Bazaar Registry Status
                 </h3>
-                <p className="text-xs text-neutral-400 mt-1">
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
                   Public catalog where autonomous agents worldwide discover Medusa capabilities.
                 </p>
               </div>
-
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black border border-white/10 text-xs font-mono">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Registry: {bazaarStatus.loading ? 'Querying...' : `${bazaarStatus.count} Nodes Active`}</span>
+              <div className="badge-emerald" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="status-dot status-dot-live" style={{ width: '6px', height: '6px' }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#10b981' }} />
+                </span>
+                Registry: {bazaarStatus.loading ? 'Querying...' : `${bazaarStatus.count} Nodes Active`}
               </div>
             </div>
 
-            <div className="rounded-xl bg-black border border-white/10 p-4 font-mono text-xs text-neutral-300 space-y-3">
-              <div className="text-neutral-500"># Query Live Decentralized Discovery Catalog:</div>
-              <div className="text-emerald-300">curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000"</div>
-              
-              <div className="pt-2 border-t border-neutral-800/80 text-neutral-400">
-                <div className="text-emerald-400 font-bold mb-1">✓ Live Registered Record:</div>
-                <pre className="text-[11px] text-neutral-300 overflow-x-auto bg-black/60 p-3 rounded border border-white/10">
+            <div style={{
+              borderRadius: 'var(--radius-md)',
+              background: '#080c14',
+              border: '1px solid var(--border-default)',
+              padding: '20px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '12px',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}>
+              <div style={{ color: 'var(--text-dim)' }}># Query Live Decentralized Discovery Catalog:</div>
+              <div style={{ color: '#6ee7b7' }}>curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000"</div>
+
+              <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+                <div style={{ color: '#10b981', fontWeight: 700, marginBottom: '8px' }}>✓ Live Registered Record:</div>
+                <pre style={{
+                  fontSize: '11px',
+                  color: 'var(--text-secondary)',
+                  overflowX: 'auto',
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '14px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--border-default)',
+                  margin: 0,
+                }}>
 {`{
   "resourceUrl": "https://mesh402x.onrender.com/adsec/audit",
   "method": "POST",
@@ -343,42 +511,76 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
 
         {/* TAB 4: PROMPTING YOUR AGENT */}
         {activeTab === 'architecture' && (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-white">💬 How to Prompt Your AI Assistant</h3>
-              <p className="text-xs text-neutral-400 mt-1">
-                Once <code className="text-emerald-300">install.sh</code> is run, simply prompt Antigravity, Cursor, or Claude Code in natural English.
+          <div className="card animate-fade-in" style={{ padding: '28px' }}>
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#fff', margin: 0 }}>💬 How to Prompt Your AI Assistant</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
+                Once <code style={{ color: '#6ee7b7', fontFamily: 'var(--font-mono)' }}>install.sh</code> is run, simply prompt Antigravity, Cursor, or Claude Code in natural English.
               </p>
             </div>
 
-            <div className="rounded-xl bg-black border border-white/10 p-5 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider font-mono">Example Chat Prompt</span>
+            <div style={{
+              borderRadius: 'var(--radius-md)',
+              background: '#080c14',
+              border: '1px solid var(--border-default)',
+              padding: '20px',
+              marginBottom: '24px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: 'var(--font-mono)' }}>Example Chat Prompt</span>
                 <button
                   onClick={copyPromptText}
-                  className="text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold"
+                  style={{
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    color: '#10b981',
+                    fontWeight: 700,
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
                 >
                   {copiedPrompt ? '✓ Copied' : 'Copy Prompt'}
                 </button>
               </div>
-              <div className="text-sm font-mono text-emerald-300 bg-black p-3.5 rounded-lg border border-white/10 select-all">
+              <div style={{
+                fontSize: '14px',
+                fontFamily: 'var(--font-mono)',
+                color: '#6ee7b7',
+                background: 'rgba(0,0,0,0.3)',
+                padding: '16px',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-default)',
+                userSelect: 'all',
+                lineHeight: 1.6,
+              }}>
                 "Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof."
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-neutral-300">
-              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-                <div className="font-bold text-white mb-1">What the Agent Does:</div>
-                <ul className="list-disc list-inside space-y-1 text-neutral-400">
-                  <li>Reads <code className="text-emerald-300">Medusa_Skill.md</code></li>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '16px' }}>
+              <div style={{
+                padding: '20px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid var(--border-default)',
+              }}>
+                <div style={{ fontWeight: 700, color: '#fff', fontSize: '13px', marginBottom: '12px' }}>What the Agent Does:</div>
+                <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <li>Reads <code style={{ color: '#6ee7b7', fontFamily: 'var(--font-mono)' }}>Medusa_Skill.md</code></li>
                   <li>Executes the right modular script</li>
                   <li>Signs $0.001 USDC in code</li>
                   <li>Applies git diff patches</li>
                 </ul>
               </div>
-              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-                <div className="font-bold text-white mb-1">What You Receive:</div>
-                <ul className="list-disc list-inside space-y-1 text-neutral-400">
+              <div style={{
+                padding: '20px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px solid var(--border-default)',
+              }}>
+                <div style={{ fontWeight: 700, color: '#fff', fontSize: '13px', marginBottom: '12px' }}>What You Receive:</div>
+                <ul style={{ margin: 0, paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
                   <li>Health Score (0-100)</li>
                   <li>Categorized CVEs & AST findings</li>
                   <li>Verified Lora Explorer transaction link</li>
@@ -390,24 +592,25 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
         )}
       </section>
 
-      {/* QUICK FOOTER STATS */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-neutral-800 text-center">
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-          <div className="text-2xl font-black text-white">$0.001</div>
-          <div className="text-xs text-neutral-400 mt-1">Per Paid Audit</div>
-        </div>
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-          <div className="text-2xl font-black text-emerald-400">&lt; 1.5s</div>
-          <div className="text-xs text-neutral-400 mt-1">On-Chain Settlement</div>
-        </div>
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-          <div className="text-2xl font-black text-emerald-400">0</div>
-          <div className="text-xs text-neutral-400 mt-1">API Keys / Logins</div>
-        </div>
-        <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
-          <div className="text-2xl font-black text-white">100%</div>
-          <div className="text-xs text-neutral-400 mt-1">Lora Explorer Verified</div>
-        </div>
+      {/* ═══ STATS FOOTER ═══ */}
+      <section style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))',
+        gap: '12px',
+        paddingTop: '24px',
+        borderTop: '1px solid var(--border-default)',
+      }}>
+        {[
+          { value: '$0.001', label: 'Per Paid Audit', color: '#f1f5f9' },
+          { value: '< 1.5s', label: 'On-Chain Settlement', color: '#10b981' },
+          { value: '0', label: 'API Keys / Logins', color: '#10b981' },
+          { value: '100%', label: 'Lora Explorer Verified', color: '#f1f5f9' },
+        ].map(stat => (
+          <div key={stat.label} className="card" style={{ padding: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: stat.color }}>{stat.value}</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>{stat.label}</div>
+          </div>
+        ))}
       </section>
     </div>
   )
