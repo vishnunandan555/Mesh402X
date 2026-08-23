@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "discover": "npm --prefix x402-Project/x402-demo-server run discover",
+    "live": "npm --prefix x402-Project/x402-demo-server run live",
     "audit": "npm --prefix x402-Project/x402-demo-server run audit",
     "dev:backend": "npm --prefix x402-Project/x402-demo-server run dev",
     "dev:frontend": "npm --prefix x402-Project/X402-Usecase/projects/X402-Usecase run dev",
