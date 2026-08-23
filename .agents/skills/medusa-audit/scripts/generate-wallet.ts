@@ -12,7 +12,7 @@ function main() {
   console.log(`======================================================================`);
   console.log(`\n[+] Fresh Keypair Generated:`);
   console.log(`   Public Address  : ${account.addr}`);
-  console.log(`   25-Word Mnemonic: "${mnemonic}"`);
+  console.log(`   25-Word Mnemonic: ${mnemonic}`);
   console.log(`\n----------------------------------------------------------------------`);
   console.log(`ACTIVATION CHECKLIST:`);
   console.log(`----------------------------------------------------------------------`);

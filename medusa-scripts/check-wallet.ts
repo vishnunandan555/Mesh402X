@@ -24,24 +24,34 @@ async function main() {
 
   if (!mnemonic) {
     console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
+    console.log('Please add your 25-word Algorand TestNet mnemonic to wallet.env');
     process.exit(1);
   }
 
   try {
     const account = algosdk.mnemonicToSecretKey(mnemonic);
+    const addr = account.addr.toString();
+
     console.log(`\n======================================================`);
     console.log(`[+] MEDUSA: AGENT WALLET DIAGNOSTIC`);
     console.log(`======================================================`);
-    console.log(`Address: ${account.addr}`);
+    console.log(`Address: ${addr}`);
 
     const algodClient = new algosdk.Algodv2('', ALGOD_SERVER, '');
-    const accountInfo = await algodClient.accountInformation(account.addr).do();
+    let accountInfo: any = null;
 
-    const algoBalance = Number(accountInfo.amount) / 1e6;
+    try {
+      accountInfo = await algodClient.accountInformation(addr).do();
+    } catch (err: any) {
+      // Handle brand new un-funded Algorand accounts gracefully (Algod returns 404 for empty accounts)
+      accountInfo = { amount: 0, assets: [] };
+    }
+
+    const algoBalance = Number(accountInfo?.amount || 0) / 1e6;
     console.log(`\nBalances:`);
-    console.log(`  * ALGO (Gas) : ${algoBalance.toFixed(4)} ALGO ${algoBalance < 0.1 ? '([!] Low - claim at dispenser)' : '([OK])'}`);
+    console.log(`  * ALGO (Gas) : ${algoBalance.toFixed(4)} ALGO ${algoBalance < 0.1 ? '([!] Low/Unfunded - claim at dispenser)' : '([OK])'}`);
 
-    const usdcAsset = accountInfo.assets?.find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
+    const usdcAsset = (accountInfo?.assets || []).find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
     if (usdcAsset) {
       const usdcBalance = Number(usdcAsset.amount) / 1e6;
       console.log(`  * USDC (ASA) : $${usdcBalance.toFixed(4)} USDC (Opted-in: YES)`);
@@ -52,8 +62,8 @@ async function main() {
 
     console.log(`\nUseful Links:`);
     console.log(`  * Dispenser (Free ALGO): https://lora.algokit.io/testnet/dispenser`);
-    console.log(`  * Circle Faucet (USDC):  https://faucet.circle.com (ASA #10458941)`);
-    console.log(`  * Lora Account Explorer: https://lora.algokit.io/testnet/account/${account.addr}`);
+    console.log(`  * Circle Faucet (USDC):  https://faucet.circle.com (Select Algorand TestNet, ASA #10458941)`);
+    console.log(`  * Lora Account Explorer: https://lora.algokit.io/testnet/account/${addr}`);
     console.log(`======================================================\n`);
   } catch (err: any) {
     console.error('[!] Error checking wallet:', err.message);

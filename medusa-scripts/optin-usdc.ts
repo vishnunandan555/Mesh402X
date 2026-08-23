@@ -29,32 +29,41 @@ async function main() {
 
   try {
     const account = algosdk.mnemonicToSecretKey(mnemonic);
+    const addr = account.addr.toString();
+
     console.log(`\n======================================================`);
     console.log(`[+] MEDUSA: OPT-IN TO TESTNET USDC (ASA #${USDC_ASA_ID})`);
     console.log(`======================================================`);
-    console.log(`Wallet: ${account.addr}`);
+    console.log(`Wallet: ${addr}`);
 
     const algodClient = new algosdk.Algodv2('', ALGOD_SERVER, '');
-    const accountInfo = await algodClient.accountInformation(account.addr).do();
+    let accountInfo: any = null;
 
-    const usdcAsset = accountInfo.assets?.find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
+    try {
+      accountInfo = await algodClient.accountInformation(addr).do();
+    } catch (err: any) {
+      accountInfo = { amount: 0, assets: [] };
+    }
+
+    const usdcAsset = (accountInfo?.assets || []).find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
     if (usdcAsset) {
       console.log(`[OK] Already opted in to USDC! Current balance: ${(Number(usdcAsset.amount) / 1e6).toFixed(2)} USDC`);
       process.exit(0);
     }
 
-    const algoBalance = Number(accountInfo.amount) / 1e6;
+    const algoBalance = Number(accountInfo?.amount || 0) / 1e6;
     if (algoBalance < 0.1) {
-      console.error(`[!] Insufficient ALGO for gas (${algoBalance.toFixed(4)} ALGO).`);
-      console.log(`Claim free ALGO first: https://lora.algokit.io/testnet/dispenser`);
+      console.error(`\n[!] Insufficient ALGO for gas (${algoBalance.toFixed(4)} ALGO).`);
+      console.log(`To opt in to USDC, your account needs at least 0.1 ALGO (minimum balance requirement + 0.001 gas).`);
+      console.log(`👉 Claim free TestNet ALGO here: https://lora.algokit.io/testnet/dispenser`);
       process.exit(1);
     }
 
     console.log(`Submitting 0-amount opt-in transaction for ASA #${USDC_ASA_ID}...`);
     const params = await algodClient.getTransactionParams().do();
     const optInTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      sender: account.addr,
-      receiver: account.addr,
+      sender: addr,
+      receiver: addr,
       assetIndex: USDC_ASA_ID,
       amount: 0,
       suggestedParams: params

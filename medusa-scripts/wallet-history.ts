@@ -32,7 +32,7 @@ async function main() {
 
   try {
     const account = algosdk.mnemonicToSecretKey(mnemonic);
-    const agentAddress = account.addr;
+    const agentAddress = account.addr.toString();
 
     console.log(`\n========================================================================`);
     console.log(`MEDUSA ON-CHAIN FINANCIAL LEDGER & TRANSACTION HISTORY`);
@@ -41,9 +41,15 @@ async function main() {
 
     // 1. Fetch Current Balance via Algod
     const algodClient = new algosdk.Algodv2('', ALGOD_SERVER, '');
-    const accountInfo = await algodClient.accountInformation(agentAddress).do();
-    const algoBalance = Number(accountInfo.amount) / 1e6;
-    const usdcAsset = accountInfo.assets?.find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
+    let accountInfo: any = null;
+    try {
+      accountInfo = await algodClient.accountInformation(agentAddress).do();
+    } catch {
+      accountInfo = { amount: 0, assets: [] };
+    }
+
+    const algoBalance = Number(accountInfo?.amount || 0) / 1e6;
+    const usdcAsset = (accountInfo?.assets || []).find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
     const usdcBalance = usdcAsset ? Number(usdcAsset.amount) / 1e6 : 0;
 
     console.log(`Current Balance: ${usdcBalance.toFixed(4)} USDC | ${algoBalance.toFixed(4)} ALGO`);
@@ -51,13 +57,16 @@ async function main() {
 
     // 2. Fetch Transactions via Indexer
     const indexerUrl = `${INDEXER_SERVER}/v2/accounts/${agentAddress}/transactions?limit=30`;
-    const res = await fetch(indexerUrl);
-    if (!res.ok) {
-      throw new Error(`Indexer responded with HTTP ${res.status}`);
+    let txns: any[] = [];
+    try {
+      const res = await fetch(indexerUrl);
+      if (res.ok) {
+        const data = await res.json();
+        txns = data.transactions || [];
+      }
+    } catch (err: any) {
+      console.warn(`[!] Note: Indexer query warning: ${err.message}`);
     }
-
-    const data = await res.json();
-    const txns: any[] = data.transactions || [];
 
     let totalUsdcSpent = 0;
     let auditCallCount = 0;
@@ -65,7 +74,6 @@ async function main() {
 
     txns.forEach((tx) => {
       const isAssetTransfer = tx['tx-type'] === 'axfer' && tx['asset-transfer-transaction'];
-      const isPayment = tx['tx-type'] === 'pay';
       const roundTime = tx['round-time'] ? new Date(tx['round-time'] * 1000).toLocaleString() : 'N/A';
       
       let noteText = '';
