@@ -80,7 +80,16 @@ def get_user(user_id):
   // ─────────────────────────────────────────────────────────────
   // 4. CHECK FOR AGENT PAYER WALLET MNEMONIC & SIGN ON-CHAIN
   // ─────────────────────────────────────────────────────────────
-  const payerMnemonic = process.env.PAYER_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.AGENT_MNEMONIC;
+  const rawPayerMnemonic = process.env.PAYER_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.AGENT_MNEMONIC;
+  const payerMnemonic = rawPayerMnemonic
+    ? rawPayerMnemonic
+        .trim()
+        .replace(/^[A-Za-z0-9_]+\s*=\s*/, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .trim()
+        .replace(/\s+/g, ' ')
+    : '';
 
   if (!payerMnemonic) {
     console.log('\n' + '─'.repeat(75));

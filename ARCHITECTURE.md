@@ -54,6 +54,15 @@ Medusa is composed of four decoupled, scalable layers serving both **Autonomous 
 
 ---
 
+## Token & Gas Fee Model
+
+| Asset | Type | Purpose | Amount Per Call | Faucet / Dispenser Link |
+|---|---|---|---|---|
+| **ALGO** | Native Algorand Token | Network Transaction Gas Fee | **0.001 ALGO** / tx | [Lora TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) |
+| **USDC** | ASA ID `#10458941` | Medusa Security Audit Fee | **$0.001 USDC** / call | [Circle USDC Faucet](https://faucet.circle.com) |
+
+---
+
 ## Endpoint Pricing & Modular Script Specifications
 
 All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.001 USDC (1,000 microUSDC)**.
@@ -65,6 +74,7 @@ All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.00
 | `/adsec/attest` | `POST` | **$0.001 USDC** | `audit-attest.ts` | Release pipelines, compliance | Computes SHA-256 code hash and broadcasts on-chain Algorand certificate. |
 | `/adsec/audit` | `POST` | **$0.001 USDC** | `audit-full.ts` | Coding agents, comprehensive audits | Complete pipeline: Scan + AI Review + Unified Diffs + Attestation. |
 | Financial History | — | **$0.00** | `wallet-history.ts` | Financial audits, reporting | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
+| Wallet Diagnostic | — | **$0.00** | `check-wallet.ts` | Diagnostics, setup checks | Checks current ALGO gas balance, USDC balance, and ASA opt-in status. |
 
 ---
 

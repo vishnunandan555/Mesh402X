@@ -13,7 +13,17 @@ async function broadcastOnChainAttestation(
   score: number,
   filename?: string
 ): Promise<{ txId?: string; loraUrl?: string }> {
-  const mnemonic = process.env.ATTESTATION_MNEMONIC || process.env.SERVER_MNEMONIC || process.env.PAYER_MNEMONIC;
+  const rawMnemonic = process.env.ATTESTATION_MNEMONIC || process.env.SERVER_MNEMONIC || process.env.PAYER_MNEMONIC;
+  const mnemonic = rawMnemonic
+    ? rawMnemonic
+        .trim()
+        .replace(/^[A-Za-z0-9_]+\s*=\s*/, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .trim()
+        .replace(/\s+/g, ' ')
+    : '';
+
   if (!mnemonic) {
     return {};
   }

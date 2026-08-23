@@ -12,6 +12,15 @@ This skill gives any AI agent the capability to discover, hire, pay, and consume
 
 ---
 
+## Token & Gas Fee Model
+
+| Asset | Type | Role | Cost | Faucet / Dispenser Link |
+|---|---|---|---|---|
+| **ALGO** | Native Algorand Token | Network Gas Fee | **0.001 ALGO** / tx | [Lora TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) |
+| **USDC** | ASA ID `#10458941` | Audit Service Fee | **$0.001 USDC** / call | [Circle USDC Faucet](https://faucet.circle.com) |
+
+---
+
 ## Service Capabilities & Tier Pricing
 
 | Tier / Feature | Endpoint | Price | Modular Script to Execute | When to Choose |
@@ -21,6 +30,7 @@ This skill gives any AI agent the capability to discover, hire, pay, and consume
 | **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | Compute SHA-256 code digest and broadcast an immutable proof-of-audit certificate on Algorand. |
 | **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Comprehensive review: Scan + LLM Logic Review + Git Diffs + On-Chain Attestation. |
 | **Financial Ledger & History** | — | **$0.00** | `npx tsx medusa-scripts/wallet-history.ts` | User asks to check past transactions, total audits purchased, or financial spending summary. |
+| **Wallet Diagnostics** | — | **$0.00** | `npx tsx medusa-scripts/check-wallet.ts` | Check ALGO gas balance, USDC balance, and ASA opt-in status. |
 
 ---
 
@@ -43,6 +53,9 @@ When the user asks you to review or secure code, evaluate their request and exec
 5. **If the user asks:** *"How much have I spent?"* or *"Show my transaction history"*:
    -> Run: `npx tsx medusa-scripts/wallet-history.ts`
 
+6. **If the user asks:** *"Do I have enough balance or ALGO?"*:
+   -> Run: `npx tsx medusa-scripts/check-wallet.ts`
+
 ---
 
 ## Execution Protocol
@@ -53,7 +66,7 @@ When the user asks you to review or secure code, evaluate their request and exec
 
 ### Step 2: Execute the Script in Terminal
 Run the chosen script using `npx tsx`. The script will:
-- Read `AGENT_MNEMONIC` from `wallet.env` or `.env`.
+- Read and sanitize `AGENT_MNEMONIC` from `wallet.env` or `.env`.
 - Query GoPlausible Bazaar or contact the hosted Medusa Node (`https://mesh402x.onrender.com`).
 - Handle the HTTP 402 challenge and sign the $0.001 USDC payment on Algorand TestNet.
 - Echo payment confirmation and output structured findings + Git diffs.
@@ -71,6 +84,7 @@ Format your final response with:
 - **Remediation:** Summary of patches generated or applied.
 - **Financial Spending Summary (MANDATORY):**
   - **Amount Paid:** `$0.001 USDC (1,000 microUSDC)`
+  - **Network Gas Fee:** `0.001 ALGO`
   - **Receiver Node:** `LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`
   - **Payment Protocol:** `x402 (Algorand TestNet ASA #10458941)`
   - **Settlement TxID:** `<TX_ID>`

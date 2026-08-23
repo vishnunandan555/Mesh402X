@@ -136,11 +136,21 @@ async function main() {
   console.log(`   - Price    : $0.05 USDC (ASA ${USDC_ASA_ID})`);
 
   // 3. Load User Agent Wallet
-  const mnemonic =
+  const rawMnemonic =
     process.env.USER_AGENT_MNEMONIC ||
     process.env.PAYER_MNEMONIC ||
     process.env.AVM_MNEMONIC ||
     process.env.AGENT_MNEMONIC;
+
+  const mnemonic = rawMnemonic
+    ? rawMnemonic
+        .trim()
+        .replace(/^[A-Za-z0-9_]+\s*=\s*/, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .trim()
+        .replace(/\s+/g, ' ')
+    : '';
 
   if (!mnemonic) {
     console.log('\n' + '─'.repeat(75));

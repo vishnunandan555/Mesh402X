@@ -27,6 +27,15 @@ There are **no accounts, API keys, logins, or subscriptions**. A valid on-chain 
 
 ---
 
+## Token & Gas Fee Model
+
+| Asset | Type | Purpose | Amount Per Call | Faucet / Dispenser Link |
+|---|---|---|---|---|
+| **ALGO** | Native Algorand Token | Network Transaction Gas Fee | **0.001 ALGO** / tx | [Lora TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) |
+| **USDC** | ASA ID `#10458941` | Medusa Security Audit Fee | **$0.001 USDC** / call | [Circle USDC Faucet](https://faucet.circle.com) |
+
+---
+
 ## 1-Line Universal Installer for Any External Repository
 
 To enable autonomous pay-per-call security audits in **any codebase**, run this single command in the project root:
@@ -37,7 +46,7 @@ curl -fsSL https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main/insta
 
 **What this does automatically:**
 1. Installs `@x402-avm/fetch` & `algosdk`.
-2. Sets up your agent's Algorand wallet in `wallet.env`.
+2. Sets up your agent's Algorand wallet in `wallet.env` with input sanitization.
 3. Downloads the modular `medusa-scripts/` suite.
 4. Configures `Medusa_Skill.md` and `.agents/skills/medusa-audit/SKILL.md` so AI agents (Antigravity, Cursor, Claude) understand Medusa natively.
 
@@ -52,8 +61,9 @@ All paid tiers settle via **TestNet USDC (ASA ID `10458941`)** at **$0.001 (1,00
 | **Pre-Flight Scanner** | `POST /adsec/scan` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-scan.ts <file>` | Static AST syntax hazards, leaked keys, typosquats & live OSV.dev CVEs. |
 | **Auto-Remediator** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Language-aware unified Git diff patches (`git apply` compatible). |
 | **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | SHA-256 code digest broadcasted as an immutable Algorand note certificate. |
-| **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Complete pipeline: Scan + LLM Logic Review + Git Diffs + Attestation. |
+| **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Complete pipeline: Scan + AI Review + Unified Diffs + Attestation. |
 | **Financial Ledger & History** | — | **$0.00** | `npx tsx medusa-scripts/wallet-history.ts` | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
+| **Wallet Diagnostics** | — | **$0.00** | `npx tsx medusa-scripts/check-wallet.ts` | Diagnostics: Checks ALGO gas balance, USDC balance, and ASA opt-in status. |
 
 ---
 
@@ -95,18 +105,6 @@ Once `install.sh` has run in your target repo, simply type into your AI assistan
 
 ---
 
-## Dynamic Discovery via GoPlausible Bazaar
-
-Any external autonomous agent can dynamically discover this service from the decentralized catalog:
-
-```bash
-curl -s "https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000"
-```
-
-The catalog returns the full OpenAPI schema, pricing (`1000` microUSDC), and parameter definitions for all Medusa endpoints.
-
----
-
 ## Repository Structure
 
 ```text
@@ -114,7 +112,7 @@ Mesh402X/
 ├── install.sh                             # 1-line universal installer for any repo
 ├── AGENTS.md                              # Autonomous Agent Instructions & Spending Policies
 ├── Medusa_Skill.md                        # Master AI Agent Skill specification
-├── README.md                              # This document
+├── README.md                              # Main Repository Documentation
 ├── ARCHITECTURE.md                        # Architectural specification
 │
 ├── medusa-scripts/                        # Modular audit and wallet scripts
@@ -123,7 +121,7 @@ Mesh402X/
 │   ├── audit-remediate.ts                 # Git Diff Auto-Remediation ($0.001 USDC)
 │   ├── audit-attest.ts                    # On-Chain Attestation ($0.001 USDC)
 │   ├── wallet-history.ts                  # On-Chain Financial Ledger & Tx History
-│   ├── check-wallet.ts                    # Wallet balance diagnostic
+│   ├── check-wallet.ts                    # Wallet balance & ALGO gas diagnostic
 │   ├── optin-usdc.ts                      # 1-click USDC ASA opt-in
 │   └── generate-wallet.ts                 # Keypair generator
 │
@@ -147,14 +145,6 @@ Mesh402X/
                 ├── AsciiTerminal.tsx      # Live ASCII payment pipeline
                 └── OnChainLedger.tsx      # Immutable on-chain receipt ledger
 ```
-
----
-
-## On-Chain Verification on Lora Explorer
-Every payment and on-chain attestation is publicly verifiable on Algorand TestNet:
-- **Lora Explorer:** [https://lora.algokit.io/testnet](https://lora.algokit.io/testnet)
-- **Direct Attestation Tx Link:** `https://lora.algokit.io/testnet/transaction/<TRANSACTION_ID>`
-- **Medusa Receiver Account:** [`LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`](https://lora.algokit.io/testnet/account/LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ)
 
 ---
 
