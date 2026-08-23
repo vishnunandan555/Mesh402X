@@ -6,6 +6,7 @@ import {
   MedusaMark,
   IconArrowDown,
   IconArrowRight,
+  IconCoins,
   IconExternal,
   IconFileDiff,
   IconScan,
@@ -65,14 +66,6 @@ const ENDPOINT_ICONS: Record<EndpointMode, React.FC<IconProps>> = {
   remediate: IconFileDiff,
   attest: IconShieldCheck,
   audit: IconVault,
-}
-
-// Bento placement — Full Audit dominates, attestation runs as a wide strip
-const ENDPOINT_SPAN: Record<EndpointMode, string> = {
-  audit: 'lg:col-span-2 lg:row-span-2',
-  scan: '',
-  remediate: '',
-  attest: 'lg:col-span-3',
 }
 
 export const AdsecHome: React.FC = () => {
@@ -223,7 +216,7 @@ export const AdsecHome: React.FC = () => {
         </ol>
       </section>
 
-      {/* ENDPOINTS — asymmetric bento */}
+      {/* ENDPOINTS — uniform card grid */}
       <section id="endpoints" className="border-y border-base-800 bg-base-900/30 scroll-mt-20">
         <div className="max-w-shell mx-auto px-4 py-24">
           <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -233,88 +226,73 @@ export const AdsecHome: React.FC = () => {
                 <p className="text-xs font-mono text-accent tracking-wide">Available endpoints</p>
               </div>
               <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-base-50 leading-[1.1]">
-                Pick a service to inspect
+                Choose what Medusa should do
               </h2>
             </div>
             <p className="text-sm text-base-400 max-w-sm sm:text-right">
-              Each endpoint is a dedicated x402 resource with fixed, transparent pricing.
+              Four fixed-price tools, each one a single request. Every run costs exactly{' '}
+              <span className="text-accent font-semibold tnum">$0.001 USDC</span> — no accounts, no subscriptions.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-4 auto-rows-fr">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
             {ENDPOINT_ORDER.map((key) => {
               const meta = ENDPOINTS_META[key]
               const Icon = ENDPOINT_ICONS[key]
-              const isWide = key === 'attest'
               const isHero = key === 'audit'
               return (
                 <button
                   key={key}
                   onClick={() => handleSelectEndpoint(key)}
-                  className={`group text-left bg-base-900/80 border border-base-800 rounded-2xl p-6 transition-all duration-200 hover:border-accent/50 hover:bg-base-900 hover:shadow-pop active:scale-[0.99] focus-ring ${ENDPOINT_SPAN[key]} ${
-                    isWide ? 'flex flex-col sm:flex-row sm:items-center gap-5' : 'flex flex-col'
+                  className={`group h-full text-left bg-base-900/80 border rounded-2xl p-6 transition-all duration-200 hover:shadow-pop active:scale-[0.99] focus-ring flex flex-col ${
+                    isHero
+                      ? 'border-accent/45 bg-accent/[0.045] hover:border-accent/70'
+                      : 'border-base-800 hover:border-accent/50 hover:bg-base-900'
                   }`}
                 >
-                  {isHero ? (
-                    <>
-                      <div className="flex items-center justify-between mb-5">
-                        <span className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/30 text-accent flex items-center justify-center">
-                          <Icon size={19} />
-                        </span>
-                        <span className="font-display text-lg font-semibold text-accent tnum">
-                          {meta.price.replace(' USDC', '')}
-                          <span className="text-xs font-mono font-medium text-base-400 ml-1">USDC</span>
-                        </span>
-                      </div>
-                      <span className="text-[10px] font-mono tracking-widest text-accent/80 uppercase">{meta.cardBadge}</span>
-                      <h3 className="mt-2 font-display text-2xl font-semibold text-base-50 group-hover:text-accent-bright transition-colors duration-200">
-                        {meta.name}
-                      </h3>
-                      <code className="block mt-2 text-[11px] font-mono text-base-500">{meta.path}</code>
-                      <p className="mt-3 text-sm text-base-400 leading-relaxed max-w-[48ch]">{meta.desc}</p>
-                      <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-xs font-mono text-accent group-hover:text-accent-bright transition-colors duration-200">
-                        Open in editor
-                        <IconArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                      </span>
-                    </>
-                  ) : isWide ? (
-                    <>
-                      <span className="shrink-0 w-10 h-10 rounded-xl bg-base-950 border border-base-700 text-base-300 flex items-center justify-center group-hover:border-accent/40 group-hover:text-accent transition-colors duration-200">
-                        <Icon size={18} />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-[10px] font-mono tracking-widest text-base-500 uppercase">{meta.cardBadge}</span>
-                          <code className="text-[11px] font-mono text-base-600 hidden md:inline">{meta.path}</code>
-                        </div>
-                        <h3 className="mt-1 font-semibold text-base-100 group-hover:text-accent-bright transition-colors duration-200">
-                          {meta.name}
-                        </h3>
-                        <p className="mt-1 text-xs text-base-400 leading-relaxed line-clamp-2">{meta.desc}</p>
-                      </div>
-                      <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-mono text-accent tnum mt-3 sm:mt-0">
-                        {meta.price}
-                        <IconArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between mb-4">
-                        <Icon size={17} className="text-base-400 group-hover:text-accent transition-colors duration-200" />
-                        <span className="text-xs font-mono font-semibold text-accent tnum">{meta.price}</span>
-                      </div>
-                      <span className="text-[10px] font-mono tracking-widest text-base-500 uppercase">{meta.cardBadge}</span>
-                      <h3 className="mt-1.5 font-semibold text-base-100 group-hover:text-accent-bright transition-colors duration-200">
-                        {meta.name}
-                      </h3>
-                      <code className="block mt-1 text-[11px] font-mono text-base-600">{meta.path}</code>
-                      <p className="mt-2.5 text-xs text-base-400 leading-relaxed line-clamp-3">{meta.desc}</p>
-                    </>
-                  )}
+                  <div className="flex items-start justify-between mb-5">
+                    <span
+                      className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-colors duration-200 ${
+                        isHero
+                          ? 'bg-accent/15 border-accent/40 text-accent'
+                          : 'bg-base-950 border-base-700 text-base-300 group-hover:border-accent/40 group-hover:text-accent'
+                      }`}
+                    >
+                      <Icon size={18} />
+                    </span>
+                    <span className="text-right leading-tight">
+                      <span className="font-display font-semibold text-accent tnum">{meta.price.replace(' USDC', '')}</span>
+                      <span className="block text-[10px] font-mono text-base-500 tracking-wide">USDC / run</span>
+                    </span>
+                  </div>
+
+                  <span className={`text-[10px] font-mono tracking-widest uppercase ${isHero ? 'text-accent' : 'text-base-500'}`}>
+                    {meta.cardBadge}
+                  </span>
+                  <h3
+                    className={`mt-1.5 font-semibold group-hover:text-accent-bright transition-colors duration-200 ${
+                      isHero ? 'font-display text-xl text-base-50' : 'text-lg text-base-100'
+                    }`}
+                  >
+                    {meta.name}
+                  </h3>
+                  <code className="block mt-1.5 text-[11px] font-mono text-base-600">{meta.path}</code>
+                  <p className={`mt-3 text-sm text-base-400 leading-relaxed ${isHero ? '' : 'line-clamp-none'}`}>{meta.desc}</p>
+
+                  <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-xs font-mono text-accent group-hover:text-accent-bright transition-colors duration-200">
+                    Open in editor
+                    <IconArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
                 </button>
               )
             })}
           </div>
+
+          <p className="mt-6 flex items-start sm:items-center justify-start gap-2 text-xs text-base-500 leading-relaxed">
+            <IconCoins size={14} className="shrink-0 mt-0.5 sm:mt-0 text-accent/80" />
+            Flat pricing — every service above costs exactly $0.001 USDC (Algorand TestNet, ASA #10458941), paid per request over the x402
+            protocol from your connected wallet.
+          </p>
         </div>
       </section>
 
@@ -334,7 +312,7 @@ export const AdsecHome: React.FC = () => {
               </h2>
               <p className="mt-3 text-base-400 leading-relaxed">
                 {currentView === 'playground'
-                  ? 'Choose a code preset or write your own to run a live scan, negotiate an x402 payment challenge, and generate verified patches.'
+                  ? 'Start with one of our pre-built vulnerable examples, or paste your own source file to test it for security issues. Each paid run costs a flat $0.001 USDC — connect your Algorand wallet to authorize the charge before results are returned.'
                   : 'Immutable record of verified x402 payment settlements and SHA-256 code attestations on Algorand TestNet.'}
               </p>
             </div>

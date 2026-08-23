@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
 import { executeAdsecRequestWithPayment, AdsecResponse } from '../utils/adsecApi'
 import AsciiTerminal, { TerminalPhase } from './AsciiTerminal'
-import { IconAlert, IconCheck, IconCopy, IconExternal, IconShieldCheck, IconWallet } from './icons'
+import { IconAlert, IconCheck, IconCopy, IconExternal, IconFileDiff, IconShieldCheck, IconWallet } from './icons'
 import { ENDPOINTS_META, EndpointMode } from '../utils/adsecEndpoints'
 
 type AuditLanguage = 'python' | 'javascript' | 'typescript' | 'solidity'
@@ -92,10 +92,28 @@ function renderUserContent(userInput) {
 // Derived once at module load — avoids re-evaluation on every render
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
 
+const LANGUAGES: AuditLanguage[] = ['python', 'javascript', 'typescript', 'solidity']
+
+const AUDIT_STEPS = [
+  {
+    title: 'Choose your code',
+    body: 'Pick a pre-built example below, or paste your own source file into the editor.',
+  },
+  {
+    title: 'Connect your wallet',
+    body: 'Audits are paid per request — an Algorand wallet (Pera, Defly, Exodus, Lute) must be connected first.',
+  },
+  {
+    title: 'Run & pay $0.001',
+    body: 'Each run deducts $0.001 USDC from your balance, then returns findings, patches and on-chain proof.',
+  },
+]
+
 export const AdsecPlayground: React.FC = () => {
   const { activeAddress, signTransactions } = useWallet()
   const [mode, setMode] = useState<EndpointMode>('audit')
   const [selectedPreset, setSelectedPreset] = useState(PRESETS[0].id)
+  const [usingOwnCode, setUsingOwnCode] = useState(false)
   const [code, setCode] = useState(PRESETS[0].code)
   const [filename, setFilename] = useState(PRESETS[0].filename)
   const [language, setLanguage] = useState<AuditLanguage>('python')
@@ -116,19 +134,35 @@ export const AdsecPlayground: React.FC = () => {
 
   const pushLog = (line: string) => setTerminalLogs((prev) => [...prev.slice(-8), line])
 
+  const openWalletModal = () => window.dispatchEvent(new CustomEvent('medusa:open-wallet'))
+
+  const resetResults = () => {
+    setAuditResponse(null)
+    setError('')
+    setHasStarted(false)
+    setTerminalPhase('idle')
+    setTerminalLogs([])
+  }
+
   const handleSelectPreset = (presetId: string) => {
     const preset = PRESETS.find((p) => p.id === presetId)
     if (preset) {
       setSelectedPreset(preset.id)
+      setUsingOwnCode(false)
       setCode(preset.code)
       setFilename(preset.filename)
       setLanguage(preset.language)
-      setAuditResponse(null)
-      setError('')
-      setHasStarted(false)
-      setTerminalPhase('idle')
-      setTerminalLogs([])
+      resetResults()
     }
+  }
+
+  const handleUseOwnCode = () => {
+    setSelectedPreset('')
+    setUsingOwnCode(true)
+    setCode('')
+    setFilename('my_code.py')
+    setLanguage('python')
+    resetResults()
   }
 
   const beginRun = () => {
@@ -237,17 +271,51 @@ export const AdsecPlayground: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Preset Selector & Code Input */}
-      <div className="bg-base-900/70 border border-base-800 rounded-2xl p-5 shadow-node">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-          <label className="text-sm font-semibold text-base-200">Sample vulnerability presets</label>
-          <div className="flex flex-wrap gap-2">
+      <div className="bg-base-900/70 border border-base-800 rounded-2xl p-5 sm:p-6 shadow-node">
+        {/* How an audit works */}
+        <ol className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          {AUDIT_STEPS.map((s, i) => (
+            <li
+              key={s.title}
+              className={`flex items-start gap-3 rounded-xl border p-3.5 ${
+                i === 1 && !activeAddress ? 'border-amber-500/30 bg-amber-500/[0.05]' : 'border-base-800 bg-base-ink/40'
+              }`}
+            >
+              <span
+                className={`w-6 h-6 shrink-0 rounded-lg border flex items-center justify-center font-mono text-[11px] font-semibold tnum ${
+                  i === 1 && !activeAddress
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                    : i === 2
+                      ? 'bg-accent/10 text-accent border-accent/30'
+                      : 'bg-base-800 text-base-300 border-base-700'
+                }`}
+                aria-hidden="true"
+              >
+                {i + 1}
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-base-100">{s.title}</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-base-400">{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div className="mb-4">
+          <label className="text-sm font-semibold text-base-200">Try a pre-built example</label>
+          <p className="mt-1 text-[11px] leading-relaxed text-base-500">
+            These are predefined sample files with real-world vulnerabilities baked in — safe demos you can audit right away. To test your
+            own project, click <span className="text-base-300 font-medium">Paste my own code</span> and drop your file&apos;s contents into
+            the editor. Nothing is uploaded until you run the paid audit.
+          </p>
+          <div className="flex flex-wrap gap-2 mt-3">
             {PRESETS.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleSelectPreset(p.id)}
                 aria-pressed={selectedPreset === p.id}
                 className={`text-xs px-3 py-1.5 rounded-md border transition-all duration-200 font-medium focus-ring active:scale-[0.98] ${
-                  selectedPreset === p.id
+                  selectedPreset === p.id && !usingOwnCode
                     ? 'bg-accent text-base-ink border-accent shadow-glow'
                     : 'bg-transparent text-base-400 border-base-700 hover:border-base-500 hover:text-base-100'
                 }`}
@@ -255,17 +323,46 @@ export const AdsecPlayground: React.FC = () => {
                 {p.name}
               </button>
             ))}
+            <button
+              onClick={handleUseOwnCode}
+              aria-pressed={usingOwnCode}
+              className={`text-xs px-3 py-1.5 rounded-md border transition-all duration-200 font-medium focus-ring active:scale-[0.98] flex items-center gap-1.5 ${
+                usingOwnCode
+                  ? 'bg-accent text-base-ink border-accent shadow-glow'
+                  : 'bg-accent/[0.08] text-accent border-accent/40 hover:border-accent hover:bg-accent/[0.14]'
+              }`}
+            >
+              <IconFileDiff size={12} />
+              Paste my own code
+            </button>
           </div>
         </div>
 
         {/* Editor Box */}
         <div className="relative rounded-xl overflow-hidden border border-base-800 bg-base-ink focus-within:border-accent/50 transition-colors duration-200">
-          <div className="bg-base-900/70 px-4 py-2 flex justify-between items-center border-b border-base-800 text-xs font-mono text-base-400">
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent inline-block"></span>
-              <span className="text-base-200 font-semibold">{filename}</span>
+          <div className="bg-base-900/70 px-3 sm:px-4 py-2 flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-base-800 text-xs font-mono text-base-400">
+            <span className="flex items-center gap-2 min-w-0 flex-1">
+              <span className={`w-1.5 h-1.5 rounded-full inline-block shrink-0 ${usingOwnCode ? 'bg-amber-400' : 'bg-accent'}`}></span>
+              <input
+                value={filename}
+                onChange={(e) => setFilename(e.target.value)}
+                spellCheck={false}
+                aria-label="File name sent with the audit"
+                className="bg-transparent text-base-200 font-semibold focus:outline-none focus:text-accent transition-colors duration-200 w-full min-w-0 max-w-[240px]"
+              />
             </span>
-            <span className="uppercase text-base-500 font-medium tracking-wide">{language}</span>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as AuditLanguage)}
+              aria-label="Programming language"
+              className="bg-base-950/80 border border-base-700 rounded-md px-2 py-1 text-[11px] uppercase tracking-wide text-base-300 cursor-pointer focus-ring"
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l} value={l}>
+                  {l}
+                </option>
+              ))}
+            </select>
           </div>
           <textarea
             value={code}
@@ -274,48 +371,78 @@ export const AdsecPlayground: React.FC = () => {
             spellCheck={false}
             aria-label={`Source code for ${filename}`}
             className="w-full bg-base-ink p-4 font-mono text-sm text-base-200 resize-y leading-relaxed thin-scroll focus:outline-none"
-            placeholder="Paste source code to audit..."
+            placeholder="// Paste your own source code here, or pick a pre-built example above…"
           />
         </div>
 
+        {/* Wallet & payment status */}
+        {!activeAddress ? (
+          <div className="mt-5 rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-4 flex flex-col sm:flex-row sm:items-center gap-3.5">
+            <span className="w-9 h-9 shrink-0 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center justify-center">
+              <IconWallet size={17} />
+            </span>
+            <p className="flex-1 text-xs leading-relaxed text-amber-100/90">
+              <span className="font-semibold text-amber-200">A connected wallet is required to run audits.</span> Every audit is an on-chain
+              micropayment — running one deducts <span className="font-semibold tnum">$0.001 USDC</span> from your Algorand account balance.
+              Connect Pera, Defly, Exodus or Lute below to authorize it.
+            </p>
+            <button
+              onClick={openWalletModal}
+              className="shrink-0 px-4 py-2 rounded-xl bg-accent hover:bg-accent-bright text-base-ink text-xs font-semibold shadow-glow transition-all duration-200 active:scale-[0.98] focus-ring flex items-center justify-center gap-2"
+            >
+              <IconWallet size={13} />
+              Connect wallet
+            </button>
+          </div>
+        ) : (
+          <div className="mt-5 rounded-xl border border-accent/25 bg-accent/[0.05] px-4 py-3 flex items-start sm:items-center gap-2.5 text-xs text-base-300 leading-relaxed">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shrink-0 mt-1 sm:mt-0" aria-hidden="true"></span>
+            <span>
+              Wallet connected (
+              <span className="font-mono tnum">
+                {activeAddress.slice(0, 6)}…{activeAddress.slice(-4)}
+              </span>
+              ) · each run deducts <span className="text-accent font-semibold">$0.001 USDC</span> from this account, signed by you in your
+              wallet.
+            </span>
+          </div>
+        )}
+
         {/* Action Bar */}
-        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="text-xs text-base-400 font-mono tnum">
-            Selected service: <span className="font-semibold text-base-200">{ENDPOINTS_META[mode].name}</span> ({ENDPOINTS_META[mode].path})
-            · Cost: <span className="text-accent font-semibold">{ENDPOINTS_META[mode].price}</span>
+        <div className="mt-4 pt-4 border-t border-base-800 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+          <div className="text-xs text-base-400 leading-relaxed">
+            Selected service: <span className="font-semibold text-base-200">{ENDPOINTS_META[mode].name}</span>{' '}
+            <code className="text-base-500">({ENDPOINTS_META[mode].path})</code> · Cost:{' '}
+            <span className="text-accent font-semibold tnum">{ENDPOINTS_META[mode].price}</span>
+            <span className="block mt-0.5 text-[11px] text-base-500">
+              You will sign one payment in your wallet before results are returned.
+            </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
-            <button
-              onClick={handleExecuteAudit}
-              disabled={loading || !activeAddress}
-              className={`w-full sm:w-auto px-7 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 focus-ring ${
-                loading
-                  ? 'bg-base-700 cursor-not-allowed text-base-300'
-                  : !activeAddress
-                    ? 'bg-base-800 text-base-500 border border-base-700 cursor-not-allowed'
-                    : 'bg-accent hover:bg-accent-bright text-base-ink shadow-glow active:scale-[0.98]'
-              }`}
-            >
-              {loading ? (
-                <>
-                  <span className="animate-caret font-mono">█</span>
-                  <span>Processing x402 audit…</span>
-                </>
-              ) : (
-                <>
-                  <span>{activeAddress ? 'Run paid audit' : 'Run paid audit'}</span>
-                  <span className="text-xs bg-base-ink/25 px-2 py-0.5 rounded-md font-mono tnum">{ENDPOINTS_META[mode].price}</span>
-                </>
-              )}
-            </button>
-            {!activeAddress && (
-              <p className="text-xs text-base-400 flex items-center gap-1.5">
-                <IconWallet size={13} />
-                Connect a wallet to authorize $0.001 USDC
-              </p>
+          <button
+            onClick={activeAddress ? handleExecuteAudit : openWalletModal}
+            disabled={loading}
+            className={`w-full sm:w-auto px-7 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 focus-ring ${
+              loading
+                ? 'bg-base-700 cursor-not-allowed text-base-300'
+                : activeAddress
+                  ? 'bg-accent hover:bg-accent-bright text-base-ink shadow-glow active:scale-[0.98]'
+                  : 'border border-accent/50 bg-accent/10 text-accent hover:bg-accent hover:text-base-ink active:scale-[0.98]'
+            }`}
+          >
+            {loading ? (
+              <>
+                <span className="animate-caret font-mono">█</span>
+                <span>Processing x402 audit…</span>
+              </>
+            ) : (
+              <>
+                <IconWallet size={15} />
+                <span>{activeAddress ? 'Run security audit' : 'Connect wallet to run'}</span>
+                <span className="text-xs bg-base-ink/25 px-2 py-0.5 rounded-md font-mono tnum">{ENDPOINTS_META[mode].price}</span>
+              </>
             )}
-          </div>
+          </button>
         </div>
       </div>
 

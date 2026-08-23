@@ -1,6 +1,6 @@
 import { SupportedWallet, WalletId, WalletManager, WalletProvider, useWallet } from '@txnlab/use-wallet-react'
 import { SnackbarProvider } from 'notistack'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AdsecHome from './AdsecHome'
 import AgentGuidePage from './components/AgentGuidePage'
 import ConnectWallet from './components/ConnectWallet'
@@ -53,6 +53,12 @@ export default function App() {
   )
 
   const toggleWalletModal = () => setOpenWalletModal(!openWalletModal)
+
+  useEffect(() => {
+    const handler = () => setOpenWalletModal(true)
+    window.addEventListener('medusa:open-wallet', handler)
+    return () => window.removeEventListener('medusa:open-wallet', handler)
+  }, [])
 
   return (
     <SnackbarProvider maxSnack={3}>
