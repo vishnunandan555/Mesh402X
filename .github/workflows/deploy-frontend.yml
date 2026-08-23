@@ -1,12 +1,7 @@
 name: ⚡ Deploy Frontend to Vercel
 
 on:
-  workflow_dispatch: # Manual "Run workflow" button in GitHub Actions
-  push:
-    branches: [ main ]
-    paths:
-      - 'x402-Project/X402-Usecase/**'
-      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch: # ONLY manual "Run workflow" button in GitHub Actions UI
 
 jobs:
   build-and-deploy-frontend:
@@ -35,7 +30,6 @@ jobs:
           npx tsc --noEmit && npx vite build
 
       - name: ⚡ Trigger Vercel Frontend Deployment
-        if: github.ref == 'refs/heads/main'
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |

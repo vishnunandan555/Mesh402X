@@ -1,9 +1,7 @@
-# 🌐 ADSEC — Separate Backend (Render) & Frontend (Vercel) Deployment Guide
-
 > **Architecture:**  
 > • **Backend:** Render Web Service (`x402-demo-server` Hono Node.js Server)  
 > • **Frontend:** Vercel Static Site (`X402-Usecase` React Vite App)  
-> • **CI/CD:** 2 Separate GitHub Actions (`deploy-backend.yml` & `deploy-frontend.yml`)
+> • **CI/CD:** 2 Separate Manual GitHub Actions (`deploy-backend.yml` & `deploy-frontend.yml`) — *Only runs when you manually click "Run workflow" in GitHub UI!*
 
 ---
 
