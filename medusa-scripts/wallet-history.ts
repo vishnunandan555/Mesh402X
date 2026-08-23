@@ -14,7 +14,17 @@ const MEDUSA_RECEIVER = 'LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQ
  * Queries the Algorand TestNet indexer to retrieve on-chain payments, attestation receipts, and spending summary.
  */
 async function main() {
-  const mnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
+  const rawMnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
+  const mnemonic = rawMnemonic
+    ? rawMnemonic
+        .trim()
+        .replace(/^[A-Za-z0-9_]+\s*=\s*/, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .trim()
+        .replace(/\s+/g, ' ')
+    : '';
+
   if (!mnemonic) {
     console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
     process.exit(1);

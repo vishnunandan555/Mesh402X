@@ -95,7 +95,10 @@ elif [ -t 0 ]; then
     read -r -p "AGENT_MNEMONIC: " USER_MNEMONIC || true
 fi
 
-# Trim whitespace
+# Clean & sanitize input (strip variable assignment prefixes, surrounding quotes, whitespace)
+USER_MNEMONIC=$(echo "$USER_MNEMONIC" | sed -E "s/^[A-Za-z0-9_]+[[:space:]]*=[[:space:]]*//")
+USER_MNEMONIC=$(echo "$USER_MNEMONIC" | sed -E "s/^[[:space:]\"'\\\\]+//; s/[[:space:]\"'\\\\]+$//")
+USER_MNEMONIC=$(echo "$USER_MNEMONIC" | sed -E "s/^[[:space:]\"'\\\\]+//; s/[[:space:]\"'\\\\]+$//")
 USER_MNEMONIC=$(echo "$USER_MNEMONIC" | xargs 2>/dev/null || echo "$USER_MNEMONIC")
 
 # Write to wallet.env

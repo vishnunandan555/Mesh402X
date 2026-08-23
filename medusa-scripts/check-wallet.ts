@@ -11,7 +11,17 @@ const USDC_ASA_ID = 10458941;
  * MEDUSA WALLET BALANCE & OPT-IN DIAGNOSTIC
  */
 async function main() {
-  const mnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
+  const rawMnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
+  const mnemonic = rawMnemonic
+    ? rawMnemonic
+        .trim()
+        .replace(/^[A-Za-z0-9_]+\s*=\s*/, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .replace(/^["'\\]+|["'\\]+$/g, '')
+        .trim()
+        .replace(/\s+/g, ' ')
+    : '';
+
   if (!mnemonic) {
     console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
     process.exit(1);
