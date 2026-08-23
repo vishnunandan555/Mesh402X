@@ -89,33 +89,64 @@ if [ ! -f "$ENV_FILE" ]; then
     touch "$ENV_FILE"
 fi
 
+USER_MNEMONIC=""
+USER_ADDRESS=""
+
 if grep -q "AGENT_MNEMONIC" "$ENV_FILE" && [ -n "$(grep -E "^AGENT_MNEMONIC=.+" "$ENV_FILE")" ]; then
     echo -e "${GREEN}✓ Existing AGENT_MNEMONIC detected in .env.${NC}"
 else
-    echo -e "${YELLOW}No AGENT_MNEMONIC found in .env.${NC}"
+    echo -e "${YELLOW}Please enter your Algorand TestNet wallet credentials for your agent:${NC}"
     
-    # Generate fresh keypair
-    NODE_OUTPUT=$(node -e "
-      const algosdk = require('algosdk');
-      const acc = algosdk.generateAccount();
-      const m = algosdk.secretKeyToMnemonic(acc.sk);
-      console.log(acc.addr + '|||' + m);
-    " 2>/dev/null || echo "")
+    # Read from /dev/tty if available (works even when script is piped via curl | bash)
+    if [ -t 0 ]; then
+        read -r -p "🔑 Enter your 25-word Mnemonic (AGENT_MNEMONIC): " USER_MNEMONIC
+        read -r -p "💳 Enter Public Address (Optional, press Enter to auto-derive): " USER_ADDRESS
+    elif [ -e /dev/tty ]; then
+        read -r -p "🔑 Enter your 25-word Mnemonic (AGENT_MNEMONIC): " USER_MNEMONIC < /dev/tty
+        read -r -p "💳 Enter Public Address (Optional, press Enter to auto-derive): " USER_ADDRESS < /dev/tty
+    fi
 
-    if [ -n "$NODE_OUTPUT" ]; then
-        WALLET_ADDR=$(echo "$NODE_OUTPUT" | awk -F '|||' '{print $1}')
-        WALLET_MNEM=$(echo "$NODE_OUTPUT" | awk -F '|||' '{print $2}')
+    # Trim whitespace
+    USER_MNEMONIC=$(echo "$USER_MNEMONIC" | xargs)
+    USER_ADDRESS=$(echo "$USER_ADDRESS" | xargs)
 
-        echo "AGENT_MNEMONIC=\"$WALLET_MNEM\"" >> "$ENV_FILE"
+    if [ -n "$USER_MNEMONIC" ]; then
+        # Auto-derive address from mnemonic if not provided
+        if [ -z "$USER_ADDRESS" ]; then
+            DERIVED_ADDR=$(node -e "
+              try {
+                const algosdk = require('algosdk');
+                const acc = algosdk.mnemonicToSecretKey('$USER_MNEMONIC');
+                console.log(acc.addr);
+              } catch(e) {
+                console.log('');
+              }
+            " 2>/dev/null || echo "")
+            if [ -n "$DERIVED_ADDR" ]; then
+                USER_ADDRESS="$DERIVED_ADDR"
+            fi
+        fi
+
+        # Save to .env
+        echo "" >> "$ENV_FILE"
+        echo "# Medusa x402 Agent Configuration" >> "$ENV_FILE"
+        echo "AGENT_MNEMONIC=\"$USER_MNEMONIC\"" >> "$ENV_FILE"
+        if [ -n "$USER_ADDRESS" ]; then
+            echo "AGENT_ADDRESS=\"$USER_ADDRESS\"" >> "$ENV_FILE"
+        fi
         echo "ADSEC_SERVER_URL=\"https://mesh402x.onrender.com\"" >> "$ENV_FILE"
 
-        echo -e "${GREEN}✓ Generated a brand new Algorand TestNet wallet for your agent!${NC}"
-        echo -e "  ${CYAN}Address : ${YELLOW}${WALLET_ADDR}${NC}"
-        echo -e "  ${CYAN}Mnemonic: ${YELLOW}${WALLET_MNEM}${NC}"
-        echo -e "\n${YELLOW}👉 Quick Action Required to Fund Wallet:${NC}"
-        echo -e "  1. Get Free Gas (ALGO): ${CYAN}https://lora.algokit.io/testnet/dispenser${NC}"
-        echo -e "  2. Opt-in to USDC:      ${CYAN}npx tsx medusa-scripts/optin-usdc.ts${NC}"
-        echo -e "  3. Get Free USDC:       ${CYAN}https://faucet.circle.com${NC} (Select Algorand TestNet, ASA #10458941)"
+        echo -e "${GREEN}✓ Wallet configured successfully in .env!${NC}"
+        if [ -n "$USER_ADDRESS" ]; then
+            echo -e "  ${CYAN}Public Address: ${YELLOW}${USER_ADDRESS}${NC}"
+        fi
+    else
+        echo -e "${YELLOW}ℹ️  No mnemonic entered. Added placeholder to .env.${NC}"
+        echo "" >> "$ENV_FILE"
+        echo "# Medusa x402 Agent Configuration" >> "$ENV_FILE"
+        echo "AGENT_MNEMONIC=\"\"" >> "$ENV_FILE"
+        echo "ADSEC_SERVER_URL=\"https://mesh402x.onrender.com\"" >> "$ENV_FILE"
+        echo -e "  ${YELLOW}Remember to add your AGENT_MNEMONIC to .env before running paid audits.${NC}"
     fi
 fi
 
