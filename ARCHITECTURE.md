@@ -2,90 +2,113 @@
 
 ---
 
-## System Architecture
+## 1. System Architecture Overview
 
-Medusa is composed of four decoupled, scalable layers serving both **Autonomous AI Agents** and **Human Developers**:
+Medusa is structured into five decoupled layers serving autonomous AI agents, CI/CD pipelines, and web developers:
 
 ```text
 +------------------------------------------------------------------------+
 |                          1. CLIENT / AGENT LAYER                       |
-|  * Autonomous AI Agents (using Medusa_Skill.md & medusa-scripts/)      |
-|  * CI/CD Autonomous Security Gates (GitHub Actions / GitLab CI)        |
+|  * Autonomous AI Agents (Antigravity CLI agy, Cursor, OpenCode, Claude)|
+|  * CI/CD Security Score Gates (GitHub Actions, GitLab CI)             |
 |  * Web Application Users (Dual-Mode React UI + Pera / Defly Wallet)    |
++-----------------------------------+------------------------------------+
+                                    |
+                                    v
++------------------------------------------------------------------------+
+|                   2. MCP & PROTOCOL CLIENT BRIDGE                      |
+|  * Native Model Context Protocol (MCP) Server (mcp-server/index.ts)    |
+|  * Modular Headless Scripts (medusa-scripts/)                          |
+|  * In-Process Algorand Key Management & Exact-AVM Transaction Signer   |
+|  * Automatic HTTP 402 Negotiation & Payment Submission                 |
 +-----------------------------------+------------------------------------+
                                     | HTTP Requests (x402 Protocol)
                                     v
 +------------------------------------------------------------------------+
-|                        2. X402 PROTOCOL GATEWAY                        |
-|  * Hono HTTP Framework (TypeScript, Node.js / Edge-Ready)              |
-|  * @x402/hono Payment Middleware (Enforces HTTP 402 Challenges)        |
+|                        3. X402 PROTOCOL GATEWAY                        |
+|  * Express / Hono HTTP Framework (TypeScript, Edge-Ready)              |
+|  * x402 Payment Middleware (Enforces HTTP 402 Challenges)              |
 |  * GoPlausible Facilitator Settlement (facilitator.goplausible.xyz)     |
-|  * Algorand TestNet Blockchain (USDC ASA 10458941)                     |
-|  * GoPlausible Bazaar Discovery (Dynamic Agent Service Indexing)       |
+|  * Algorand TestNet Consensus (USDC ASA 10458941)                       |
+|  * GoPlausible Bazaar Dynamic Resource Discovery Catalog               |
 +-----------------------------------+------------------------------------+
                                     | Verified Paid Requests ($0.001 USDC)
                                     v
 +------------------------------------------------------------------------+
-|                      3. MEDUSA SECURITY AUDIT ENGINE                   |
+|                      4. MULTI-TIER SECURITY ENGINE                     |
 |                                                                        |
 |  +------------------------------------------------------------------+  |
 |  | Tier 1: Deterministic Engine (<50ms)                             |  |
 |  | * Secret Scanner: AWS, OpenAI, GitHub PAT, JWT, Private Keys     |  |
-|  | * Dangerous Patterns: eval(), exec(), pickle, SQLi, Command Inj  |  |
+|  | * Dangerous Syntax: eval(), exec(), pickle, SQLi, Command Inj    |  |
 |  | * Supply Chain: Typosquatting detection via Levenshtein distance |  |
-|  | * OSV.dev CVE Query: Real-time public vulnerability database     |  |
+|  | * Multi-Ecosystem OSV.dev CVE Query (npm, PyPI, Pub, Go, Cargo)  |  |
 |  +------------------------------------------------------------------+  |
 |  +------------------------------------------------------------------+  |
 |  | Tier 2: AI Semantic Logic & Diff Engine                          |  |
-|  | * LLM Semantic Review: Auth bypass, IDOR, logic flaws            |  |
-|  | * Unified Diff Generator: Actionable Git patch generation        |  |
-|  | * Weighted Scoring: 0–100 Health Score calculation               |  |
+|  | * LLM Semantic Review: Auth bypass, IDOR, business logic flaws   |  |
+|  | * Unified Diff Generator: Language-aware Git patch creation       |  |
+|  | * CI/CD Scorer: 0-100 Health score calculation & threshold gate   |  |
 |  +------------------------------------------------------------------+  |
 +-----------------------------------+------------------------------------+
                                     |
                                     v
 +------------------------------------------------------------------------+
-|                      4. SETTLEMENT & AUDIT RECEIPTS                    |
+|                      5. SETTLEMENT & AUDIT RECEIPTS                    |
 |  * On-Chain Algorand TestNet Transaction Hash (Immutable Proof)        |
-|  * Algorand Lora Explorer Deep-Links                                   |
-|  * JSON Structured Findings + Standard Unified Git Diff (.patch)       |
+|  * Cryptographic SHA-256 Code Digest Attestation Notes                 |
+|  * Real-Time Streamed Public On-Chain Ledger & Telemetry               |
+|  * Algorand Lora Explorer Verification Deep-Links                      |
 +------------------------------------------------------------------------+
 ```
 
 ---
 
-## Token & Gas Fee Model
+## 2. Token & Gas Fee Model
 
 | Asset | Type | Purpose | Amount Per Call | Faucet / Dispenser Link |
 |---|---|---|---|---|
-| **ALGO** | Native Algorand Token | Network Transaction Gas Fee | **0.001 ALGO** / tx | [Lora TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) |
-| **USDC** | ASA ID `#10458941` | Medusa Security Audit Fee | **$0.001 USDC** / call | [Circle USDC Faucet](https://faucet.circle.com) |
+| ALGO | Native Algorand Token | Network Transaction Gas Fee | 0.001 ALGO / tx | [Lora TestNet Dispenser](https://lora.algokit.io/testnet/dispenser) |
+| USDC | ASA ID #10458941 | Medusa Security Audit Fee | $0.001 USDC / call | [Circle USDC Faucet](https://faucet.circle.com) |
 
 ---
 
-## Endpoint Pricing & Modular Script Specifications
+## 3. Endpoints & Modular Capabilities
 
 All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.001 USDC (1,000 microUSDC)**.
 
-| Endpoint | Method | Price | Modular Script | Target Consumers | Description |
-|---|---|---|---|---|---|
-| `/adsec/scan` | `POST` | **$0.001 USDC** | `audit-scan.ts` | Pre-commit hooks, fast linters | Fast deterministic secret, CVE, and AST vulnerability scan. |
-| `/adsec/remediate` | `POST` | **$0.001 USDC** | `audit-remediate.ts` | Autonomous self-healing bots | Generates language-aware unified Git diff patches (`git apply` ready). |
-| `/adsec/attest` | `POST` | **$0.001 USDC** | `audit-attest.ts` | Release pipelines, compliance | Computes SHA-256 code hash and broadcasts on-chain Algorand certificate. |
-| `/adsec/audit` | `POST` | **$0.001 USDC** | `audit-full.ts` | Coding agents, comprehensive audits | Complete pipeline: Scan + AI Review + Unified Diffs + Attestation. |
-| Financial History | — | **$0.00** | `wallet-history.ts` | Financial audits, reporting | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
-| Wallet Diagnostic | — | **$0.00** | `check-wallet.ts` | Diagnostics, setup checks | Checks current ALGO gas balance, USDC balance, and ASA opt-in status. |
+| Endpoint | Method | Price | Modular Script / MCP Tool | Description |
+|---|---|---|---|---|
+| `/adsec/scan` | `POST` | $0.001 USDC | `audit-score.ts` / `medusa_get_security_score` | CI/CD Security Gate: Parses package manifests and exits 0 (Pass) or 1 (Fail). |
+| `/adsec/scan` | `POST` | $0.001 USDC | `audit-scan.ts` / `medusa_scan_code` | Fast pre-flight deterministic secret, CVE, and AST vulnerability scan. |
+| `/adsec/remediate` | `POST` | $0.001 USDC | `audit-remediate.ts` / `medusa_remediate_file` | Generates language-aware unified Git diff patches (`git apply` compatible). |
+| `/adsec/attest` | `POST` | $0.001 USDC | `audit-attest.ts` / `medusa_attest_code` | Computes SHA-256 code hash and broadcasts on-chain Algorand certificate. |
+| `/adsec/audit` | `POST` | $0.001 USDC | `audit-full.ts` / `medusa_audit_file` | Complete pipeline: Scan + AI Review + Unified Diffs + Attestation. |
+| Dynamic Discovery | `GET` | $0.00 | `medusa_discover_nodes` | Queries GoPlausible Bazaar catalog for live active security nodes. |
+| Financial History | — | $0.00 | `wallet-history.ts` / `medusa_get_financial_ledger` | On-chain ledger explorer: shows transaction history and USDC spent. |
+| Wallet Diagnostic | — | $0.00 | `check-wallet.ts` / `medusa_check_wallet` | Checks current ALGO gas balance, USDC balance, and ASA opt-in status. |
 
 ---
 
-## Dual Interaction Modes
+## 4. Multi-Ecosystem OSV.dev Integration
 
-### Mode 1: Headless Autonomous Agent (Agent-to-Agent)
-1. **Installation:** Any codebase runs `curl -fsSL .../install.sh | bash`.
-2. **Decentralized Discovery:** Queries `GET https://facilitator.goplausible.xyz/discovery/resources`.
-3. **Execution:** Reads `Medusa_Skill.md`, chooses script in `medusa-scripts/`, signs payment with `AGENT_MNEMONIC`.
-4. **Self-Healing:** Automatically runs `git apply audit.patch`.
+The Tier 1 scanner dynamically parses package dependencies across five package formats:
+- **Dart / Flutter:** `pubspec.yaml`, `pubspec.lock` (Ecosystem: `Pub`)
+- **JavaScript / TypeScript:** `package.json` (Ecosystem: `npm`)
+- **Python:** `requirements.txt`, `pyproject.toml` (Ecosystem: `PyPI`)
+- **Go:** `go.mod` (Ecosystem: `Go`)
+- **Rust:** `Cargo.toml` (Ecosystem: `crates.io`)
 
-### Mode 2: Web Playground (Human-to-Agent)
-1. **Interactive Guide:** Tab 1 provides copyable installer commands and live Bazaar inspection.
-2. **Interactive Auditor:** Tab 2 provides Pera/Defly wallet connection, code presets, live ASCII terminal animation, and on-chain ledger links.
+Queries to `https://api.osv.dev/v1/query` are executed concurrently with timeouts, returning precise CVE aliases (`CVE-YYYY-NNNN`), CWE IDs, affected versions, and severity ratings.
+
+---
+
+## 5. On-Chain Attestation Standard
+
+When `/adsec/attest` is invoked, Medusa calculates the SHA-256 digest of the audited code and constructs a standard Algorand note field payload:
+
+```text
+adsec:v1;sha256=<HASH>;score=<SCORE>;status=<VERDICT>
+```
+
+This 0-ALGO transaction is broadcasted to Algorand TestNet consensus, establishing an immutable timestamp and proof-of-audit certificate verifiable on any Algorand block explorer.

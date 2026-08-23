@@ -61,64 +61,91 @@ export default function App() {
   return (
     <SnackbarProvider maxSnack={3}>
       <WalletProvider manager={walletManager}>
-        <div className="min-h-screen bg-black text-neutral-100 flex flex-col selection:bg-emerald-500 selection:text-white">
-          {/* GLOBAL STICKY HEADER */}
-          <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-              {/* Logo */}
-              <div className="flex items-center gap-6">
-                <button
-                  onClick={() => setActiveTab('guide')}
-                  className="flex items-center gap-2.5 shrink-0 group text-left"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-black text-xs text-black shadow-lg shadow-emerald-500/30 group-hover:scale-105 transition-transform">
-                    🐍
-                  </div>
-                  <div>
-                    <div className="font-black text-sm tracking-wider text-white flex items-center gap-1.5">
-                      MEDUSA
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/40">
-                        x402
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              </div>
+        <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-deep)', color: 'var(--text-primary)' }}>
+          {/* ═══ HEADER ═══ */}
+          <header className="sticky top-0 z-50" style={{
+            background: 'rgba(6, 8, 13, 0.85)',
+            backdropFilter: 'blur(20px) saturate(1.3)',
+            WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+            borderBottom: '1px solid var(--border-subtle)',
+          }}>
+            {/* Animated gradient line at very top */}
+            <div className="animate-gradient" style={{
+              height: '2px',
+              background: 'linear-gradient(90deg, #10b981, #06b6d4, #8b5cf6, #10b981)',
+              backgroundSize: '200% 200%',
+            }} />
 
-              {/* Main Dual-Page Navigation Tabs */}
-              <nav className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1" aria-label="Main Navigation">
-                <button
+            <div className="max-w-7xl mx-auto px-4 sm:px-6" style={{ height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+              {/* Logo */}
+              <button
+                onClick={() => setActiveTab('guide')}
+                className="flex items-center gap-3 shrink-0 group"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px',
+                  boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)',
+                  transition: 'transform var(--transition-fast)',
+                }}>
+                  🐍
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontWeight: 900,
+                    fontSize: '15px',
+                    letterSpacing: '0.08em',
+                    color: '#fff',
+                  }}>
+                    MEDUSA
+                    <span className="badge-emerald" style={{ fontSize: '9px', padding: '2px 8px', letterSpacing: '0.1em' }}>
+                      x402
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              {/* Navigation Tabs */}
+              <nav
+                className="flex items-center gap-1"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--border-default)',
+                  borderRadius: 'var(--radius-full)',
+                  padding: '4px',
+                }}
+                aria-label="Main Navigation"
+              >
+                <NavTab
+                  active={activeTab === 'guide'}
                   onClick={() => setActiveTab('guide')}
-                  className={`px-4 sm:px-5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeTab === 'guide'
-                      ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/25'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <span>📖</span>
-                  <span>Agent & Dev Guide</span>
-                </button>
-                <button
+                  icon="📖"
+                  label="Agent & Dev Guide"
+                />
+                <NavTab
+                  active={activeTab === 'playground'}
                   onClick={() => setActiveTab('playground')}
-                  className={`px-4 sm:px-5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeTab === 'playground'
-                      ? 'bg-emerald-500 text-black shadow-md shadow-emerald-500/25'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <span>⚡</span>
-                  <span>Live Web Playground</span>
-                </button>
+                  icon="⚡"
+                  label="Live Playground"
+                />
               </nav>
 
-              {/* Wallet Connection Header Button */}
-              <div className="flex items-center gap-3">
-                <NavWalletButton onClick={toggleWalletModal} />
-              </div>
+              {/* Wallet Button */}
+              <NavWalletButton onClick={toggleWalletModal} />
             </div>
           </header>
 
-          {/* Main Content View Switcher */}
+          {/* ═══ MAIN CONTENT ═══ */}
           <main className="flex-1">
             {activeTab === 'guide' ? (
               <AgentGuidePage onSwitchToPlayground={() => setActiveTab('playground')} />
@@ -135,23 +162,87 @@ export default function App() {
   )
 }
 
+/* ─── Tab Button ─── */
+function NavTab({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: string; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '7px 18px',
+        borderRadius: 'var(--radius-full)',
+        fontSize: '12px',
+        fontWeight: 700,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all var(--transition-default)',
+        background: active
+          ? 'linear-gradient(135deg, #10b981, #059669)'
+          : 'transparent',
+        color: active ? '#000' : 'var(--text-secondary)',
+        boxShadow: active ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
+      }}
+    >
+      <span>{icon}</span>
+      <span className="hide-mobile">{label}</span>
+    </button>
+  )
+}
+
+/* ─── Wallet Button ─── */
 function NavWalletButton({ onClick }: { onClick: () => void }) {
   const { activeAddress } = useWallet()
   return (
     <button
       onClick={onClick}
       data-test-id="nav-wallet-button"
-      className={`shrink-0 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold font-mono transition-all border flex items-center gap-2 ${
-        activeAddress
-          ? 'bg-emerald-500/10 border-emerald-500/60 text-emerald-300 hover:border-emerald-400'
-          : 'bg-emerald-500 hover:bg-emerald-400 border-emerald-500 text-black shadow-lg shadow-emerald-500/25 active:scale-95'
-      }`}
+      style={{
+        flexShrink: 0,
+        padding: '8px 16px',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: '12px',
+        fontWeight: 700,
+        fontFamily: 'var(--font-mono)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        cursor: 'pointer',
+        transition: 'all var(--transition-default)',
+        border: activeAddress
+          ? '1px solid rgba(16, 185, 129, 0.5)'
+          : '1px solid transparent',
+        background: activeAddress
+          ? 'rgba(16, 185, 129, 0.1)'
+          : 'linear-gradient(135deg, #10b981, #059669)',
+        color: activeAddress ? '#6ee7b7' : '#000',
+        boxShadow: activeAddress
+          ? 'inset 0 0 15px rgba(16, 185, 129, 0.05)'
+          : '0 4px 16px rgba(16, 185, 129, 0.3)',
+      }}
     >
-      <span className={`w-2 h-2 rounded-full ${activeAddress ? 'bg-emerald-400 animate-pulse' : 'bg-white'}`}></span>
-      <span className="hidden sm:inline">
+      <span style={{
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        background: activeAddress ? '#10b981' : 'rgba(255,255,255,0.8)',
+        animation: activeAddress ? 'radar-ping 2s cubic-bezier(0,0,0.2,1) infinite' : 'none',
+        position: 'relative',
+      }}>
+        {activeAddress && (
+          <span style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '50%',
+            background: '#10b981',
+          }} />
+        )}
+      </span>
+      <span className="hide-mobile">
         {activeAddress ? `${activeAddress.slice(0, 6)}...${activeAddress.slice(-4)}` : 'Connect Wallet'}
       </span>
-      <span className="sm:hidden">
+      <span className="show-mobile-only">
         {activeAddress ? `${activeAddress.slice(0, 4)}..` : 'Wallet'}
       </span>
     </button>
