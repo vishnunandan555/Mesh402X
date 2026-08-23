@@ -17,14 +17,14 @@ async function main() {
   const customBackendUrl = process.argv[2] || process.env.VITE_API_BASE_URL || 'http://localhost:4021';
 
   console.log('\n' + '═'.repeat(70));
-  console.log('🤖 AGENTIC COMMERCE: Dynamic Discovery & Autonomous Hire Pipeline');
+  console.log('[AGENTIC COMMERCE] Dynamic Discovery & Autonomous Hire Pipeline');
   console.log('═'.repeat(70));
 
   // ─────────────────────────────────────────────────────────────
   // STEP 1: Query the Open Bazaar Registry for "Security Audit"
   // ─────────────────────────────────────────────────────────────
-  console.log('\n🔍 [Agent Discovery] Querying GoPlausible Bazaar Registry...');
-  console.log(`📡 GET ${BAZAAR_DISCOVERY_URL}`);
+  console.log('\n[Agent Discovery] Querying GoPlausible Bazaar Registry...');
+  console.log(`[HTTP GET] ${BAZAAR_DISCOVERY_URL}`);
 
   let discoveredEndpoints: any[] = [];
   try {
@@ -32,16 +32,16 @@ async function main() {
     if (res.ok) {
       const data = await res.json();
       discoveredEndpoints = Array.isArray(data) ? data : data.resources || [];
-      console.log(`✓ Bazaar Registry online — Fetched active network catalog (${discoveredEndpoints.length} registered nodes).`);
+      console.log(`[SUCCESS] Bazaar Registry online - Fetched active network catalog (${discoveredEndpoints.length} registered nodes).`);
     }
   } catch (err) {
-    console.log('⚠️ Network registry lookup timed out, querying local node discovery manifest...');
+    console.log('[WARN] Network registry lookup timed out, querying local node discovery manifest...');
   }
 
   // ─────────────────────────────────────────────────────────────
   // STEP 2: Agent Discovers ADSEC Node & Inspects Manifest
   // ─────────────────────────────────────────────────────────────
-  console.log('\n📋 [Agent Capabilities Matching] Searching for "Code Security Audit" nodes...');
+  console.log('\n[Agent Capabilities Matching] Searching for "Code Security Audit" nodes...');
   
   const targetNode = {
     serviceName: 'ADSEC Code Security Audit Node',
@@ -66,17 +66,17 @@ async function main() {
     },
   };
 
-  console.log(`\n🎯 Discovered Node: ${targetNode.serviceName}`);
-  console.log(`   • Endpoint  : ${targetNode.endpointUrl}`);
-  console.log(`   • Network   : ${targetNode.network}`);
-  console.log(`   • Fee       : ${targetNode.pricing.audit}`);
-  console.log(`   • Schema    : JSON payload with required 'code' property`);
+  console.log(`\n[Discovered Node] ${targetNode.serviceName}`);
+  console.log(`   - Endpoint  : ${targetNode.endpointUrl}`);
+  console.log(`   - Network   : ${targetNode.network}`);
+  console.log(`   - Fee       : ${targetNode.pricing.audit}`);
+  console.log(`   - Schema    : JSON payload with required 'code' property`);
 
   // ─────────────────────────────────────────────────────────────
   // STEP 3: Agent Hires Discovered Node & Sends Unpaid Request
   // ─────────────────────────────────────────────────────────────
   console.log('\n' + '─'.repeat(70));
-  console.log('⚡ [Agent Execution] Hiring discovered ADSEC node on-demand...');
+  console.log('[Agent Execution] Hiring discovered ADSEC node on-demand...');
   console.log('─'.repeat(70));
 
   const sampleCode = `
@@ -91,10 +91,10 @@ def query_user(user_id):
     return sql
   `.trim();
 
-  console.log(`📡 1. Agent sends POST request to ${targetNode.endpointUrl}`);
-  console.log('🟡 2. HTTP 402 Payment Required received ($0.05 USDC challenge)');
-  console.log('🔵 3. Agent programmatic wallet signs TestNet USDC transaction');
-  console.log('🟢 4. Facilitator broadcasts & settles on Algorand TestNet');
+  console.log(`1. Agent sends POST request to ${targetNode.endpointUrl}`);
+  console.log('2. HTTP 402 Payment Required received ($0.05 USDC challenge)');
+  console.log('3. Agent programmatic wallet signs TestNet USDC transaction');
+  console.log('4. Facilitator broadcasts & settles on Algorand TestNet');
 
   // Direct call to local/live backend
   try {
@@ -112,12 +112,12 @@ def query_user(user_id):
     if (auditRes.ok) {
       const report = await auditRes.json();
       console.log('\n' + '─'.repeat(70));
-      console.log(`🛡️  AUDIT DELIVERED: Score ${report.summary?.score || 0}/100 in ${report.summary?.durationMs || 500}ms`);
+      console.log(`[AUDIT REPORT] Score ${report.summary?.score || 0}/100 in ${report.summary?.durationMs || 500}ms`);
       console.log('─'.repeat(70));
-      console.log(`⚠️  Issues Found: ${report.summary?.totalIssues || 3} (Critical: ${report.summary?.critical || 1}, High: ${report.summary?.high || 2})`);
+      console.log(`Total Issues Found: ${report.summary?.totalIssues || 3} (Critical: ${report.summary?.critical || 1}, High: ${report.summary?.high || 2})`);
 
       if (report.fixes && report.fixes.length > 0) {
-        console.log('\n✨ [Autonomous Git Diff Fixes Received by Agent]:');
+        console.log('\n[Autonomous Git Diff Fixes Received by Agent]:');
         report.fixes.forEach((fix: any, idx: number) => {
           console.log(`\n# Fix #${idx + 1}: ${fix.findingId || 'Vulnerability Fix'}`);
           console.log(fix.diff);
@@ -125,13 +125,13 @@ def query_user(user_id):
       }
 
       console.log('\n' + '═'.repeat(70));
-      console.log('✅ Agent applied Git diffs automatically! Pipeline complete with ZERO human clicks.');
+      console.log('[COMPLETED] Agent applied Git diffs automatically. Pipeline complete.');
       console.log('═'.repeat(70) + '\n');
     } else {
       console.log(`Response status: ${auditRes.status} (Backend is running with x402 payment gate active)`);
     }
   } catch (err: any) {
-    console.log(`\n✅ Flow verified! Backend is reachable at ${customBackendUrl}`);
+    console.log(`\n[SUCCESS] Flow verified. Backend is reachable at ${customBackendUrl}`);
   }
 }
 

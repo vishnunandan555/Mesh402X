@@ -42,18 +42,18 @@ async function main() {
   const filePaths = args.filter((a) => !a.startsWith('--'));
 
   console.log('\n' + '═'.repeat(65));
-  console.log('🤖 ADSEC — Autonomous Agent Security Pre-Flight Audit');
+  console.log('[ADSEC] Autonomous Agent Security Pre-Flight Audit');
   console.log('═'.repeat(65));
-  console.log(`📁 Files to Audit : ${filePaths.length > 0 ? filePaths.length : 1} file(s)`);
-  console.log(`🏷️ Service Tier   : ${tier.toUpperCase()} (${tier === 'tier2' ? '$0.05 USDC' : '$0.01 USDC'})`);
+  console.log(`Files to Audit : ${filePaths.length > 0 ? filePaths.length : 1} file(s)`);
+  console.log(`Service Tier   : ${tier.toUpperCase()} (${tier === 'tier2' ? '$0.05 USDC' : '$0.01 USDC'})`);
   console.log('═'.repeat(65));
 
-  console.log('\n📡 [x402 Flow] Initiating audit request to ADSEC node...');
-  console.log('🟡 [x402 HTTP 402] Payment Required ($0.01 USDC on Algorand TestNet)');
-  console.log('🔵 [x402 Client] Signing micro-payment from Agent Wallet...');
-  console.log('🟢 [x402 Facilitator] Settled on Algorand TestNet (TxID: 0x4f9a2b8e...)');
+  console.log('\n[x402 Flow] Initiating audit request to ADSEC node...');
+  console.log('[x402 HTTP 402] Payment Required ($0.01 USDC on Algorand TestNet)');
+  console.log('[x402 Client] Signing micro-payment from Agent Wallet...');
+  console.log('[x402 Facilitator] Settled on Algorand TestNet (TxID: 0x4f9a2b8e...)');
 
-  console.log('\n🔍 [ADSEC Engine] Scanning code for secrets, CVEs, and pattern flaws...');
+  console.log('\n[ADSEC Engine] Scanning code for secrets, CVEs, and pattern flaws...');
 
   if (filePaths.length === 0) {
     // Default demo run
@@ -67,7 +67,7 @@ async function main() {
 
   for (const filePath of filePaths) {
     if (!fs.existsSync(filePath)) {
-      console.log(`\n❌ File not found: ${filePath}`);
+      console.log(`\n[ERROR] File not found: ${filePath}`);
       continue;
     }
 
@@ -85,27 +85,27 @@ async function main() {
     allFindings.push(...result.findings.map(f => ({ ...f, title: `[${filename}] ${f.title}` })));
     if (result.fixes) allFixes.push(...result.fixes);
 
-    console.log(`\n📄 Audited: ${filename} ➔ Score: ${result.summary.score}/100 | Issues: ${result.summary.totalIssues} (Critical: ${result.summary.critical}, High: ${result.summary.high})`);
+    console.log(`\nAudited: ${filename} -> Score: ${result.summary.score}/100 | Issues: ${result.summary.totalIssues} (Critical: ${result.summary.critical}, High: ${result.summary.high})`);
   }
 
   console.log('\n' + '─'.repeat(65));
-  console.log(`🛡️  AUDIT SUMMARY Across ${filePaths.length} Files: ${grandTotalIssues} Total Issues Detected`);
+  console.log(`[AUDIT SUMMARY] Across ${filePaths.length} Files: ${grandTotalIssues} Total Issues Detected`);
   console.log('─'.repeat(65));
 
   if (allFindings.length > 0) {
-    console.log('\n📋 DETAILED FINDINGS:');
+    console.log('\nDETAILED FINDINGS:');
     allFindings.forEach((f, idx) => {
-      const icon = f.severity === 'critical' ? '🔴 [CRITICAL]' : f.severity === 'high' ? '🟠 [HIGH]' : '🟡 [MEDIUM]';
+      const icon = f.severity === 'critical' ? '[CRITICAL]' : f.severity === 'high' ? '[HIGH]' : '[MEDIUM]';
       console.log(`\n${idx + 1}. ${icon} ${f.title}`);
-      if (f.line) console.log(`   📍 Line ${f.line}: \`${f.snippet}\``);
-      console.log(`   💡 Remediation: ${f.remediation}`);
-      if (f.cweId) console.log(`   🏷️ Tag: ${f.cweId}`);
+      if (f.line) console.log(`   Line ${f.line}: \`${f.snippet}\``);
+      console.log(`   Remediation: ${f.remediation}`);
+      if (f.cweId) console.log(`   Tag: ${f.cweId}`);
     });
   }
 
   if (allFixes.length > 0) {
     console.log('\n' + '═'.repeat(65));
-    console.log('✨ [ADSEC Auto-Remediation] Generated Actionable Git Diff Patches:');
+    console.log('[ADSEC Auto-Remediation] Generated Actionable Git Diff Patches:');
     console.log('═'.repeat(65));
     for (const fix of allFixes) {
       console.log(`\n# Fix for: ${fix.findingId}`);
@@ -115,20 +115,20 @@ async function main() {
   }
 
   console.log('\n' + '═'.repeat(65));
-  console.log('✅ Audit Completed & Verified On-Chain! Ready for deployment.');
+  console.log('[COMPLETED] Audit Completed & Verified On-Chain.');
   console.log('═'.repeat(65) + '\n');
 }
 
 async function auditSingleContent(filename: string, code: string, language: any, tier: any) {
   const result = await runAudit({ code, language, tier, filename });
-  console.log(`\n🛡️  AUDIT REPORT: ${result.summary.score}/100 Security Score (${result.summary.durationMs}ms)`);
-  console.log(`⚠️  Total Issues Found: ${result.summary.totalIssues} (Critical: ${result.summary.critical}, High: ${result.summary.high})`);
+  console.log(`\n[AUDIT REPORT] ${result.summary.score}/100 Security Score (${result.summary.durationMs}ms)`);
+  console.log(`Total Issues Found: ${result.summary.totalIssues} (Critical: ${result.summary.critical}, High: ${result.summary.high})`);
   if (result.findings.length > 0) {
     result.findings.forEach((f, idx) => {
-      const icon = f.severity === 'critical' ? '🔴 [CRITICAL]' : '🟠 [HIGH]';
+      const icon = f.severity === 'critical' ? '[CRITICAL]' : '[HIGH]';
       console.log(`\n${idx + 1}. ${icon} ${f.title}`);
-      if (f.line) console.log(`   📍 Line ${f.line}: \`${f.snippet}\``);
-      console.log(`   💡 Remediation: ${f.remediation}`);
+      if (f.line) console.log(`   Line ${f.line}: \`${f.snippet}\``);
+      console.log(`   Remediation: ${f.remediation}`);
     });
   }
 }

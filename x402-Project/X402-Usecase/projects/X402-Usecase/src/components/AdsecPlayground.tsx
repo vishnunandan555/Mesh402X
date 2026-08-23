@@ -5,7 +5,7 @@ import { executeAdsecRequestWithPayment, AdsecResponse } from '../utils/adsecApi
 const PRESETS = [
   {
     id: 'python-sqli-secret',
-    name: '🐍 Python: SQLi + Leaked Key',
+    name: 'Python: SQLi + Leaked Key',
     language: 'python',
     filename: 'auth_service.py',
     code: `import os
@@ -29,7 +29,7 @@ def get_user_profile(user_id):
   },
   {
     id: 'typosquat-supply-chain',
-    name: '📦 Supply-Chain: Typosquatting Attack',
+    name: 'Supply-Chain: Typosquatting Attack',
     language: 'python',
     filename: 'scraper.py',
     code: `import sys
@@ -42,7 +42,7 @@ def fetch_data(target_url):
   },
   {
     id: 'algorand-contract',
-    name: '⛓️ Algorand: PyTeAL Opt-In Vulnerability',
+    name: 'Algorand: PyTeAL Opt-In Vulnerability',
     language: 'python',
     filename: 'asa_vault.py',
     code: `from pyteal import *
@@ -64,7 +64,7 @@ def approval_program():
   },
   {
     id: 'js-xss-eval',
-    name: '🌐 JavaScript: XSS & Dynamic Eval',
+    name: 'JavaScript: XSS & Dynamic Eval',
     language: 'javascript',
     filename: 'render.js',
     code: `// Danger: Unsafe dynamic eval and XSS injection
@@ -86,28 +86,28 @@ const ENDPOINTS_META: Record<
     path: '/adsec/scan',
     name: 'Pre-Flight Scanner',
     price: '$0.01 USDC',
-    cardBadge: '🟢 Green Card 1',
-    desc: 'Fast deterministic check for leaked secrets, AST patterns, typosquatting & live OSV.dev CVEs.',
+    cardBadge: 'Card 1',
+    desc: 'Fast deterministic check for leaked secrets, AST patterns, typosquatting and live OSV.dev CVEs.',
   },
   remediate: {
     path: '/adsec/remediate',
     name: 'Auto-Remediation Node',
     price: '$0.03 USDC',
-    cardBadge: '🟢 Green Card 2',
+    cardBadge: 'Card 2',
     desc: 'Generates language-aware unified Git diff patches (git apply ready) to fix code flaws.',
   },
   attest: {
     path: '/adsec/attest',
     name: 'On-Chain Attestation',
     price: '$0.01 USDC',
-    cardBadge: '🟢 Green Card 3',
+    cardBadge: 'Card 3',
     desc: 'Hashes code with SHA-256 and writes a cryptographic proof-of-audit certificate on Algorand TestNet.',
   },
   audit: {
     path: '/adsec/audit',
     name: 'Unified Audit Suite',
     price: '$0.05 USDC',
-    cardBadge: '⚡ Full Pipeline',
+    cardBadge: 'Full Pipeline',
     desc: 'Complete all-in-one suite: Full Scan, Git Diff fixes, and On-Chain Attestation.',
   },
 }
@@ -217,7 +217,7 @@ export const AdsecPlayground: React.FC = () => {
               </span>
             </div>
             <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-2">
-              🛡️ ADSEC Security Node
+              ADSEC Security Node
             </h1>
             <p className="text-slate-300 text-sm mt-1 max-w-2xl">
               On-demand, pay-per-call pre-flight security auditor for autonomous AI agents. Powered by micro-payments in TestNet USDC (ASA 10458941).
@@ -265,7 +265,7 @@ export const AdsecPlayground: React.FC = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
               <label className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                📁 Vulnerability Presets (Click to Load):
+                Vulnerability Presets (Click to Load):
               </label>
               <div className="flex flex-wrap gap-2">
                 {PRESETS.map((p) => (
@@ -328,7 +328,7 @@ export const AdsecPlayground: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <span>⚡ Run Paid Security Audit</span>
+                    <span>Run Paid Security Audit</span>
                     <span className="text-xs bg-indigo-800 px-2 py-0.5 rounded-md font-mono">
                       {ENDPOINTS_META[mode].price}
                     </span>
@@ -356,7 +356,7 @@ export const AdsecPlayground: React.FC = () => {
       {/* Error Alert */}
       {error && (
         <div className="bg-red-950/80 border border-red-500/50 rounded-xl p-4 text-red-200 text-sm flex items-center gap-2">
-          <span>❌</span>
+          <span className="font-bold text-red-400">[ERROR]</span>
           <span>{error}</span>
         </div>
       )}
@@ -415,7 +415,7 @@ export const AdsecPlayground: React.FC = () => {
             <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-5 shadow-lg text-white">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-bold text-emerald-400 flex items-center gap-2">
-                  <span>📜</span> Cryptographic On-Chain Attestation
+                  Cryptographic On-Chain Attestation
                 </h4>
                 <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-3 py-1 rounded-full border border-emerald-500/40">
                   {auditResponse.attestation.status}
@@ -433,7 +433,7 @@ export const AdsecPlayground: React.FC = () => {
           {auditResponse.findings && auditResponse.findings.length > 0 && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>📋</span> Detailed Security Findings ({auditResponse.findings.length})
+                Detailed Security Findings ({auditResponse.findings.length})
               </h3>
               <div className="space-y-3">
                 {auditResponse.findings.map((finding, idx) => (
@@ -465,13 +465,13 @@ export const AdsecPlayground: React.FC = () => {
 
                     {finding.line && (
                       <div className="text-xs font-mono text-slate-600 dark:text-slate-400">
-                        📍 Line {finding.line}: <code className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-indigo-600 dark:text-indigo-400">{finding.snippet}</code>
+                        Line {finding.line}: <code className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-indigo-600 dark:text-indigo-400">{finding.snippet}</code>
                       </div>
                     )}
 
                     {finding.remediation && (
                       <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
-                        <span className="font-bold text-indigo-600 dark:text-indigo-400">💡 Remediation: </span>
+                        <span className="font-bold text-indigo-600 dark:text-indigo-400">Remediation: </span>
                         {finding.remediation}
                       </div>
                     )}
@@ -486,7 +486,7 @@ export const AdsecPlayground: React.FC = () => {
             <div className="bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-xl space-y-4 text-white">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span>✨</span> Autonomous Git Diff Patches ({auditResponse.fixes.length})
+                  Autonomous Git Diff Patches ({auditResponse.fixes.length})
                 </h3>
                 <span className="text-xs text-slate-400 font-mono">git apply compatible</span>
               </div>
@@ -500,7 +500,7 @@ export const AdsecPlayground: React.FC = () => {
                         onClick={() => handleCopyDiff(fix.diff, idx)}
                         className="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2.5 py-1 rounded transition-all text-[11px]"
                       >
-                        {copiedDiffIdx === idx ? '✓ Copied!' : 'Copy Patch'}
+                        {copiedDiffIdx === idx ? 'Copied' : 'Copy Patch'}
                       </button>
                     </div>
                     <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed">

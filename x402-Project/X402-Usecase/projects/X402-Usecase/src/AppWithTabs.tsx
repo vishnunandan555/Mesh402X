@@ -67,7 +67,7 @@ export default function App() {
                       : 'text-slate-400 hover:text-indigo-300 hover:bg-slate-800/50'
                   }`}
                 >
-                  <span>🛡️ ADSEC Security Node</span>
+                  <span>ADSEC Security Node</span>
                   <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-mono border border-indigo-500/30">
                     3 Green Cards
                   </span>
@@ -80,7 +80,7 @@ export default function App() {
                       : 'text-slate-500 hover:text-teal-300 hover:bg-slate-800/30'
                   }`}
                 >
-                  🌤️ Weather Demo
+                  Weather Demo
                 </button>
                 <button
                   onClick={() => setActiveTab('meme')}
@@ -90,7 +90,7 @@ export default function App() {
                       : 'text-slate-500 hover:text-purple-300 hover:bg-slate-800/30'
                   }`}
                 >
-                  🎨 Meme Generator
+                  Meme Generator
                 </button>
               </div>
             </div>
