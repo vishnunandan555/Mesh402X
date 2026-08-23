@@ -13,11 +13,11 @@ export type TerminalPhase =
 const W = 18
 
 function attackFrames(): string[] {
-  const labels = ['SQLi', 'XSS ', 'KEY ', 'RCE ']
+  const labels = ['AST-Tree', 'Secrets ', 'Pkg-CVE ', 'DataFlow']
   const headers = [
-    '[*] loading ruleset ......... 42 rules',
-    '[*] tracing dataflow ........ depth 9',
-    '[*] correlating OSV.dev CVEs',
+    '[*] Scanning AST node hierarchy...',
+    '[*] Checking secret pattern entropy...',
+    '[*] Cross-referencing OSV.dev advisory database...',
   ]
   const frames: string[] = []
   for (let p = 0; p <= W; p++) {
@@ -26,7 +26,7 @@ function attackFrames(): string[] {
     frames.push([header, '', ...rows, ''].join('\n'))
   }
   frames.push(
-    ['', '[!] threats engaged @ ADSEC wall', '', ...labels.map((l) => `[${l}] ${'#'.repeat(W)}||`), ''].join('\n')
+    ['', '[✓] Static analysis & rule evaluation complete', '', ...labels.map((l) => `[${l}] ${'#'.repeat(W)}||`), ''].join('\n')
   )
   return frames
 }
@@ -36,15 +36,15 @@ function settleFrames(): string[] {
   const frames: string[] = []
   for (let i = 0; i <= total; i++) {
     const bar = `${'#'.repeat(i)}${i === total ? '' : '*'}${'.'.repeat(Math.max(0, total - i - 1))}`
-    const status = i === total ? 'FINAL CONFIRMED' : `confirming.. ${(i / total * 100).toFixed(0)}%`
+    const status = i === total ? 'CONFIRMED ON-CHAIN' : `Settling.. ${(i / total * 100).toFixed(0)}%`
     frames.push(
       [
-        'wallet ==> mempool ==> ALGORAND',
+        'Client Wallet  ──>  Facilitator  ──>  Algorand TestNet',
         '',
-        'round  #48,201,334',
+        'Transaction Round  : #48,201,334',
         `[${bar}]  ${status}`,
         '',
-        'note  : adsec-attest:v1',
+        'Settlement Protocol: x402 / USDC (ASA#10458941)',
       ].join('\n')
     )
   }
@@ -53,31 +53,22 @@ function settleFrames(): string[] {
 
 const IDLE_FRAMES = [
   [
-    'intruder$ nmap -sS adsec-node:4021',
+    'Service : Medusa Security Node (Algorand TestNet)',
+    'Protocol: x402 Micropayment Standard',
     '',
-    '[probe] =============>',
-    '[probe] =============>',
-    '[probe] =============>',
+    'Rulesets: 42 deterministic detectors active',
+    'CVE Sync: OSV.dev vulnerability index synchronized',
     '',
-    'sweeping perimeter...',
+    'Status  : Standing by for incoming audit request...',
   ].join('\n'),
   [
-    'intruder$ nmap -sS adsec-node:4021',
+    'Service : Medusa Security Node (Algorand TestNet)',
+    'Protocol: x402 Micropayment Standard',
     '',
-    '[probe] ......#####...',
-    '[probe] ......#####...',
-    '[probe] ......#####...',
+    'Rulesets: 42 deterministic detectors active',
+    'CVE Sync: OSV.dev vulnerability index synchronized',
     '',
-    'REFUSED by ADSEC firewall',
-  ].join('\n'),
-  [
-    'intruder$ nmap -sS adsec-node:4021',
-    '',
-    '   .------------------.',
-    "   |   NODE SECURE    |",
-    "   '------------------'",
-    '',
-    'listening :4021 for x402 calls',
+    'Status  : Ready to receive code payload.',
   ].join('\n'),
 ]
 
@@ -86,52 +77,52 @@ const RECON_FRAMES = attackFrames()
 const CHALLENGE_FRAMES = [
   [
     '> POST /adsec/audit HTTP/1.1',
-    '> content-type: application/json',
+    '> Content-Type: application/json',
     '',
     '< HTTP/1.1 402 PAYMENT REQUIRED',
-    '< price : $0.001 USDC ASA#10458941',
-    '< via   : goplausible facilitator',
+    '< Price : $0.001 USDC (ASA#10458941)',
+    '< Via   : GoPlausible Facilitator',
     '',
-    '+------------------------------+',
-    '| awaiting wallet signature _  |',
-    '+------------------------------+',
+    '+──────────────────────────────────+',
+    '| Waiting for wallet signature...  |',
+    '+──────────────────────────────────+',
   ].join('\n'),
   [
     '> POST /adsec/audit HTTP/1.1',
-    '> content-type: application/json',
+    '> Content-Type: application/json',
     '',
     '< HTTP/1.1 402 PAYMENT REQUIRED',
-    '< price : $0.001 USDC ASA#10458941',
-    '< via   : goplausible facilitator',
+    '< Price : $0.001 USDC (ASA#10458941)',
+    '< Via   : GoPlausible Facilitator',
     '',
-    '+------------------------------+',
-    "| awaiting wallet signature    |",
-    '+------------------------------+',
+    '+──────────────────────────────────+',
+    '| Waiting for wallet signature _   |',
+    '+──────────────────────────────────+',
   ].join('\n'),
 ]
 
 const SIGNING_FRAMES = [
   [
-    '.-----------------------------.',
-    '| PERA / DEFLY WALLET         |',
-    '| network: algorand-testnet   |',
-    '| fee    : 0.001 ALGO         |',
-    '| sign txn? ............... Y<|',
-    "'-----------------------------'",
-    '           |',
-    '           v',
-    'sig ed25519 :: 7xKq****9fQ=',
+    '┌─────────────────────────────┐',
+    '│ Algorand Wallet Connection  │',
+    '│ Network : Algorand TestNet  │',
+    '│ Asset   : 0.001 TestNet USDC│',
+    '│ Confirm transfer? ...... Y< │',
+    '└─────────────────────────────┘',
+    '              │',
+    '              ▼',
+    'Signature ed25519: 7xKq...9fQ=',
   ].join('\n'),
   [
-    '.-----------------------------.',
-    '| PERA / DEFLY WALLET         |',
-    '| network: algorand-testnet   |',
-    '| fee    : 0.001 ALGO         |',
-    '| sign txn? ............... Y<|',
-    "'-----------------------------'",
-    '           |',
-    '           v',
-    'sig ed25519 :: mR2v****kQ8z',
+    '┌─────────────────────────────┐',
+    '│ Algorand Wallet Connection  │',
+    '│ Network : Algorand TestNet  │',
+    '│ Asset   : 0.001 TestNet USDC│',
+    '│ Confirm transfer? ...... Y< │',
+    '└─────────────────────────────┘',
+    '              │',
+    '              ▼',
+    'Signature ed25519: mR2v...kQ8z',
   ].join('\n'),
 ]
 
@@ -142,22 +133,19 @@ const PATCH_FRAMES = [
     '--- a/auth_service.py',
     '+++ b/auth_service.py',
     '',
-    '- sql = f"SELECT * FROM users',
-    '-      WHERE id = {user_id}"',
-    '+ sql = "SELECT * FROM users',
-    '+      WHERE id = %s", user_id',
+    '- sql = f"SELECT * FROM users WHERE id = {user_id}"',
+    '+ sql = "SELECT * FROM users WHERE id = %s", (user_id,)',
     '',
-    'applying hunk 1/3 ... ok',
+    'Generating patch 1 of 3 ... ok',
   ].join('\n'),
   [
     '--- a/auth_service.py',
     '+++ b/auth_service.py',
     '',
-    '- OPENAI_API_KEY = "sk-proj-abc"',
-    '+ OPENAI_API_KEY = os.environ[',
-    '+   "OPENAI_API_KEY"]',
+    '- OPENAI_API_KEY = "sk-proj-abc..."',
+    '+ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")',
     '',
-    'applying hunk 2/3 ... ok',
+    'Generating patch 2 of 3 ... ok',
   ].join('\n'),
   [
     '--- a/auth_service.py',
@@ -166,30 +154,30 @@ const PATCH_FRAMES = [
     '- import reqeusts',
     '+ import requests',
     '',
-    'git apply --check ... PASS',
+    'Validating git diff syntax ... PASS',
   ].join('\n'),
 ]
 
 const SUCCESS_FRAME = [
-  '          ______________',
-  '         /              \\',
-  '        /    DEFENDED    \\',
-  '       |                  |',
-  '       |   score -> 96    |',
-  '       |   patches applied|',
-  '       |   proof on-chain |',
-  '        \\                /',
-  '         \\______________/',
+  '  ┌──────────────────────────────────┐',
+  '  │        AUDIT COMPLETE            │',
+  '  │                                  │',
+  '  │  ✓ Diagnostics & score generated │',
+  '  │  ✓ Git patches ready to apply    │',
+  '  │  ✓ Attestation written on-chain  │',
+  '  │  ✓ HTTP 200 payload returned     │',
+  '  └──────────────────────────────────┘',
 ].join('\n')
 
 const ERROR_FRAME = [
-  '!! x402 flow halted !!',
+  '── Audit Process Interrupted ──',
   '',
-  ' > upstream unreachable?',
-  ' > insufficient balance?',
-  ' > wallet rejected signing?',
+  'Possible causes:',
+  ' • Wallet signature rejected or timed out',
+  ' • Insufficient TestNet USDC or ALGO balance',
+  ' • Network connectivity issue with facilitator',
   '',
-  'review and retry_',
+  'Check your wallet and try again.',
 ].join('\n')
 
 interface PhaseTheme {
@@ -200,14 +188,14 @@ interface PhaseTheme {
 }
 
 const THEMES: Record<TerminalPhase, PhaseTheme> = {
-  idle: { label: 'PERIMETER WATCH', step: 'standby', text: 'text-slate-400', chip: 'bg-slate-500/10 text-slate-300 border-slate-500/40' },
-  recon: { label: 'THREAT SWEEP', step: 'step 1/5 · analyzing target', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/40' },
-  challenge: { label: 'HTTP 402 CHALLENGE', step: 'step 2/5 · payment required', text: 'text-amber-300', chip: 'bg-amber-500/10 text-amber-300 border-amber-500/40' },
-  signing: { label: 'WALLET SIGNATURE', step: 'step 3/5 · signing micropayment', text: 'text-sky-300', chip: 'bg-sky-500/10 text-sky-300 border-sky-500/40' },
-  settling: { label: 'ON-CHAIN SETTLEMENT', step: 'step 4/5 · algorand testnet', text: 'text-cyan-300', chip: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/40' },
-  patching: { label: 'AUTO-PATCH', step: 'step 5/5 · applying git diffs', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40' },
-  success: { label: 'NODE SECURE', step: 'complete · report delivered', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/40' },
-  error: { label: 'FLOW HALTED', step: 'error', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/40' },
+  idle: { label: 'STANDBY', step: 'Ready for request', text: 'text-slate-400', chip: 'bg-slate-500/10 text-slate-300 border-slate-500/40' },
+  recon: { label: 'STATIC ANALYSIS', step: 'Step 1/5 · Analyzing code structure', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/40' },
+  challenge: { label: 'HTTP 402 CHALLENGE', step: 'Step 2/5 · Micropayment invoice generated', text: 'text-amber-300', chip: 'bg-amber-500/10 text-amber-300 border-amber-500/40' },
+  signing: { label: 'WALLET SIGNATURE', step: 'Step 3/5 · Awaiting user signature', text: 'text-sky-300', chip: 'bg-sky-500/10 text-sky-300 border-sky-500/40' },
+  settling: { label: 'ON-CHAIN SETTLEMENT', step: 'Step 4/5 · Confirming on Algorand TestNet', text: 'text-cyan-300', chip: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/40' },
+  patching: { label: 'PATCH GENERATION', step: 'Step 5/5 · Creating unified diffs', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40' },
+  success: { label: 'VERIFIED & DELIVERED', step: 'Complete · Audit report delivered', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/40' },
+  error: { label: 'INTERRUPTED', step: 'Request halted', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/40' },
 }
 
 function framesFor(phase: TerminalPhase): string[] {

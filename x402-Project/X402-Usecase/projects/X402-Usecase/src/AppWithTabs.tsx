@@ -32,8 +32,8 @@ if (import.meta.env.VITE_ALGOD_NETWORK === 'localnet') {
 type TabType = 'adsec' | 'weather' | 'meme'
 
 const TABS: { id: TabType; label: string }[] = [
-  { id: 'adsec', label: 'Security Node' },
-  { id: 'weather', label: 'Weather Demo' },
+  { id: 'adsec', label: 'Security Auditor' },
+  { id: 'weather', label: 'Live Data Feed' },
   { id: 'meme', label: 'Meme Studio' },
 ]
 

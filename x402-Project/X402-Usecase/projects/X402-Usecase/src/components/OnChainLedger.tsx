@@ -143,15 +143,15 @@ export const OnChainLedger: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="bg-emerald-500/20 text-emerald-300 text-xs font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold">
-              Live Algorand Indexer
+              Algorand Indexer Feed
             </span>
             <span className="bg-indigo-500/20 text-indigo-300 text-xs font-mono px-3 py-1 rounded-full border border-indigo-500/40">
-              ASA 10458941 (USDC)
+              TestNet USDC (ASA 10458941)
             </span>
           </div>
-          <h2 className="text-2xl font-black text-white">On-Chain Audit Ledger & Dashboard</h2>
+          <h2 className="text-2xl font-bold text-white">On-Chain Settlement Ledger</h2>
           <p className="text-xs text-slate-400 font-mono mt-1">
-            Zero Web2 database required — all transaction receipts are cryptographically verified directly on Algorand TestNet.
+            Verifiable transaction feed queried directly from Algorand TestNet nodes.
           </p>
         </div>
 
@@ -162,7 +162,7 @@ export const OnChainLedger: React.FC = () => {
               onClick={handleAdminLock}
               className="text-xs bg-red-950/60 hover:bg-red-900 border border-red-500/40 text-red-300 px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1"
             >
-              🔒 Lock
+              🔒 Lock Console
             </button>
           )}
 
@@ -175,7 +175,7 @@ export const OnChainLedger: React.FC = () => {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              My User Receipts
+              My Receipts
             </button>
             <button
               onClick={() => setViewMode('merchant')}
@@ -185,7 +185,7 @@ export const OnChainLedger: React.FC = () => {
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              {isAdminUnlocked ? '👑 Node Operator Admin' : '🔒 Admin Login'}
+              {isAdminUnlocked ? 'Operator Console' : 'Operator Login'}
             </button>
           </div>
         </div>
@@ -198,9 +198,9 @@ export const OnChainLedger: React.FC = () => {
             🔒
           </div>
           <div>
-            <h3 className="text-xl font-bold text-white">Node Operator Authentication</h3>
+            <h3 className="text-xl font-bold text-white">Operator Console</h3>
             <p className="text-xs text-slate-400 font-mono mt-1">
-              Restricted console for the Medusa / ADSEC security node operator.
+              Enter operator passcode to view receiver analytics and aggregate volume.
             </p>
           </div>
 
@@ -209,7 +209,7 @@ export const OnChainLedger: React.FC = () => {
               type="password"
               value={adminPassInput}
               onChange={(e) => setAdminPassInput(e.target.value)}
-              placeholder="Enter Admin Passcode..."
+              placeholder="Enter passcode..."
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-indigo-300 focus:outline-none focus:border-indigo-500"
             />
             {adminAuthError && (
@@ -219,7 +219,7 @@ export const OnChainLedger: React.FC = () => {
               type="submit"
               className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl font-mono text-xs shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
             >
-              Unlock Node Dashboard
+              Unlock Console
             </button>
           </form>
         </div>
@@ -230,43 +230,43 @@ export const OnChainLedger: React.FC = () => {
             {viewMode === 'user' ? (
               <>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">User Identity (Connected Wallet)</div>
+                  <div className="text-xs text-slate-400 font-mono uppercase">Connected Account</div>
                   <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
-                    {activeAddress || 'Not Connected'}
+                    {activeAddress || 'Wallet not connected'}
                   </div>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
                   <div className="text-xs text-slate-400 font-mono uppercase">TestNet ALGO Balance</div>
                   <div className="text-xl font-mono font-black text-emerald-400 mt-1">
-                    {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '---'}
+                    {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '—'}
                   </div>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
                   <div className="text-xs text-slate-400 font-mono uppercase">TestNet USDC Balance</div>
                   <div className="text-xl font-mono font-black text-amber-400 mt-1">
-                    {userBalances ? `$${userBalances.usdc.toFixed(2)} USDC` : '---'}
+                    {userBalances ? `$${userBalances.usdc.toFixed(2)} USDC` : '—'}
                   </div>
                 </div>
               </>
             ) : (
               <>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">ADSEC Receiver Address</div>
+                  <div className="text-xs text-slate-400 font-mono uppercase">Settlement Address</div>
                   <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
                     {RECEIVER_WALLET}
                   </div>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">Total Settle Volume</div>
+                  <div className="text-xs text-slate-400 font-mono uppercase">Total Settled Volume</div>
                   <div className="text-xl font-mono font-black text-emerald-400 mt-1">
-                    {merchantStats ? `$${merchantStats.totalRevenue.toFixed(2)} USDC` : '---'}
+                    {merchantStats ? `$${merchantStats.totalRevenue.toFixed(2)} USDC` : '—'}
                   </div>
                 </div>
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">GoPlausible Bazaar Status</div>
+                  <div className="text-xs text-slate-400 font-mono uppercase">Node Services</div>
                   <div className="text-sm font-mono font-bold text-emerald-400 mt-1 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Active (4 Routes Configured)
+                    Online (4 Paid Routes Active)
                   </div>
                 </div>
               </>
@@ -277,7 +277,7 @@ export const OnChainLedger: React.FC = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl text-white space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="font-bold text-base text-white flex items-center gap-2">
-            <span>{viewMode === 'user' ? 'Your Verified Transactions' : 'Node Settlement Stream'}</span>
+            <span>{viewMode === 'user' ? 'Your Verified Receipts' : 'Recent Node Settlements'}</span>
             <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">
               {transactions.length} record(s)
             </span>
@@ -287,7 +287,7 @@ export const OnChainLedger: React.FC = () => {
             disabled={loading}
             className="text-xs text-indigo-400 hover:text-indigo-300 font-mono font-bold border border-indigo-500/30 px-3 py-1.5 rounded-lg hover:bg-indigo-950 transition-all flex items-center gap-1.5"
           >
-            {loading ? 'Refreshing...' : '🔄 Refresh Ledger'}
+            {loading ? 'Refreshing...' : '🔄 Refresh Feed'}
           </button>
         </div>
 
@@ -298,8 +298,8 @@ export const OnChainLedger: React.FC = () => {
         ) : transactions.length === 0 ? (
           <div className="text-center py-12 text-slate-500 font-mono text-xs bg-slate-950 rounded-xl border border-slate-800/80">
             {viewMode === 'user' && !activeAddress
-              ? 'Connect your Algorand wallet above to view your on-chain audit history.'
-              : 'No on-chain transactions detected for this address yet.'}
+              ? 'Connect your Algorand wallet above to view your on-chain transaction receipts.'
+              : 'No on-chain transactions detected for this account yet.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -308,9 +308,9 @@ export const OnChainLedger: React.FC = () => {
                 <tr>
                   <th className="py-3 px-4">Transaction ID</th>
                   <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Time</th>
+                  <th className="py-3 px-4">Settled At</th>
                   <th className="py-3 px-4">Counterparty</th>
-                  <th className="py-3 px-4 text-right">Lora Explorer</th>
+                  <th className="py-3 px-4 text-right">Explorer</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -337,7 +337,7 @@ export const OnChainLedger: React.FC = () => {
                         rel="noreferrer"
                         className="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2.5 py-1 rounded-md border border-indigo-500/40 transition-all text-[11px] font-bold inline-flex items-center gap-1"
                       >
-                        View Tx ↗
+                        View on Lora ↗
                       </a>
                     </td>
                   </tr>

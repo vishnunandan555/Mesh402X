@@ -7,7 +7,7 @@ import { ENDPOINTS_META, ENDPOINT_ORDER, EndpointMode } from '../utils/adsecEndp
 const PRESETS = [
   {
     id: 'python-sqli-secret',
-    name: 'Python: SQLi + Leaked Key',
+    name: 'Python: SQLi & Exposed Key',
     language: 'python',
     filename: 'auth_service.py',
     code: `import os
@@ -31,7 +31,7 @@ def get_user_profile(user_id):
   },
   {
     id: 'typosquat-supply-chain',
-    name: 'Supply-Chain: Typosquatting',
+    name: 'Supply Chain: Malicious Package',
     language: 'python',
     filename: 'scraper.py',
     code: `import sys
@@ -44,7 +44,7 @@ def fetch_data(target_url):
   },
   {
     id: 'algorand-contract',
-    name: 'Algorand: ASA Opt-In Flaw',
+    name: 'Algorand: Unchecked ASA Transfer',
     language: 'python',
     filename: 'asa_vault.py',
     code: `from pyteal import *
@@ -66,7 +66,7 @@ def approval_program():
   },
   {
     id: 'js-xss-eval',
-    name: 'JavaScript: XSS + eval',
+    name: 'JavaScript: Eval & XSS Injection',
     language: 'javascript',
     filename: 'render.js',
     code: `// Danger: Unsafe dynamic eval and XSS injection
@@ -129,34 +129,34 @@ export const AdsecPlayground: React.FC = () => {
     setTerminalLogs([])
     setTerminalPhase('recon')
     const meta = ENDPOINTS_META[mode]
-    pushLog(`target ${filename} · ${(new TextEncoder().encode(code).length / 1024).toFixed(1)}KB ${language}`)
-    pushLog(`POST ${meta.path} · tier ${mode === 'scan' || mode === 'attest' ? 'tier1' : 'tier2'}`)
+    pushLog(`Target: ${filename} (${(new TextEncoder().encode(code).length / 1024).toFixed(1)} KB ${language})`)
+    pushLog(`Endpoint: POST ${meta.path} (${meta.name})`)
   }
 
   const finishSuccess = (data: AdsecResponse) => {
     setAuditResponse(data)
     if (data.fixes && data.fixes.length > 0 && (mode === 'remediate' || mode === 'audit')) {
       setTerminalPhase('patching')
-      pushLog(`generated ${data.fixes.length} git patch(es)`)
+      pushLog(`Generated ${data.fixes.length} git patch(es) ready to apply`)
       setTimeout(() => {
         setTerminalPhase('success')
         setLoading(false)
         pushLog(
-          `done · score ${data.summary?.score ?? '—'} · findings ${data.findings?.length ?? 0} · attested ${
-            data.attestation ? 'yes' : 'no'
+          `Audit complete · Score: ${data.summary?.score ?? '—'}/100 · Findings: ${data.findings?.length ?? 0} · Proof recorded: ${
+            data.attestation ? 'Yes' : 'No'
           }`
         )
-      }, 1600)
+      }, 1400)
     } else {
       setTerminalPhase('success')
       setLoading(false)
-      pushLog(`done · score ${data.summary?.score ?? '—'} · findings ${data.findings?.length ?? 0}`)
+      pushLog(`Audit complete · Score: ${data.summary?.score ?? '—'}/100 · Findings: ${data.findings?.length ?? 0}`)
     }
   }
 
   const handleExecuteAudit = async () => {
     if (!activeAddress) {
-      setError('Please connect your Algorand TestNet wallet (Pera / Defly) using the header button.')
+      setError('Please connect your Algorand wallet (Pera, Defly, or Lute) to sign the payment.')
       return
     }
 
@@ -188,15 +188,15 @@ export const AdsecPlayground: React.FC = () => {
         (step) => {
           if (step === 'challenging') {
             setTerminalPhase('challenge')
-            pushLog(`<- HTTP 402 PAYMENT REQUIRED · ${meta.price}`)
+            pushLog(`Received HTTP 402 challenge (${meta.price})`)
           } else if (step === 'signing') {
             setTerminalPhase('signing')
-            pushLog('-> awaiting wallet signature (Pera / Defly)')
+            pushLog('Waiting for transaction signature in wallet...')
           } else if (step === 'settling') {
             setTerminalPhase('settling')
-            pushLog('-> settling micropayment via goplausible facilitator')
+            pushLog('Settling payment on Algorand TestNet via GoPlausible...')
           } else if (step === 'done') {
-            pushLog('<- HTTP 200 OK · settlement confirmed on-chain')
+            pushLog('Payment confirmed on Algorand · Delivering results')
           }
         }
       )
@@ -204,16 +204,16 @@ export const AdsecPlayground: React.FC = () => {
       finishSuccess(response)
     } catch (err: any) {
       console.error('ADSEC execution error:', err)
-      setError(err?.message || 'Failed to execute security audit request.')
+      setError(err?.message || 'Audit request could not be completed.')
       setTerminalPhase('error')
       setLoading(false)
-      pushLog(`!! aborted · ${(err?.message || 'request failed').slice(0, 48)}`)
+      pushLog(`Error: ${(err?.message || 'Request cancelled or failed').slice(0, 52)}`)
     }
   }
 
   const handleExecuteFreeDevAudit = async () => {
     beginRun()
-    pushLog('dev mode · bypassing x402 payment rail')
+    pushLog('Running in Dev Mode (bypassing on-chain payment rail)')
 
     try {
       const res = await fetch(`${API_BASE_URL}/adsec/dev-audit`, {
@@ -233,14 +233,14 @@ export const AdsecPlayground: React.FC = () => {
       }
 
       const data = await res.json()
-      pushLog('<- HTTP 200 OK · free audit complete')
+      pushLog('Audit completed successfully')
       finishSuccess(data)
     } catch (err: any) {
       console.error('Dev audit error:', err)
-      setError(err?.message || 'Failed to execute dev audit.')
+      setError(err?.message || 'Failed to complete free dev audit.')
       setTerminalPhase('error')
       setLoading(false)
-      pushLog(`!! dev audit failed · ${(err?.message || '').slice(0, 48)}`)
+      pushLog(`Error: ${(err?.message || 'Request failed').slice(0, 52)}`)
     }
   }
 
@@ -255,8 +255,8 @@ export const AdsecPlayground: React.FC = () => {
       {/* Preset Selector & Code Input */}
       <div className="bg-slate-900/70 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-          <label className="text-sm font-bold text-slate-200 flex items-center gap-2 font-mono">
-            <span className="text-indigo-400">$</span> load a vulnerable target:
+          <label className="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <span className="text-indigo-400 font-mono">▸</span> Sample Vulnerability Presets:
           </label>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => (
@@ -279,12 +279,12 @@ export const AdsecPlayground: React.FC = () => {
         <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-[#05070d]">
           <div className="bg-slate-900 px-4 py-2 flex justify-between items-center border-b border-slate-800 text-xs font-mono text-slate-400">
             <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 inline-block"></span>
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block"></span>
               <span className="ml-2 text-slate-300 font-bold">{filename}</span>
             </span>
-            <span className="uppercase text-indigo-400 tracking-widest">{language}</span>
+            <span className="uppercase text-indigo-400 font-semibold tracking-wider">{language}</span>
           </div>
           <textarea
             value={code}
@@ -292,14 +292,14 @@ export const AdsecPlayground: React.FC = () => {
             rows={12}
             spellCheck={false}
             className="w-full bg-[#05070d] p-4 font-mono text-sm text-emerald-300 focus:outline-none resize-y leading-relaxed thin-scroll"
-            placeholder="Paste code to audit..."
+            placeholder="Paste source code to audit..."
           />
         </div>
 
         {/* Action Bar */}
         <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="text-xs text-slate-500 font-mono">
-            calling <span className="font-bold text-slate-300">{ENDPOINTS_META[mode].path}</span> · fee{' '}
+          <div className="text-xs text-slate-400 font-mono">
+            Selected Service: <span className="font-bold text-slate-200">{ENDPOINTS_META[mode].name}</span> ({ENDPOINTS_META[mode].path}) · Cost:{' '}
             <span className="text-amber-300 font-bold">{ENDPOINTS_META[mode].price}</span>
           </div>
           
@@ -310,12 +310,9 @@ export const AdsecPlayground: React.FC = () => {
               className={`px-5 py-3 rounded-xl font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 transition-all flex items-center justify-center gap-2 active:scale-95 ${
                 loading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
-              title="Run instant audit without paying USDC (Free Dev Mode)"
+              title="Test the audit engine without requiring an Algorand wallet transaction"
             >
-              <span className="font-mono">&gt;_</span> Free Dev Test
-              <span className="text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono">
-                0 USDC
-              </span>
+              <span>Run Free Test (Dev Mode)</span>
             </button>
 
             <button
@@ -332,11 +329,11 @@ export const AdsecPlayground: React.FC = () => {
               {loading ? (
                 <>
                   <span className="animate-caret font-mono">█</span>
-                  <span className="font-mono">executing x402 flow</span>
+                  <span>Processing x402 Audit...</span>
                 </>
               ) : (
                 <>
-                  Pay &amp; Audit with x402
+                  Run Paid Audit
                   <span className="text-xs bg-indigo-900/80 px-2 py-0.5 rounded-md font-mono">
                     {ENDPOINTS_META[mode].price}
                   </span>
@@ -345,22 +342,22 @@ export const AdsecPlayground: React.FC = () => {
             </button>
             {!activeAddress && (
               <p className="text-xs text-amber-400/80 font-mono mt-2">
-                ↑ Connect your Algorand wallet (Pera / Defly) via the header button to enable paid audits.
+                Connect your Algorand wallet via the header button to enable live paid audits.
               </p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Live ASCII Terminal — replaces generic loaders */}
+      {/* Live ASCII Terminal */}
       {hasStarted && (
-        <AsciiTerminal phase={terminalPhase} logs={terminalLogs} title={`adsec-node — run #${filename}`} />
+        <AsciiTerminal phase={terminalPhase} logs={terminalLogs} title={`Audit Telemetry — ${filename}`} />
       )}
 
       {/* Error Alert */}
       {error && (
         <div className="bg-red-950/60 border border-red-500/50 rounded-xl p-4 text-red-200 text-sm flex items-center gap-2 font-mono">
-          <span className="text-red-400 font-black">!!</span>
+          <span className="text-red-400 font-bold">Notice:</span>
           <span>{error}</span>
         </div>
       )}
@@ -370,7 +367,7 @@ export const AdsecPlayground: React.FC = () => {
         <div className="space-y-6">
           {/* Score Header Card */}
           {auditResponse.summary && (
-            <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-5">
                 <div
                   className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center font-black text-2xl border ${
@@ -382,12 +379,12 @@ export const AdsecPlayground: React.FC = () => {
                   }`}
                 >
                   <span>{auditResponse.summary.score}</span>
-                  <span className="text-[10px] font-mono tracking-widest uppercase opacity-75">Score</span>
+                  <span className="text-[10px] font-mono tracking-widest uppercase opacity-75">/ 100</span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">Security Health Score</h3>
-                  <p className="text-xs text-slate-500 font-mono mt-0.5">
-                    duration {auditResponse.summary.durationMs}ms · endpoint {auditResponse.endpoint || mode}
+                  <h3 className="text-xl font-bold text-white">Security Health Rating</h3>
+                  <p className="text-xs text-slate-400 font-mono mt-0.5">
+                    Analyzed in {auditResponse.summary.durationMs}ms · {ENDPOINTS_META[mode].name}
                   </p>
                 </div>
               </div>
@@ -408,7 +405,7 @@ export const AdsecPlayground: React.FC = () => {
                 </div>
                 <div className="bg-slate-900 border border-slate-700 rounded-xl p-2.5 px-4">
                   <div className="text-xl font-black text-slate-300">{auditResponse.summary.low}</div>
-                  <div className="text-[10px] uppercase font-bold text-slate-500">Low</div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Low</div>
                 </div>
               </div>
             </div>
@@ -420,11 +417,11 @@ export const AdsecPlayground: React.FC = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                 <h4 className="font-bold text-emerald-400 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Cryptographic On-Chain Proof-of-Audit
+                  On-Chain Audit Certificate
                 </h4>
                 <div className="flex items-center gap-2">
                   <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold">
-                    {auditResponse.attestation.status}
+                    {auditResponse.attestation.status === 'VERIFIED_ON_CHAIN' ? 'Confirmed on Algorand' : auditResponse.attestation.status}
                   </span>
                   {auditResponse.attestation.txId && (
                     <a
@@ -433,17 +430,17 @@ export const AdsecPlayground: React.FC = () => {
                       rel="noreferrer"
                       className="text-xs bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-3 py-1 rounded-full border border-indigo-500/40 transition-all flex items-center gap-1 font-mono font-bold"
                     >
-                      View Tx on Lora ↗
+                      View on Lora Explorer ↗
                     </a>
                   )}
                 </div>
               </div>
               <div className="space-y-2 text-xs font-mono text-slate-300 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                <div><span className="text-slate-500">Code SHA-256:</span> <span className="text-emerald-400">{auditResponse.attestation.codeHash}</span></div>
-                <div><span className="text-slate-500">Tx Note Schema:</span> <span className="text-indigo-300">{auditResponse.attestation.txNoteSchema}</span></div>
+                <div><span className="text-slate-500">SHA-256 Code Hash:</span> <span className="text-emerald-400">{auditResponse.attestation.codeHash}</span></div>
+                <div><span className="text-slate-500">Note Format:</span> <span className="text-indigo-300">{auditResponse.attestation.txNoteSchema}</span></div>
                 {auditResponse.attestation.txId && (
                   <div>
-                    <span className="text-slate-500">Confirmed Tx ID: </span>
+                    <span className="text-slate-500">Transaction ID: </span>
                     <a
                       href={`https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
                       target="_blank"
@@ -454,7 +451,7 @@ export const AdsecPlayground: React.FC = () => {
                     </a>
                   </div>
                 )}
-                <div><span className="text-slate-500">Authority:</span> {auditResponse.attestation.attestationAuthority}</div>
+                <div><span className="text-slate-500">Verification Authority:</span> {auditResponse.attestation.attestationAuthority}</div>
               </div>
             </div>
           )}
@@ -463,7 +460,7 @@ export const AdsecPlayground: React.FC = () => {
           {auditResponse.findings && auditResponse.findings.length > 0 && (
             <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <span className="font-mono text-red-400">[!]</span> Detailed Security Findings ({auditResponse.findings.length})
+                <span className="font-mono text-red-400">●</span> Identified Issues ({auditResponse.findings.length})
               </h3>
               <div className="space-y-3">
                 {auditResponse.findings.map((finding, idx) => (
@@ -494,14 +491,14 @@ export const AdsecPlayground: React.FC = () => {
                     </div>
 
                     {finding.line && (
-                      <div className="text-xs font-mono text-slate-500">
-                        line {finding.line}: <code className="bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">{finding.snippet}</code>
+                      <div className="text-xs font-mono text-slate-400">
+                        Line {finding.line}: <code className="bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">{finding.snippet}</code>
                       </div>
                     )}
 
                     {finding.remediation && (
-                      <div className="text-xs text-slate-400 bg-slate-900 p-2.5 rounded-lg border border-slate-800">
-                        <span className="font-bold text-indigo-400 font-mono">fix:</span> {finding.remediation}
+                      <div className="text-xs text-slate-300 bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                        <span className="font-bold text-emerald-400 font-mono">Recommended Fix:</span> {finding.remediation}
                       </div>
                     )}
                   </div>
@@ -515,21 +512,21 @@ export const AdsecPlayground: React.FC = () => {
             <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
               <div className="flex justify-between items-center flex-wrap gap-2">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <span className="font-mono text-emerald-400">[+]</span> Autonomous Git Diff Patches ({auditResponse.fixes.length})
+                  <span className="font-mono text-emerald-400">✓</span> Ready-to-Apply Git Patches ({auditResponse.fixes.length})
                 </h3>
-                <span className="text-xs text-slate-500 font-mono">git apply compatible</span>
+                <span className="text-xs text-slate-400 font-mono">Apply with `git apply`</span>
               </div>
 
               <div className="space-y-4">
                 {auditResponse.fixes.map((fix, idx) => (
                   <div key={idx} className="rounded-xl overflow-hidden border border-slate-800 bg-[#05070d]">
                     <div className="bg-slate-900 px-4 py-2 flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800">
-                      <span>patch :: {fix.findingId || `issue-${idx + 1}`}</span>
+                      <span>Patch {idx + 1} of {auditResponse.fixes?.length}</span>
                       <button
                         onClick={() => handleCopyDiff(fix.diff, idx)}
-                        className="bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2.5 py-1 rounded transition-all text-[11px]"
+                        className="bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white px-3 py-1 rounded transition-all text-xs font-medium"
                       >
-                        {copiedDiffIdx === idx ? '[ copied ]' : '[ copy patch ]'}
+                        {copiedDiffIdx === idx ? 'Copied ✓' : 'Copy Patch'}
                       </button>
                     </div>
                     <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed thin-scroll">
@@ -537,7 +534,7 @@ export const AdsecPlayground: React.FC = () => {
                     </pre>
                     {fix.explanation && (
                       <div className="bg-slate-900/60 p-3 border-t border-slate-800 text-xs text-slate-400">
-                        <span className="font-bold text-indigo-400 font-mono">why:</span> {fix.explanation}
+                        <span className="font-bold text-indigo-300 font-mono">Why this fix works:</span> {fix.explanation}
                       </div>
                     )}
                   </div>
@@ -548,18 +545,18 @@ export const AdsecPlayground: React.FC = () => {
 
           {/* On-Chain Receipt */}
           {auditResponse.receipt && (
-            <div className="bg-[#05070d] border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-500 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div className="bg-[#05070d] border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-400 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
               <div>
                 <span>Network: </span>
-                <span className="text-slate-200">{auditResponse.receipt.network || 'Algorand TestNet'}</span>
+                <span className="text-slate-200 font-semibold">{auditResponse.receipt.network || 'Algorand TestNet'}</span>
                 {auditResponse.receipt.paidAmount && (
                   <span className="ml-2 bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded border border-indigo-800">
-                    {auditResponse.receipt.paidAmount}
+                    Paid {auditResponse.receipt.paidAmount}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-2">
-                settled via GoPlausible ·
+                Settled via GoPlausible Facilitator ·
                 <a
                   href={
                     auditResponse.receipt.attestationTxId
@@ -572,7 +569,7 @@ export const AdsecPlayground: React.FC = () => {
                   rel="noreferrer"
                   className="text-indigo-400 hover:underline flex items-center gap-1 font-bold"
                 >
-                  verify on Lora ↗
+                  Verify Transaction on Lora ↗
                 </a>
               </div>
             </div>

@@ -1,12 +1,9 @@
-// src/components/Home.tsx
 import { useWallet } from '@txnlab/use-wallet-react'
 import React, { useState } from 'react'
 import ConnectWallet from './components/ConnectWallet'
 import Weather from './components/Weather'
 
-interface HomeProps {}
-
-const Home: React.FC<HomeProps> = () => {
+const Home: React.FC = () => {
   const [openWalletModal, setOpenWalletModal] = useState<boolean>(false)
   const { activeAddress } = useWallet()
 
@@ -15,90 +12,63 @@ const Home: React.FC<HomeProps> = () => {
   }
 
   return (
-    <div className="hero min-h-screen bg-gradient-to-b from-teal-400 to-teal-600 p-4">
-      <div className="hero-content w-full max-w-3xl flex flex-col gap-6">
+    <div className="bg-slate-950 text-slate-100 min-h-screen grid-bg py-12 px-4 sm:px-6">
+      <div className="max-w-3xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-white mb-2">x402 Demo</h1>
-          <p className="text-lg text-teal-100">
-            Pay-per-API on Algorand: Connect wallet, sign payment, get data
+        <div className="text-center space-y-3">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <span className="text-xs font-mono px-3 py-1 rounded-full border border-teal-500/40 bg-teal-500/10 text-teal-300">
+              METERED TELEMETRY
+            </span>
+            <span className="text-xs font-mono px-3 py-1 rounded-full border border-slate-700 bg-slate-900 text-slate-400">
+              $0.005 USDC / REQUEST
+            </span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
+            Live Data Feed
+          </h1>
+          <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
+            Demonstrating pay-as-you-go microservices on Algorand. Query real-time weather telemetry with instant on-chain settlement.
           </p>
         </div>
 
-        {/* Wallet Connection Card */}
-        <div className="card bg-white shadow-lg">
-          <div className="card-body">
-            <h2 className="card-title">Step 1: Connect Your Wallet</h2>
-            <p className="text-base-content/70">
-              Choose your Algorand TestNet wallet to get started. Make sure you have USDC available.
-            </p>
+        {/* Disconnected state prompt */}
+        {!activeAddress && (
+          <div className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 text-center shadow-xl space-y-4 max-w-md mx-auto">
+            <div className="w-12 h-12 rounded-xl bg-teal-600/20 border border-teal-500/30 flex items-center justify-center mx-auto text-xl">
+              🌤️
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Connect Wallet to Query Data</h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Each API query settles $0.005 TestNet USDC directly via the x402 protocol.
+              </p>
+            </div>
             <button
-              className="btn btn-primary w-full"
+              className="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white text-xs shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
               onClick={toggleWalletModal}
               data-test-id="connect-wallet"
             >
-              {activeAddress ? `Wallet Connected: ${activeAddress.slice(0, 12)}...` : 'Connect Wallet'}
+              Connect Wallet
             </button>
-            {activeAddress && (
-              <div className="alert alert-success mt-4">
-                <div>
-                  <span>✓ Wallet connected successfully</span>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Weather Demo */}
+        {/* Live Weather Component */}
         {activeAddress && (
-          <div className="card bg-white shadow-lg">
-            <div className="card-body">
-              <h2 className="card-title">Step 2: Request Weather Data</h2>
-              <Weather />
-            </div>
+          <div className="animate-fade-in">
+            <Weather />
           </div>
         )}
 
-        {/* Info Box */}
-        {!activeAddress && (
-          <div className="alert alert-info bg-white">
-            <div>
-              <span>💡 Connect your wallet above to start the demo and pay for weather data!</span>
-            </div>
-          </div>
-        )}
-
-        {/* Resources */}
-        <div className="card bg-white shadow-lg">
-          <div className="card-body">
-            <h2 className="card-title text-lg">Resources</h2>
-            <div className="space-y-2 text-sm">
-              <a
-                href="https://algorand.co/agentic-commerce/x402"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-primary"
-              >
-                → Learn about x402
-              </a>
-              <a
-                href="https://github.com/GoPlausible/.github/blob/main/profile/algorand-x402-documentation/typescript/x402-avm-paywall-examples.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-primary"
-              >
-                → x402 Paywall Examples
-              </a>
-              <a
-                href="https://facilitator.goplausible.xyz/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-primary"
-              >
-                → Facilitator API Docs
-              </a>
-            </div>
-          </div>
+        {/* Protocol Spec Highlights */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-3">
+          <h3 className="text-xs font-mono uppercase tracking-widest text-slate-400 font-bold">
+            How Metered Endpoints Function
+          </h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            When your client calls <code className="text-indigo-300 bg-slate-950 px-1.5 py-0.5 rounded">GET /weather</code>, the server responds with <code className="text-amber-300 bg-slate-950 px-1.5 py-0.5 rounded">402 Payment Required</code> specifying the price and facilitator. Once your wallet signs the 0.005 USDC transaction, the payload is unlocked and returned immediately.
+          </p>
         </div>
 
         <ConnectWallet openModal={openWalletModal} closeModal={toggleWalletModal} />

@@ -109,51 +109,54 @@ const MemeGenerator: React.FC = () => {
   }
 
   return (
-    <div className="card bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title text-2xl">🎨 AI Meme Generator</h2>
-        <p className="text-base-content/70">
-          Generate custom memes using AI - Pay 0.1 USDC per generation
-        </p>
-
-        {/* Wallet Status */}
-        <div className="alert alert-info">
-          <div>
-            <span>
-              💰 Cost: <span className="font-bold">0.1 USDC</span> per meme generation
-            </span>
-          </div>
+    <div className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <span>✨ Create Custom Meme</span>
+          </h2>
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            Micropayment fee: <span className="text-amber-300 font-bold">0.10 USDC</span> per generation
+          </p>
         </div>
-
-        {/* Prompt Input */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text font-semibold">Meme Prompt *</span>
-          </label>
-          <textarea
-            className="textarea textarea-bordered h-24"
-            placeholder="e.g., When you finally fix that bug at 3 AM"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            disabled={loading}
-          />
+        <div className="text-xs font-mono px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-slate-300">
+          x402 Micropayment Rail
         </div>
+      </div>
 
+      {/* Prompt Input */}
+      <div className="space-y-2">
+        <label className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 block">
+          Meme Concept or Prompt *
+        </label>
+        <textarea
+          className="w-full bg-[#05070d] border border-slate-800 rounded-xl p-4 font-mono text-sm text-emerald-300 focus:outline-none focus:border-indigo-500 transition-colors h-24 leading-relaxed"
+          placeholder="e.g. When the smart contract compiles cleanly on the first attempt..."
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          disabled={loading}
+        />
+      </div>
+
+      {/* Style & Theme Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Style Selection */}
         {availableStyles && (
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Meme Style (optional)</span>
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Humor Tone
             </label>
             <select
-              className="select select-bordered"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
               value={selectedStyle}
               onChange={(e) => setSelectedStyle(e.target.value)}
               disabled={loading}
             >
-              <option value="">Auto-detect</option>
-              {availableStyles.styles.map(style => (
-                <option key={style} value={style}>{style}</option>
+              <option value="">Auto-detected</option>
+              {availableStyles.styles.map((style) => (
+                <option key={style} value={style}>
+                  {style}
+                </option>
               ))}
             </select>
           </div>
@@ -161,19 +164,21 @@ const MemeGenerator: React.FC = () => {
 
         {/* Theme Selection */}
         {availableStyles && (
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Theme (optional)</span>
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Topic / Theme
             </label>
             <select
-              className="select select-bordered"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
               value={selectedTheme}
               onChange={(e) => setSelectedTheme(e.target.value)}
               disabled={loading}
             >
               <option value="">General</option>
-              {availableStyles.themes.map(theme => (
-                <option key={theme} value={theme}>{theme}</option>
+              {availableStyles.themes.map((theme) => (
+                <option key={theme} value={theme}>
+                  {theme}
+                </option>
               ))}
             </select>
           </div>
@@ -181,134 +186,130 @@ const MemeGenerator: React.FC = () => {
 
         {/* Visual Style Selection */}
         {availableStyles && availableStyles.visualStyles && (
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-semibold">Visual Style (optional)</span>
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Visual Art Style
             </label>
             <select
-              className="select select-bordered"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
               value={selectedVisualStyle}
               onChange={(e) => setSelectedVisualStyle(e.target.value)}
               disabled={loading}
             >
-              <option value="">Default</option>
-              {availableStyles.visualStyles.map(vstyle => (
-                <option key={vstyle} value={vstyle}>{vstyle}</option>
+              <option value="">Default Art</option>
+              {availableStyles.visualStyles.map((vstyle) => (
+                <option key={vstyle} value={vstyle}>
+                  {vstyle}
+                </option>
               ))}
             </select>
           </div>
         )}
-
-        {/* Multi-Model Toggle */}
-        <div className="form-control">
-          <label className="label cursor-pointer">
-            <span className="label-text">
-              <span className="font-semibold">🔄 Multi-Model Generation</span>
-              <span className="text-xs block text-base-content/60">Use multiple AI models for best results (slower but higher quality)</span>
-            </span>
-            <input
-              type="checkbox"
-              className="toggle toggle-primary"
-              checked={useMultiModel}
-              onChange={(e) => setUseMultiModel(e.target.checked)}
-              disabled={loading}
-            />
-          </label>
-        </div>
-
-        {/* Generate Button */}
-        <button
-          className={`btn btn-primary btn-lg ${loading ? 'loading' : ''}`}
-          onClick={handleGenerateMeme}
-          disabled={!activeAddress || loading || !prompt.trim()}
-        >
-          {loading ? 'Generating...' : '🎨 Generate Meme (Pay 0.1 USDC)'}
-        </button>
-
-        {/* Payment Status */}
-        {paymentStatus && (
-          <div className="alert alert-warning">
-            <div>
-              <span>{paymentStatus}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="alert alert-error">
-            <div>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Generated Meme Display */}
-        {memeData && memeData.success && (
-          <div className="space-y-4">
-            <div className="alert alert-success">
-              <div>
-                <span>✓ Meme generated successfully!</span>
-              </div>
-            </div>
-
-            {/* Meme Image */}
-            <div className="card bg-base-200">
-              <figure className="px-4 pt-4">
-                <img
-                  src={memeData.meme.imageUrl}
-                  alt="Generated Meme"
-                  className="rounded-xl max-w-full h-auto"
-                />
-              </figure>
-              <div className="card-body">
-                <h3 className="card-title text-sm">Your Meme</h3>
-                <div className="text-xs space-y-1">
-                  <p><strong>Your Prompt:</strong> {memeData.meme.prompt}</p>
-                  {memeData.meme.generatedText && (
-                    <div className="bg-base-300 p-2 rounded mt-2">
-                      <p className="text-success font-bold">✨ AI Generated Text:</p>
-                      <p><strong>Top:</strong> {memeData.meme.generatedText.topText}</p>
-                      <p><strong>Bottom:</strong> {memeData.meme.generatedText.bottomText}</p>
-                      <p className="text-xs text-base-content/60 mt-1">{memeData.meme.generatedText.explanation}</p>
-                    </div>
-                  )}
-                  <p><strong>Style:</strong> {memeData.meme.style}</p>
-                  <p><strong>Theme:</strong> {memeData.meme.theme}</p>
-                  {memeData.meme.visualStyle && <p><strong>Visual:</strong> {memeData.meme.visualStyle}</p>}
-                  <p><strong>Model:</strong> {memeData.metadata.model}</p>
-                  {memeData.metadata.multiModel && <p className="text-success"><strong>🔄 Multi-Model Used</strong></p>}
-                  {memeData.metadata.textOverlay && <p className="text-success"><strong>✏️ Perfect Text Overlay</strong></p>}
-                </div>
-                <div className="card-actions justify-end">
-                  <a
-                    href={memeData.meme.imageUrl}
-                    download={`meme-${Date.now()}.png`}
-                    className="btn btn-sm btn-primary"
-                  >
-                    Download
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Instructions */}
-        <div className="text-sm text-base-content/60 space-y-2 mt-4">
-          <p><strong>How it works:</strong></p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>Enter your meme idea in the prompt field</li>
-            <li>Optionally select a style and theme</li>
-            <li>Click Generate to pay 0.1 USDC via x402</li>
-            <li>Sign the payment transaction</li>
-            <li>AI generates your custom meme using Hugging Face + RAG</li>
-            <li>Download and share your meme!</li>
-          </ol>
-          <div className="badge badge-outline mt-2">RAG-Enhanced</div>
-          <div className="badge badge-outline mt-2 ml-2">Hugging Face Powered</div>
-        </div>
       </div>
+
+      {/* Multi-Model Toggle */}
+      <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div>
+          <div className="font-bold text-xs text-slate-200 font-mono">High-Fidelity Rendering</div>
+          <div className="text-[11px] text-slate-400">Combines multiple models for sharper layout and typography</div>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            className="sr-only peer"
+            checked={useMultiModel}
+            onChange={(e) => setUseMultiModel(e.target.checked)}
+            disabled={loading}
+          />
+          <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+        </label>
+      </div>
+
+      {/* Generate Button */}
+      <button
+        className={`w-full py-3.5 rounded-xl font-bold font-mono text-sm text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
+          loading || !prompt.trim()
+            ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+            : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30 active:scale-98'
+        }`}
+        onClick={handleGenerateMeme}
+        disabled={!activeAddress || loading || !prompt.trim()}
+      >
+        {loading ? (
+          <>
+            <span className="animate-caret">█</span>
+            <span>Generating & Settling (0.10 USDC)...</span>
+          </>
+        ) : (
+          <>
+            <span>Generate Visual</span>
+            <span className="text-xs bg-indigo-900/80 px-2 py-0.5 rounded-md">0.10 USDC</span>
+          </>
+        )}
+      </button>
+
+      {/* Payment Status Message */}
+      {paymentStatus && (
+        <div className="bg-amber-950/60 border border-amber-500/40 rounded-xl p-3.5 text-amber-200 text-xs font-mono flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>{paymentStatus}</span>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-950/60 border border-red-500/40 rounded-xl p-3.5 text-red-200 text-xs font-mono flex items-center gap-2">
+          <span className="text-red-400 font-bold">Notice:</span>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Generated Meme Display */}
+      {memeData && memeData.success && (
+        <div className="space-y-4 pt-4 border-t border-slate-800">
+          <div className="bg-emerald-950/50 border border-emerald-500/40 rounded-xl p-3 text-emerald-300 text-xs font-mono flex items-center gap-2">
+            <span>✓</span>
+            <span>Meme generated and micropayment confirmed on-chain</span>
+          </div>
+
+          <div className="bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+            <div className="p-4 flex justify-center bg-black/40">
+              <img
+                src={memeData.meme.imageUrl}
+                alt="Generated Meme"
+                className="rounded-xl max-w-full max-h-[480px] object-contain shadow-lg"
+              />
+            </div>
+            <div className="p-5 border-t border-slate-800 space-y-3">
+              <div className="space-y-1">
+                <div className="text-xs font-mono text-slate-400 uppercase">Concept</div>
+                <div className="text-sm font-medium text-white">{memeData.meme.prompt}</div>
+              </div>
+
+              {memeData.meme.generatedText && (
+                <div className="bg-slate-900 p-3.5 rounded-xl border border-slate-800 space-y-1 text-xs font-mono">
+                  <div className="text-indigo-300 font-bold">Generated Captions:</div>
+                  <div className="text-slate-200"><span className="text-slate-500">Top:</span> {memeData.meme.generatedText.topText}</div>
+                  <div className="text-slate-200"><span className="text-slate-500">Bottom:</span> {memeData.meme.generatedText.bottomText}</div>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-2">
+                <div className="text-[11px] font-mono text-slate-400">
+                  Model: {memeData.metadata?.model || 'Flux'} · Cost: 0.10 USDC
+                </div>
+                <a
+                  href={memeData.meme.imageUrl}
+                  download={`meme-${Date.now()}.png`}
+                  className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow transition-all"
+                >
+                  Download Image
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

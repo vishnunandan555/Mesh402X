@@ -54,80 +54,79 @@ const Weather: React.FC = () => {
   }
 
   return (
-    <div className="card bg-base-100 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title">Weather API (x402 Payment Required)</h2>
-
-        {/* Wallet Status */}
-        <div className="alert alert-info">
-          <div>
-            <span>
-              Wallet Status:{' '}
-              <span className="font-bold">
-                {activeAddress ? `Connected (${activeAddress.slice(0, 8)}...)` : 'Not Connected'}
-              </span>
-            </span>
-          </div>
-        </div>
-
-        {/* Request Button */}
-        <button
-          className={`btn btn-primary ${loading ? 'loading' : ''}`}
-          onClick={handleRequestWeather}
-          disabled={!activeAddress || loading}
-        >
-          {loading ? 'Processing...' : 'Request Weather (Pay 0.005 USDC)'}
-        </button>
-
-        {/* Payment Status */}
-        {paymentStatus && (
-          <div className="alert alert-warning">
-            <div>
-              <span>{paymentStatus}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="alert alert-error">
-            <div>
-              <span>{error}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Weather Data Display */}
-        {weatherData && (
-          <div className="alert alert-success">
-            <div>
-              <span>✓ Weather data received and payment settled!</span>
-            </div>
-          </div>
-        )}
-
-        {weatherData && (
-          <div className="mockup-code bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-lg shadow-lg border border-slate-700">
-            <pre className="text-sm overflow-auto max-h-64 font-mono text-emerald-300 leading-relaxed">
-              <code className="whitespace-pre-wrap break-words">{formatWeatherData(weatherData)}</code>
-            </pre>
-          </div>
-        )}
-
-        {/* Instructions */}
-        <div className="text-sm text-base-content/60 space-y-2">
-          <p>
-            <strong>How it works:</strong>
+    <div className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-4">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <span>🌦️ Live Weather Telemetry</span>
+          </h2>
+          <p className="text-xs text-slate-400 font-mono mt-0.5">
+            Query rate: <span className="text-amber-300 font-bold">$0.005 USDC</span> per call · HTTP 402 Metered
           </p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>Connect your Algorand TestNet wallet above</li>
-            <li>Click "Request Weather" to initiate payment</li>
-            <li>Sign the payment transaction when prompted</li>
-            <li>The facilitator verifies and settles your payment on-chain</li>
-            <li>Weather JSON data is returned and displayed here</li>
-          </ol>
+        </div>
+        <div className="text-xs font-mono px-3 py-1 rounded-full bg-slate-950 border border-slate-800 text-teal-300">
+          GET /weather
         </div>
       </div>
+
+      {/* Query Action Button */}
+      <button
+        className={`w-full py-3.5 rounded-xl font-bold font-mono text-sm text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
+          loading
+            ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+            : 'bg-teal-600 hover:bg-teal-500 shadow-teal-600/30 active:scale-98'
+        }`}
+        onClick={handleRequestWeather}
+        disabled={!activeAddress || loading}
+      >
+        {loading ? (
+          <>
+            <span className="animate-caret">█</span>
+            <span>Settling $0.005 USDC & Fetching...</span>
+          </>
+        ) : (
+          <>
+            <span>Query Live Weather Data</span>
+            <span className="text-xs bg-teal-900/80 px-2 py-0.5 rounded-md">$0.005 USDC</span>
+          </>
+        )}
+      </button>
+
+      {/* Payment Status Message */}
+      {paymentStatus && (
+        <div className="bg-amber-950/60 border border-amber-500/40 rounded-xl p-3.5 text-amber-200 text-xs font-mono flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>{paymentStatus}</span>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-950/60 border border-red-500/40 rounded-xl p-3.5 text-red-200 text-xs font-mono flex items-center gap-2">
+          <span className="text-red-400 font-bold">Notice:</span>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Weather Data Display */}
+      {weatherData && (
+        <div className="space-y-4 pt-2">
+          <div className="bg-emerald-950/50 border border-emerald-500/40 rounded-xl p-3 text-emerald-300 text-xs font-mono flex items-center gap-2">
+            <span>✓</span>
+            <span>Payload unlocked and micropayment settled on Algorand</span>
+          </div>
+
+          <div className="rounded-xl overflow-hidden border border-slate-800 bg-[#05070d]">
+            <div className="bg-slate-900 px-4 py-2 flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800">
+              <span>Response Payload (JSON)</span>
+              <span className="text-emerald-400 font-bold">200 OK</span>
+            </div>
+            <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed thin-scroll max-h-72">
+              <code>{formatWeatherData(weatherData)}</code>
+            </pre>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

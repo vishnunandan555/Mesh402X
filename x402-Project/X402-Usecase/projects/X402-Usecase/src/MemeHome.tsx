@@ -12,128 +12,84 @@ const MemeHome: React.FC = () => {
   }
 
   return (
-    <div className="hero min-h-screen bg-gradient-to-b from-purple-400 via-pink-500 to-red-500 p-4">
-      <div className="hero-content w-full max-w-4xl flex flex-col gap-6">
+    <div className="bg-slate-950 text-slate-100 min-h-screen grid-bg py-12 px-4 sm:px-6">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <h1 className="text-6xl font-bold text-white mb-2">🎨 Meme Factory</h1>
-          <p className="text-xl text-white/90">
-            AI-Powered Meme Generation on Algorand x402
-          </p>
-          <p className="text-md text-white/80 mt-2">
-            RAG-Enhanced • Hugging Face • 0.1 USDC per meme
+        <div className="text-center space-y-3">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <span className="text-xs font-mono px-3 py-1 rounded-full border border-purple-500/40 bg-purple-500/10 text-purple-300">
+              CREATIVE COMMERCE
+            </span>
+            <span className="text-xs font-mono px-3 py-1 rounded-full border border-slate-700 bg-slate-900 text-slate-400">
+              0.10 USDC / CALL
+            </span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white">
+            Meme Studio
+          </h1>
+          <p className="text-slate-400 text-base sm:text-lg max-w-xl mx-auto">
+            Generate customized visuals and captions on demand with instant x402 micropayments.
           </p>
         </div>
 
-        {/* Wallet Connection Card */}
-        <div className="card bg-white shadow-2xl">
-          <div className="card-body">
-            <h2 className="card-title">Step 1: Connect Your Wallet</h2>
-            <p className="text-base-content/70">
-              Connect your Algorand TestNet wallet with USDC to start generating memes.
-            </p>
+        {/* Wallet Prompt if disconnected */}
+        {!activeAddress && (
+          <div className="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-2xl p-6 text-center shadow-xl space-y-4 max-w-md mx-auto">
+            <div className="w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center mx-auto text-xl">
+              ⚡
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Connect Your Wallet to Begin</h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Connect an Algorand TestNet wallet with USDC to authorize generations.
+              </p>
+            </div>
             <button
-              className="btn btn-primary w-full"
+              className="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white text-xs shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
               onClick={toggleWalletModal}
               data-test-id="connect-wallet"
             >
-              {activeAddress ? `✓ ${activeAddress.slice(0, 12)}...` : 'Connect Wallet'}
+              Connect Wallet
             </button>
-            {activeAddress && (
-              <div className="alert alert-success mt-4">
-                <div>
-                  <span>✓ Wallet connected successfully</span>
-                </div>
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Meme Generator */}
+        {/* Meme Generator Component */}
         {activeAddress && (
-          <div className="card bg-white shadow-2xl">
-            <div className="card-body">
-              <h2 className="card-title">Step 2: Generate Your Meme</h2>
-              <MemeGenerator />
-            </div>
+          <div className="animate-fade-in">
+            <MemeGenerator />
           </div>
         )}
 
-        {/* Info Box */}
-        {!activeAddress && (
-          <div className="alert alert-info bg-white shadow-lg">
-            <div>
-              <span>💡 Connect your wallet to start generating AI-powered memes!</span>
+        {/* Feature Highlights */}
+        <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
+          <h3 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4 font-bold">
+            How It Operates
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800/80 space-y-1.5">
+              <div className="font-bold text-white flex items-center gap-2">
+                <span className="text-indigo-400 font-mono">01</span> Prompt & Style
+              </div>
+              <p className="text-slate-400 leading-relaxed">
+                Describe your concept and select optional humor or visual styling tags.
+              </p>
             </div>
-          </div>
-        )}
-
-        {/* Features */}
-        <div className="card bg-white shadow-2xl">
-          <div className="card-body">
-            <h2 className="card-title text-lg">✨ Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🤖</span>
-                <div>
-                  <strong>AI-Powered</strong>
-                  <p className="text-base-content/70">Hugging Face FLUX model for high-quality generation</p>
-                </div>
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800/80 space-y-1.5">
+              <div className="font-bold text-white flex items-center gap-2">
+                <span className="text-amber-400 font-mono">02</span> 0.10 USDC Settlement
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">🧠</span>
-                <div>
-                  <strong>RAG-Enhanced</strong>
-                  <p className="text-base-content/70">Custom context layer for better meme outputs</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">💰</span>
-                <div>
-                  <strong>Micro-Payments</strong>
-                  <p className="text-base-content/70">Pay only 0.1 USDC per generation via x402</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-2xl">⚡</span>
-                <div>
-                  <strong>Fast & Dynamic</strong>
-                  <p className="text-base-content/70">Real-time generation with blockchain payments</p>
-                </div>
-              </div>
+              <p className="text-slate-400 leading-relaxed">
+                The server issues an HTTP 402 challenge, settled instantly on Algorand.
+              </p>
             </div>
-          </div>
-        </div>
-
-        {/* Resources */}
-        <div className="card bg-white shadow-2xl">
-          <div className="card-body">
-            <h2 className="card-title text-lg">📚 Developer Resources</h2>
-            <div className="space-y-2 text-sm">
-              <a
-                href="https://algorand.co/agentic-commerce/x402"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-primary"
-              >
-                → Learn about x402 Protocol
-              </a>
-              <a
-                href="https://huggingface.co/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-primary"
-              >
-                → Hugging Face Models
-              </a>
-              <a
-                href="http://localhost:4021/info"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link link-primary"
-              >
-                → API Endpoints Info
-              </a>
+            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800/80 space-y-1.5">
+              <div className="font-bold text-white flex items-center gap-2">
+                <span className="text-emerald-400 font-mono">03</span> Ready to Share
+              </div>
+              <p className="text-slate-400 leading-relaxed">
+                High-resolution image rendered with aligned text overlay and download link.
+              </p>
             </div>
           </div>
         </div>

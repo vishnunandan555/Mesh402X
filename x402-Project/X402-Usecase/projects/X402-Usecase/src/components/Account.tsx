@@ -12,11 +12,26 @@ const Account = () => {
   }, [algoConfig.network])
 
   return (
-    <div>
-      <a className="text-xl" target="_blank" href={`https://lora.algokit.io/${networkName}/account/${activeAddress}/`}>
-        Address: {ellipseAddress(activeAddress)}
-      </a>
-      <div className="text-xl">Network: {networkName}</div>
+    <div className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-1.5 font-mono text-xs">
+      <div className="flex items-center justify-between text-slate-400">
+        <span>Connected Address:</span>
+        <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          {networkName}
+        </span>
+      </div>
+      <div className="text-indigo-300 font-bold break-all">
+        {activeAddress}
+      </div>
+      <div className="pt-1 text-right">
+        <a
+          className="text-slate-400 hover:text-indigo-300 text-[11px] underline"
+          target="_blank"
+          rel="noreferrer"
+          href={`https://lora.algokit.io/${networkName}/account/${activeAddress}/`}
+        >
+          View Account on Lora Explorer ↗
+        </a>
+      </div>
     </div>
   )
 }
