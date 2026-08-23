@@ -81,73 +81,35 @@ curl -fsSL "${GITHUB_RAW}/Medusa_Skill.md" -o "Medusa_Skill.md" 2>/dev/null || t
 curl -fsSL "${GITHUB_RAW}/Medusa_Skill.md" -o ".agents/skills/medusa-audit/SKILL.md" 2>/dev/null || true
 echo -e "${GREEN}✓ Medusa_Skill.md & .agents/skills/medusa-audit/SKILL.md configured.${NC}"
 
-# 5. Wallet Configuration in .env
-echo -e "\n${CYAN}[5/5] Configuring Agent Algorand Wallet (.env)...${NC}"
-
-ENV_FILE=".env"
-if [ ! -f "$ENV_FILE" ]; then
-    touch "$ENV_FILE"
-fi
+# 5. Wallet Configuration in wallet.env
+echo -e "\n${CYAN}[5/5] Configuring Agent Algorand Wallet (wallet.env)...${NC}"
 
 USER_MNEMONIC=""
-USER_ADDRESS=""
 
-if grep -q "AGENT_MNEMONIC" "$ENV_FILE" && [ -n "$(grep -E "^AGENT_MNEMONIC=.+" "$ENV_FILE")" ]; then
-    echo -e "${GREEN}✓ Existing AGENT_MNEMONIC detected in .env.${NC}"
+# Read from /dev/tty if available (works even when script is piped via curl | bash)
+if [ -e /dev/tty ]; then
+    echo -e "${YELLOW}Enter your 25-word Algorand TestNet Wallet Mnemonic:${NC}"
+    read -r -p "🔑 AGENT_MNEMONIC: " USER_MNEMONIC < /dev/tty || true
+elif [ -t 0 ]; then
+    echo -e "${YELLOW}Enter your 25-word Algorand TestNet Wallet Mnemonic:${NC}"
+    read -r -p "🔑 AGENT_MNEMONIC: " USER_MNEMONIC || true
+fi
+
+# Trim whitespace
+USER_MNEMONIC=$(echo "$USER_MNEMONIC" | xargs 2>/dev/null || echo "$USER_MNEMONIC")
+
+# Write to wallet.env
+cat <<EOF > wallet.env
+# Medusa x402 Agent Wallet Configuration
+AGENT_MNEMONIC="${USER_MNEMONIC}"
+ADSEC_SERVER_URL="https://mesh402x.onrender.com"
+EOF
+
+if [ -n "$USER_MNEMONIC" ]; then
+    echo -e "${GREEN}✓ Saved AGENT_MNEMONIC to wallet.env!${NC}"
 else
-    echo -e "${YELLOW}Please enter your Algorand TestNet wallet credentials for your agent:${NC}"
-    
-    # Read from /dev/tty if available (works even when script is piped via curl | bash)
-    if [ -t 0 ]; then
-        read -r -p "🔑 Enter your 25-word Mnemonic (AGENT_MNEMONIC): " USER_MNEMONIC
-        read -r -p "💳 Enter Public Address (Optional, press Enter to auto-derive): " USER_ADDRESS
-    elif [ -e /dev/tty ]; then
-        read -r -p "🔑 Enter your 25-word Mnemonic (AGENT_MNEMONIC): " USER_MNEMONIC < /dev/tty
-        read -r -p "💳 Enter Public Address (Optional, press Enter to auto-derive): " USER_ADDRESS < /dev/tty
-    fi
-
-    # Trim whitespace
-    USER_MNEMONIC=$(echo "$USER_MNEMONIC" | xargs)
-    USER_ADDRESS=$(echo "$USER_ADDRESS" | xargs)
-
-    if [ -n "$USER_MNEMONIC" ]; then
-        # Auto-derive address from mnemonic if not provided
-        if [ -z "$USER_ADDRESS" ]; then
-            DERIVED_ADDR=$(node -e "
-              try {
-                const algosdk = require('algosdk');
-                const acc = algosdk.mnemonicToSecretKey('$USER_MNEMONIC');
-                console.log(acc.addr);
-              } catch(e) {
-                console.log('');
-              }
-            " 2>/dev/null || echo "")
-            if [ -n "$DERIVED_ADDR" ]; then
-                USER_ADDRESS="$DERIVED_ADDR"
-            fi
-        fi
-
-        # Save to .env
-        echo "" >> "$ENV_FILE"
-        echo "# Medusa x402 Agent Configuration" >> "$ENV_FILE"
-        echo "AGENT_MNEMONIC=\"$USER_MNEMONIC\"" >> "$ENV_FILE"
-        if [ -n "$USER_ADDRESS" ]; then
-            echo "AGENT_ADDRESS=\"$USER_ADDRESS\"" >> "$ENV_FILE"
-        fi
-        echo "ADSEC_SERVER_URL=\"https://mesh402x.onrender.com\"" >> "$ENV_FILE"
-
-        echo -e "${GREEN}✓ Wallet configured successfully in .env!${NC}"
-        if [ -n "$USER_ADDRESS" ]; then
-            echo -e "  ${CYAN}Public Address: ${YELLOW}${USER_ADDRESS}${NC}"
-        fi
-    else
-        echo -e "${YELLOW}ℹ️  No mnemonic entered. Added placeholder to .env.${NC}"
-        echo "" >> "$ENV_FILE"
-        echo "# Medusa x402 Agent Configuration" >> "$ENV_FILE"
-        echo "AGENT_MNEMONIC=\"\"" >> "$ENV_FILE"
-        echo "ADSEC_SERVER_URL=\"https://mesh402x.onrender.com\"" >> "$ENV_FILE"
-        echo -e "  ${YELLOW}Remember to add your AGENT_MNEMONIC to .env before running paid audits.${NC}"
-    fi
+    echo -e "${YELLOW}ℹ️  Created wallet.env with placeholder AGENT_MNEMONIC=\"\"${NC}"
+    echo -e "  ${YELLOW}Please paste your 25-word mnemonic into wallet.env before running paid audits.${NC}"
 fi
 
 echo -e "\n${GREEN}══════════════════════════════════════════════════════════════════════════${NC}"
