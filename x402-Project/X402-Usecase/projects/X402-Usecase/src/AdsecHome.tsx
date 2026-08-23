@@ -52,7 +52,7 @@ const STATS = [
 export const AdsecHome: React.FC = () => {
   const [currentView, setCurrentView] = useState<'playground' | 'ledger'>('playground')
 
-  const useEndpoint = (mode: EndpointMode) => {
+  const handleSelectEndpoint = (mode: EndpointMode) => {
     setAdsecMode(mode)
     setCurrentView('playground')
     document.getElementById('playground')?.scrollIntoView({ behavior: 'smooth' })
@@ -89,7 +89,7 @@ export const AdsecHome: React.FC = () => {
             </h1>
 
             <p className="mt-6 text-slate-400 text-base sm:text-lg max-w-xl leading-relaxed">
-              AdSec is a live pay-per-call security node on Algorand. Every button on this page fires a real
+              Medusa is a live pay-per-call security audit node on Algorand. Every button on this page fires a real
               HTTP&nbsp;402 handshake, settles real TestNet USDC, and streams back scans, git-ready patches and an
               on-chain proof of audit.
             </p>
@@ -202,7 +202,7 @@ export const AdsecHome: React.FC = () => {
               return (
                 <button
                   key={key}
-                  onClick={() => useEndpoint(key)}
+                  onClick={() => handleSelectEndpoint(key)}
                   className="group text-left bg-slate-900/70 border border-slate-800 rounded-2xl p-5 transition-all hover:border-indigo-500/60 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-950/60"
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -275,17 +275,25 @@ export const AdsecHome: React.FC = () => {
       <footer className="border-t border-slate-800 bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 py-12 grid sm:grid-cols-3 gap-8 text-sm">
           <div>
-            <div className="font-black text-white tracking-wide">ADSEC<span className="text-indigo-400">.</span></div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center font-mono font-black text-xs text-white">
+                🐍
+              </div>
+              <div className="font-black text-white tracking-wide">MEDUSA<span className="text-indigo-400">.</span></div>
+              <span className="text-xs font-mono text-slate-500">v1.0.0 · testnet</span>
+            </div>
             <p className="mt-2 text-slate-500 text-xs leading-relaxed max-w-xs">
               Autonomous pre-flight security node for machine-to-machine commerce. Built on the x402 protocol and Algorand.
             </p>
           </div>
+
           <div className="space-y-2 font-mono text-xs">
-            <div className="uppercase tracking-widest text-slate-600 mb-3">protocol</div>
+            <div className="uppercase tracking-widest text-slate-600 mb-3">protocol & explorer</div>
             <a className="block text-slate-400 hover:text-indigo-300" href="https://www.x402.org" target="_blank" rel="noreferrer">x402 specification ↗</a>
-            <a className="block text-slate-400 hover:text-indigo-300" href="https://lora.algokit.io/testnet" target="_blank" rel="noreferrer">Algorand explorer ↗</a>
-            <a className="block text-slate-400 hover:text-indigo-300" href="https://osv.dev" target="_blank" rel="noreferrer">OSV.dev vulnerability feed ↗</a>
+            <a className="block text-slate-400 hover:text-indigo-300" href="https://lora.algokit.io/testnet" target="_blank" rel="noreferrer">Algorand Lora explorer ↗</a>
+            <a className="block text-slate-400 hover:text-indigo-300" href="https://facilitator.goplausible.xyz" target="_blank" rel="noreferrer">GoPlausible Facilitator ↗</a>
           </div>
+
           <div className="space-y-2 font-mono text-xs">
             <div className="uppercase tracking-widest text-slate-600 mb-3">node status</div>
             <div className="flex items-center gap-2 text-slate-400">
@@ -295,8 +303,9 @@ export const AdsecHome: React.FC = () => {
             <div className="text-slate-600">asset: USDC ASA#10458941</div>
           </div>
         </div>
-        <div className="border-t border-slate-900 py-4 text-center text-[11px] font-mono text-slate-600">
-          © 2026 AdSec Labs — demo build on TestNet · nothing here is financial advice
+
+        <div className="border-t border-slate-900 py-6 text-center text-xs text-slate-600 font-mono">
+          © 2026 Medusa Security Labs — Live on Algorand TestNet · x402 Protocol
         </div>
       </footer>
     </div>

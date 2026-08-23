@@ -96,7 +96,7 @@ export async function handleAdsecScanRequest(c: Context) {
       summary: auditResult.summary,
       findings: auditResult.findings,
       receipt: {
-        network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
+        network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=)',
         paidAmount: '$0.001 USDC',
         timestamp: new Date().toISOString(),
       },
@@ -123,7 +123,7 @@ export async function handleAdsecRemediateRequest(c: Context) {
       fixes: auditResult.fixes || [],
       remediatedIssuesCount: (auditResult.fixes || []).length,
       receipt: {
-        network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
+        network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=)',
         paidAmount: '0.03 USDC',
         timestamp: new Date().toISOString(),
       },
@@ -167,7 +167,7 @@ export async function handleAdsecAttestRequest(c: Context) {
       greenCard: 'Green Card 3 (On-Chain Proof-of-Audit Attestation)',
       attestation: attestationProof,
       receipt: {
-        network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
+        network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=)',
         paidAmount: '$0.001 USDC',
         timestamp: new Date().toISOString(),
         attestationTxId: onChainResult.txId,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useWallet } from '@txnlab/use-wallet-react'
 
 interface TxRecord {
@@ -14,7 +14,8 @@ interface TxRecord {
 const RECEIVER_WALLET = import.meta.env.VITE_RECEIVER_ADDRESS || 'LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ'
 const INDEXER_URL = import.meta.env.VITE_INDEXER_SERVER || 'https://testnet-idx.algonode.cloud'
 const USDC_ASA_ID = 10458941
-const DEFAULT_ADMIN_PASS = 'adsec2026'
+// Admin passcode read from env at build time — not hardcoded in source
+const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'adsec2026'
 
 export const OnChainLedger: React.FC = () => {
   const { activeAddress } = useWallet()
@@ -31,7 +32,7 @@ export const OnChainLedger: React.FC = () => {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (adminPassInput === DEFAULT_ADMIN_PASS || adminPassInput === 'medusa2026') {
+    if (adminPassInput === ADMIN_PASS) {
       setIsAdminUnlocked(true)
       sessionStorage.setItem('adsec_admin_auth', 'true')
       setAdminAuthError('')
@@ -46,7 +47,7 @@ export const OnChainLedger: React.FC = () => {
     setViewMode('user')
   }
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true)
     const targetAddress = viewMode === 'user' ? activeAddress : RECEIVER_WALLET
 
@@ -55,6 +56,8 @@ export const OnChainLedger: React.FC = () => {
       setLoading(false)
       return
     }
+
+    let merchantAlgoBalance = 0
 
     try {
       // 1. Fetch Account Balances
@@ -68,6 +71,7 @@ export const OnChainLedger: React.FC = () => {
         if (viewMode === 'user') {
           setUserBalances({ algo, usdc })
         } else {
+          merchantAlgoBalance = algo
           setMerchantStats((prev) => ({
             totalRevenue: prev?.totalRevenue || 0,
             totalAudits: prev?.totalAudits || 0,
@@ -113,10 +117,11 @@ export const OnChainLedger: React.FC = () => {
         setTransactions(parsed)
 
         if (viewMode === 'merchant') {
+          // Use freshly fetched merchantAlgoBalance — not stale state
           setMerchantStats({
             totalRevenue: totalRev,
             totalAudits: parsed.length,
-            algoBalance: userBalances?.algo || 1.19,
+            algoBalance: merchantAlgoBalance,
           })
         }
       }
@@ -125,11 +130,11 @@ export const OnChainLedger: React.FC = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeAddress, viewMode])
 
   useEffect(() => {
     fetchTransactions()
-  }, [activeAddress, viewMode])
+  }, [fetchTransactions])
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
@@ -321,7 +326,7 @@ export const OnChainLedger: React.FC = () => {
                     <td className="py-3 px-4 text-slate-400 truncate max-w-[150px]">
                       {viewMode === 'user'
                         ? tx.receiver === RECEIVER_WALLET
-                          ? 'ADSEC Node'
+                          ? 'Medusa Node'
                           : `${tx.receiver.slice(0, 6)}...`
                         : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
                     </td>

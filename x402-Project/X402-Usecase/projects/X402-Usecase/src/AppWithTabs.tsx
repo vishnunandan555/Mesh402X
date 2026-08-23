@@ -80,19 +80,26 @@ export default function App() {
   return (
     <SnackbarProvider maxSnack={3}>
       <WalletProvider manager={walletManager}>
-        <div className="min-h-screen bg-slate-950 text-slate-100">
-          {/* Global Nav */}
-          <header className="sticky top-0 z-50 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur">
-            <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-              <button onClick={() => setActiveTab('adsec')} className="flex items-center gap-2.5 shrink-0 group">
-                <ShieldMark />
-                <span className="font-black tracking-wide text-white text-sm group-hover:text-indigo-300 transition-colors">
-                  ADSEC
-                </span>
-                <span className="hidden sm:inline text-[10px] font-mono px-2 py-0.5 rounded border border-indigo-500/40 bg-indigo-500/10 text-indigo-300">
-                  x402
-                </span>
-              </button>
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+          {/* GLOBAL STICKY HEADER */}
+          <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+              {/* Logo */}
+              <div className="flex items-center gap-6">
+                <button onClick={() => setActiveTab('adsec')} className="flex items-center gap-2.5 shrink-0 group">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-mono font-black text-xs text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
+                    🐍
+                  </div>
+                  <div className="text-left">
+                    <div className="font-black text-sm tracking-wider text-white flex items-center gap-1.5">
+                      MEDUSA
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                        x402
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              </div>
 
               <nav className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-full p-1" aria-label="demos">
                 {TABS.map((t) => (

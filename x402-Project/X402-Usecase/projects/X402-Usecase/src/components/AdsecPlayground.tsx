@@ -78,6 +78,9 @@ function renderUserContent(userInput) {
   },
 ]
 
+// Derived once at module load — avoids re-evaluation on every render
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
+
 export const AdsecPlayground: React.FC = () => {
   const { activeAddress, signTransactions } = useWallet()
   const [mode, setMode] = useState<EndpointMode>('audit')
@@ -94,7 +97,6 @@ export const AdsecPlayground: React.FC = () => {
   const [auditResponse, setAuditResponse] = useState<AdsecResponse | null>(null)
   const [copiedDiffIdx, setCopiedDiffIdx] = useState<number | null>(null)
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
 
   useEffect(() => {
     const handler = (e: Event) => setMode((e as CustomEvent<EndpointMode>).detail)
@@ -165,7 +167,7 @@ export const AdsecPlayground: React.FC = () => {
 
     beginRun()
 
-    const endpointUrl = `${apiBaseUrl}${ENDPOINTS_META[mode].path}`
+    const endpointUrl = `${API_BASE_URL}${ENDPOINTS_META[mode].path}`
     const meta = ENDPOINTS_META[mode]
 
     try {
@@ -214,7 +216,7 @@ export const AdsecPlayground: React.FC = () => {
     pushLog('dev mode · bypassing x402 payment rail')
 
     try {
-      const res = await fetch(`${apiBaseUrl}/adsec/dev-audit`, {
+      const res = await fetch(`${API_BASE_URL}/adsec/dev-audit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -300,7 +302,7 @@ export const AdsecPlayground: React.FC = () => {
             calling <span className="font-bold text-slate-300">{ENDPOINTS_META[mode].path}</span> · fee{' '}
             <span className="text-amber-300 font-bold">{ENDPOINTS_META[mode].price}</span>
           </div>
-
+          
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
               onClick={handleExecuteFreeDevAudit}
@@ -341,6 +343,11 @@ export const AdsecPlayground: React.FC = () => {
                 </>
               )}
             </button>
+            {!activeAddress && (
+              <p className="text-xs text-amber-400/80 font-mono mt-2">
+                ↑ Connect your Algorand wallet (Pera / Defly) via the header button to enable paid audits.
+              </p>
+            )}
           </div>
         </div>
       </div>

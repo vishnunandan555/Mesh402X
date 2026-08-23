@@ -50,7 +50,7 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC Pre-Flight Scanner - Fast deterministic secrets, AST pattern flaws, typosquatting & live OSV.dev CVE checks ($0.001 USDC)',
+      description: 'Medusa Security Node — Pre-Flight Scanner: Fast deterministic secrets, AST pattern flaws, typosquatting & live OSV.dev CVE checks ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: { code: 'import os\napi_key = "sk-..."', language: 'python', filename: 'app.py' },
@@ -86,7 +86,7 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC Auto-Remediation Node - Generates language-aware unified Git diff patches (git apply compatible) ($0.001 USDC)',
+      description: 'Medusa Security Node — Auto-Remediation: Generates language-aware unified Git diff patches (git apply compatible) ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: { code: 'api_key = "sk-..."', language: 'python', filename: 'app.py' },
@@ -121,7 +121,7 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC On-Chain Attestation - Logs SHA-256 code hash and security audit proof to Algorand TestNet ($0.001 USDC)',
+      description: 'Medusa Security Node — On-Chain Attestation: Logs SHA-256 code hash and security audit proof to Algorand TestNet ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: { code: 'def safe(): pass', language: 'python', filename: 'app.py' },
@@ -161,7 +161,7 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC Full Security Audit Suite - Complete Scan, Unified Git Diffs, and On-Chain Attestation ($0.001 USDC)',
+      description: 'Medusa Security Node — Full AI & Deterministic Audit Suite: Complete Scan, Unified Git Diffs, and On-Chain Attestation ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: {

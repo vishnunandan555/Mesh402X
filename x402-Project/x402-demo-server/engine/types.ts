@@ -79,5 +79,6 @@ export interface AuditResponse {
     timestamp?: string;
     attestationTxId?: string;
     loraUrl?: string;
+    codeHash?: string;
   };
 }
