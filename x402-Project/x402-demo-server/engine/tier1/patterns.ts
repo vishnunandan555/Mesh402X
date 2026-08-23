@@ -15,14 +15,14 @@ const PATTERN_RULES: PatternRule[] = [
   // ── SQL Injection ──────────────────────────────────────────────────────────
   {
     id: 'PAT-001',
-    title: 'SQL Injection via String Concatenation / Formatting',
-    pattern: /(?:cursor\.execute|db\.query|sequelize\.query|execute_sql)\s*\(\s*(?:f["'][^"']*(?:SELECT|INSERT|UPDATE|DELETE)[^"']*\{|["'][^"']*(?:SELECT|INSERT|UPDATE|DELETE)[^"']*["']\s*\+)/gi,
+    title: 'SQL Injection via String Concatenation / Interpolation',
+    pattern: /(?:"[^"]*(?:SELECT|INSERT|UPDATE|DELETE|DROP|ALTER)\b[^"]*"\s*\+|'[^']*(?:SELECT|INSERT|UPDATE|DELETE|DROP|ALTER)\b[^']*'\s*\+|\+\s*(?:"[^"]*\b(?:FROM|WHERE|SELECT|INSERT|UPDATE|DELETE)\b[^"]*"|'[^']*\b(?:FROM|WHERE|SELECT|INSERT|UPDATE|DELETE)\b[^']*')|f(?:"[^"]*\b(?:SELECT|INSERT|UPDATE|DELETE)\b[^"]*\{|'[^']*\b(?:SELECT|INSERT|UPDATE|DELETE)\b[^']*\{)|`[^`]*\b(?:SELECT|INSERT|UPDATE|DELETE)\b[^`]*\$\{|(?:cursor\.execute|conn\.execute|db\.query|sequelize\.query|execute_sql)\s*\(\s*(?:f["']|["'][^"']*["']\s*\+|`[^`]*\$\{)|(?:"[^"]*\b(?:SELECT|INSERT|UPDATE|DELETE)\b[^"]*"|'[^']*\b(?:SELECT|INSERT|UPDATE|DELETE)\b[^']*')\s*(?:\.format\s*\(|%\s*(?:\(|[a-zA-Z0-9_])))/i,
     severity: 'critical',
     cweId: 'CWE-89',
-    description: 'Dynamic SQL query constructed with string concatenation or f-strings instead of parameterized queries.',
-    remediation: 'Use parameterized queries / prepared statements (e.g. `cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))`).',
+    description: 'Dynamic SQL query constructed with string concatenation, template literals, or f-strings instead of parameterized queries.',
+    remediation: 'Use parameterized queries / prepared statements (e.g. `cursor.execute("SELECT * FROM users WHERE username = ?", (username,))`).',
   },
-  // ── Arbitrary Code Execution ───────────────────────────────────────────────
+  // ── Dynamic Code Execution ────────────────────────────────────────────────
   {
     id: 'PAT-002',
     title: 'Dynamic Code Execution via eval() / exec()',
@@ -36,7 +36,7 @@ const PATTERN_RULES: PatternRule[] = [
   {
     id: 'PAT-003',
     title: 'Insecure Object Deserialization',
-    pattern: /(?:pickle\.loads?|yaml\.load\s*\([^,)]+?(?:Loader\s*=\s*(?:yaml\.)?Loader)?\)|unserialize\s*\()/g,
+    pattern: /(?:pickle\.loads?|yaml\.load\s*\([^,)]+?(?:Loader\s*=\s*(?:yaml\.)?Loader)?\)|unserialize\s*\(|marshal\.loads\()/g,
     severity: 'critical',
     cweId: 'CWE-502',
     description: 'Deserializing untrusted data with `pickle` or `yaml.load` can trigger arbitrary remote code execution.',
@@ -46,15 +46,25 @@ const PATTERN_RULES: PatternRule[] = [
   {
     id: 'PAT-004',
     title: 'OS Command Injection Hazard',
-    pattern: /(?:os\.system\s*\(|subprocess\.(?:Popen|run|call)\s*\([^)]*shell\s*=\s*True|child_process\.exec\s*\()/g,
+    pattern: /(?:os\.system\s*\(|subprocess\.(?:Popen|run|call|check_output)\s*\([^)]*(?:shell\s*=\s*True|f["']|["']\s*\+)|child_process\.(?:exec|execSync)\s*\()/g,
     severity: 'high',
     cweId: 'CWE-78',
     description: 'Executing shell commands with string interpolation or `shell=True` enables command injection.',
     remediation: 'Pass arguments as a safe array/list without a shell (e.g., `subprocess.run(["ls", "-la"], shell=False)`).',
   },
-  // ── React / Web XSS ────────────────────────────────────────────────────────
+  // ── Path Traversal ────────────────────────────────────────────────────────
   {
     id: 'PAT-005',
+    title: 'Path Traversal / Arbitrary File Access Hazard',
+    pattern: /(?:open|fs\.readFile|fs\.readFileSync|fs\.writeFile|fs\.writeFileSync)\s*\(\s*(?:f["'][^"']*\{|["'][^"']*["']\s*\+|`[^`]*\$\{)/g,
+    severity: 'high',
+    cweId: 'CWE-22',
+    description: 'Constructing file paths with unvalidated string concatenation allows path traversal (`../`) attacks.',
+    remediation: 'Validate input against an allowlist and use safe path resolution (`path.resolve` with root directory verification).',
+  },
+  // ── React / Web XSS ────────────────────────────────────────────────────────
+  {
+    id: 'PAT-006',
     title: 'Cross-Site Scripting (XSS) via dangerouslySetInnerHTML',
     pattern: /dangerouslySetInnerHTML\s*=\s*\{\s*\{\s*__html\s*:/g,
     severity: 'high',
@@ -65,7 +75,7 @@ const PATTERN_RULES: PatternRule[] = [
   },
   // ── Weak Cryptography / Hashing ───────────────────────────────────────────
   {
-    id: 'PAT-006',
+    id: 'PAT-007',
     title: 'Use of Broken/Weak Cryptographic Hash (MD5 / SHA-1)',
     pattern: /(?:hashlib\.(?:md5|sha1)|crypto\.createHash\s*\(\s*['"](?:md5|sha1)['"]\s*\))/gi,
     severity: 'medium',
@@ -75,7 +85,7 @@ const PATTERN_RULES: PatternRule[] = [
   },
   // ── Prototype Pollution ───────────────────────────────────────────────────
   {
-    id: 'PAT-007',
+    id: 'PAT-008',
     title: 'Potential Prototype Pollution Vulnerability',
     pattern: /(?:__proto__|constructor\.prototype)\s*\[/g,
     severity: 'high',
@@ -86,7 +96,7 @@ const PATTERN_RULES: PatternRule[] = [
   },
   // ── Solidity / Smart Contract Hazards ─────────────────────────────────────
   {
-    id: 'PAT-008',
+    id: 'PAT-009',
     title: 'Insecure Authorization via tx.origin in Smart Contract',
     pattern: /\btx\.origin\b/g,
     languages: ['solidity'],
@@ -94,6 +104,16 @@ const PATTERN_RULES: PatternRule[] = [
     cweId: 'CWE-287',
     description: 'Using `tx.origin` for authentication allows phishing contracts to bypass authorization.',
     remediation: 'Use `msg.sender` instead of `tx.origin` to authenticate callers in Solidity contracts.',
+  },
+  // ── Algorand Smart Contract Hazards ────────────────────────────────────────
+  {
+    id: 'PAT-010',
+    title: 'Algorand: Unchecked RekeyTo or AssetCloseTo Hazard',
+    pattern: /(?:TxnField\.rekey_to|TxnField\.asset_close_to|TxnField\.close_remainder_to)\s*:/g,
+    severity: 'critical',
+    cweId: 'CWE-284',
+    description: 'Setting RekeyTo or CloseRemainderTo without strict authorization checks can drain or seize the contract account.',
+    remediation: 'Ensure RekeyTo and CloseRemainderTo are explicitly set to Global.zero_address() unless authorized by admin multisig.',
   },
 ];
 

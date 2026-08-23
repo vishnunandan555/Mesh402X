@@ -33,6 +33,7 @@ export function generateUnifiedDiffs(
     } else if (finding.id.startsWith('PAT-001')) {
       // SQL Injection fix
       fixedLine = originalLine
+        .replace(/["']([^"']*=\s*)'["']\s*\+\s*([a-zA-Z0-9_]+)\s*\+\s*["']'["']/, '"$1?", ($2,)')
         .replace(/f(["'][^"']*)(\{[^}]+\})([^"']*["'])/, '"$1%s$3", (user_param,)')
         .replace(/["']([^"']*)["']\s*\+\s*([a-zA-Z0-9_]+)/, '"$1%s", ($2,)');
       explanation = 'Converted dynamic string interpolation to parameterized prepared statement.';
