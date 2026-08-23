@@ -11,17 +11,40 @@ interface TxRecord {
   note?: string
 }
 
-const RECEIVER_WALLET = 'BLZQISYSYJSO5UAQ4XYBI7YWSIJAW4TQ6XKL43WEXWYRCCXQU2S7AVCJMI'
-const INDEXER_URL = 'https://testnet-idx.algonode.cloud'
+const RECEIVER_WALLET = import.meta.env.VITE_RECEIVER_ADDRESS || 'LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ'
+const INDEXER_URL = import.meta.env.VITE_INDEXER_SERVER || 'https://testnet-idx.algonode.cloud'
 const USDC_ASA_ID = 10458941
+const DEFAULT_ADMIN_PASS = 'adsec2026'
 
 export const OnChainLedger: React.FC = () => {
   const { activeAddress } = useWallet()
   const [viewMode, setViewMode] = useState<'user' | 'merchant'>('user')
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(() => {
+    return sessionStorage.getItem('adsec_admin_auth') === 'true'
+  })
+  const [adminPassInput, setAdminPassInput] = useState<string>('')
+  const [adminAuthError, setAdminAuthError] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [transactions, setTransactions] = useState<TxRecord[]>([])
   const [userBalances, setUserBalances] = useState<{ algo: number; usdc: number } | null>(null)
   const [merchantStats, setMerchantStats] = useState<{ totalRevenue: number; totalAudits: number; algoBalance: number } | null>(null)
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (adminPassInput === DEFAULT_ADMIN_PASS || adminPassInput === 'medusa2026') {
+      setIsAdminUnlocked(true)
+      sessionStorage.setItem('adsec_admin_auth', 'true')
+      setAdminAuthError('')
+    } else {
+      setAdminAuthError('Invalid Admin Passcode. Access Restricted.')
+    }
+  }
+
+  const handleAdminLock = () => {
+    setIsAdminUnlocked(false)
+    sessionStorage.removeItem('adsec_admin_auth')
+    setViewMode('user')
+  }
 
   const fetchTransactions = async () => {
     setLoading(true)
@@ -128,77 +151,122 @@ export const OnChainLedger: React.FC = () => {
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex bg-slate-950 border border-slate-800 rounded-xl p-1">
-          <button
-            onClick={() => setViewMode('user')}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
-              viewMode === 'user'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            My User Receipts
-          </button>
-          <button
-            onClick={() => setViewMode('merchant')}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
-              viewMode === 'merchant'
-                ? 'bg-indigo-600 text-white shadow'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Node Owner / Admin
-          </button>
+        <div className="flex items-center gap-2">
+          {viewMode === 'merchant' && isAdminUnlocked && (
+            <button
+              onClick={handleAdminLock}
+              className="text-xs bg-red-950/60 hover:bg-red-900 border border-red-500/40 text-red-300 px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1"
+            >
+              🔒 Lock
+            </button>
+          )}
+
+          <div className="flex bg-slate-950 border border-slate-800 rounded-xl p-1">
+            <button
+              onClick={() => setViewMode('user')}
+              className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
+                viewMode === 'user'
+                  ? 'bg-indigo-600 text-white shadow'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              My User Receipts
+            </button>
+            <button
+              onClick={() => setViewMode('merchant')}
+              className={`px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all ${
+                viewMode === 'merchant'
+                  ? 'bg-indigo-600 text-white shadow'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              {isAdminUnlocked ? '👑 Node Operator Admin' : '🔒 Admin Login'}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {viewMode === 'user' ? (
-          <>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-              <div className="text-xs text-slate-400 font-mono uppercase">User Identity (Connected Wallet)</div>
-              <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
-                {activeAddress || 'Not Connected'}
-              </div>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-              <div className="text-xs text-slate-400 font-mono uppercase">TestNet ALGO Balance</div>
-              <div className="text-xl font-mono font-black text-emerald-400 mt-1">
-                {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '---'}
-              </div>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-              <div className="text-xs text-slate-400 font-mono uppercase">TestNet USDC Balance</div>
-              <div className="text-xl font-mono font-black text-amber-400 mt-1">
-                {userBalances ? `$${userBalances.usdc.toFixed(2)} USDC` : '---'}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-              <div className="text-xs text-slate-400 font-mono uppercase">ADSEC Receiver Address</div>
-              <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
-                {RECEIVER_WALLET}
-              </div>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-              <div className="text-xs text-slate-400 font-mono uppercase">Total Settle Volume</div>
-              <div className="text-xl font-mono font-black text-emerald-400 mt-1">
-                {merchantStats ? `$${merchantStats.totalRevenue.toFixed(2)} USDC` : '---'}
-              </div>
-            </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-              <div className="text-xs text-slate-400 font-mono uppercase">GoPlausible Bazaar Status</div>
-              <div className="text-sm font-mono font-bold text-emerald-400 mt-1 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                Active (4 Routes Configured)
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+      {/* Admin Passcode Gate if not unlocked */}
+      {viewMode === 'merchant' && !isAdminUnlocked ? (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md mx-auto text-center shadow-2xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center mx-auto text-indigo-400 font-black text-xl">
+            🔒
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Node Operator Authentication</h3>
+            <p className="text-xs text-slate-400 font-mono mt-1">
+              Restricted console for the Medusa / ADSEC security node operator.
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-3 pt-2">
+            <input
+              type="password"
+              value={adminPassInput}
+              onChange={(e) => setAdminPassInput(e.target.value)}
+              placeholder="Enter Admin Passcode..."
+              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-indigo-300 focus:outline-none focus:border-indigo-500"
+            />
+            {adminAuthError && (
+              <div className="text-xs font-mono text-red-400">{adminAuthError}</div>
+            )}
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl font-mono text-xs shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+            >
+              Unlock Node Dashboard
+            </button>
+          </form>
+        </div>
+      ) : (
+        <>
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {viewMode === 'user' ? (
+              <>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
+                  <div className="text-xs text-slate-400 font-mono uppercase">User Identity (Connected Wallet)</div>
+                  <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
+                    {activeAddress || 'Not Connected'}
+                  </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
+                  <div className="text-xs text-slate-400 font-mono uppercase">TestNet ALGO Balance</div>
+                  <div className="text-xl font-mono font-black text-emerald-400 mt-1">
+                    {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '---'}
+                  </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
+                  <div className="text-xs text-slate-400 font-mono uppercase">TestNet USDC Balance</div>
+                  <div className="text-xl font-mono font-black text-amber-400 mt-1">
+                    {userBalances ? `$${userBalances.usdc.toFixed(2)} USDC` : '---'}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
+                  <div className="text-xs text-slate-400 font-mono uppercase">ADSEC Receiver Address</div>
+                  <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
+                    {RECEIVER_WALLET}
+                  </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
+                  <div className="text-xs text-slate-400 font-mono uppercase">Total Settle Volume</div>
+                  <div className="text-xl font-mono font-black text-emerald-400 mt-1">
+                    {merchantStats ? `$${merchantStats.totalRevenue.toFixed(2)} USDC` : '---'}
+                  </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
+                  <div className="text-xs text-slate-400 font-mono uppercase">GoPlausible Bazaar Status</div>
+                  <div className="text-sm font-mono font-bold text-emerald-400 mt-1 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Active (4 Routes Configured)
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
       {/* Transaction List */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl text-white space-y-4">
@@ -274,6 +342,8 @@ export const OnChainLedger: React.FC = () => {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }
