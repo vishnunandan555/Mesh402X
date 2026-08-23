@@ -2,6 +2,84 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---- AdSec landing utilities ---- */
+
+.text-gradient {
+  @apply bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-cyan-300 bg-clip-text text-transparent;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.crt {
+  position: relative;
+}
+
+.crt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.02) 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.35s ease-out;
+}
+
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+.animate-caret {
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee-x 32s linear infinite;
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-float-y {
+  animation: float-y 5s ease-in-out infinite;
+}
+
+/* terminal-style scrollbars */
+.thin-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
 /* Enhanced color grading for data displays */
 .mockup-code {
   @apply bg-gradient-to-br from-slate-900 to-slate-800 !important;

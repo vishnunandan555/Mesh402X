@@ -13,8 +13,9 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
 
   return (
     <dialog id="connect_wallet_modal" className={`modal ${openModal ? 'modal-open' : ''}`}>
-      <form method="dialog" className="modal-box">
-        <h3 className="font-bold text-2xl">Select wallet provider</h3>
+      <form method="dialog" className="modal-box bg-slate-900 text-slate-100 border border-slate-800 rounded-2xl shadow-2xl">
+        <h3 className="font-bold text-2xl text-white">Select wallet provider</h3>
+        <p className="text-xs font-mono text-slate-500 mt-1">algorand testnet · x402 micropayments</p>
 
         <div className="grid m-2 pt-5">
           {activeAddress && (
@@ -28,7 +29,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
             wallets?.map((wallet) => (
               <button
                 data-test-id={`${wallet.id}-connect`}
-                className="btn border-teal-800 border-1  m-2"
+                className="btn border border-slate-700 bg-slate-800 hover:bg-slate-700 hover:border-slate-500 text-slate-100 m-2 rounded-xl justify-start"
                 key={`provider-${wallet.id}`}
                 onClick={() => {
                   return wallet.connect()
@@ -49,7 +50,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
         <div className="modal-action ">
           <button
             data-test-id="close-wallet-modal"
-            className="btn"
+            className="btn bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl px-6"
             onClick={() => {
               closeModal()
             }}
@@ -58,7 +59,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
           </button>
           {activeAddress && (
             <button
-              className="btn btn-warning"
+              className="btn btn-warning rounded-xl px-6 text-black"
               data-test-id="logout"
               onClick={async () => {
                 if (wallets) {
