@@ -83,7 +83,7 @@ function renderUserContent(userInput) {
 ]
 
 // Derived once at module load — avoids re-evaluation on every render
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com').replace(/\/+$/, '')
 
 export const AdsecPlayground: React.FC = () => {
   const { activeAddress, signTransactions } = useWallet()
@@ -101,7 +101,6 @@ export const AdsecPlayground: React.FC = () => {
   const [auditResponse, setAuditResponse] = useState<AdsecResponse | null>(null)
   const [copiedDiffIdx, setCopiedDiffIdx] = useState<number | null>(null)
 
-
   useEffect(() => {
     const handler = (e: Event) => setMode((e as CustomEvent<EndpointMode>).detail)
     window.addEventListener('adsec:set-mode', handler)
@@ -116,7 +115,7 @@ export const AdsecPlayground: React.FC = () => {
       setSelectedPreset(preset.id)
       setCode(preset.code)
       setFilename(preset.filename)
-      setLanguage(preset.language as any)
+      setLanguage(preset.language as 'python' | 'javascript' | 'typescript' | 'solidity')
       setAuditResponse(null)
       setError('')
       setHasStarted(false)
@@ -206,12 +205,13 @@ export const AdsecPlayground: React.FC = () => {
       )
 
       finishSuccess(response)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Audit request could not be completed.'
       console.error('ADSEC execution error:', err)
-      setError(err?.message || 'Audit request could not be completed.')
+      setError(errorMessage)
       setTerminalPhase('error')
       setLoading(false)
-      pushLog(`Error: ${(err?.message || 'Request cancelled or failed').slice(0, 52)}`)
+      pushLog(`Error: ${errorMessage.slice(0, 52)}`)
     }
   }
 

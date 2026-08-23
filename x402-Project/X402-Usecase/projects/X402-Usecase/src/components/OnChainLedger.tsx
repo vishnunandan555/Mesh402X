@@ -13,7 +13,7 @@ interface TxRecord {
 }
 
 const RECEIVER_WALLET = import.meta.env.VITE_RECEIVER_ADDRESS || 'LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ'
-const INDEXER_URL = import.meta.env.VITE_INDEXER_SERVER || 'https://testnet-idx.algonode.cloud'
+const INDEXER_URL = (import.meta.env.VITE_INDEXER_SERVER || 'https://testnet-idx.algonode.cloud').replace(/\/+$/, '')
 const USDC_ASA_ID = 10458941
 // Admin passcode read from env at build time — not hardcoded in source
 const ADMIN_PASS = import.meta.env.VITE_ADMIN_PASS || 'adsec2026'

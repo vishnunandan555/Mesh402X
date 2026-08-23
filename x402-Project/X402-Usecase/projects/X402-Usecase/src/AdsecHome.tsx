@@ -198,7 +198,7 @@ export const AdsecHome: React.FC = () => {
               <dl className="animate-fade-in-delay-3" style={{
                 marginTop: '48px',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 120px), 1fr))',
                 gap: '16px',
               }}>
                 {STATS.map((s) => (

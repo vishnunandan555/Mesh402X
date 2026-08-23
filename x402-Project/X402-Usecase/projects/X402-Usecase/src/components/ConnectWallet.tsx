@@ -1,4 +1,5 @@
 import { useWallet, Wallet, WalletId } from '@txnlab/use-wallet-react'
+import { useEffect } from 'react'
 import Account from './Account'
 
 interface ConnectWalletInterface {
@@ -11,10 +12,23 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
 
   const isKmd = (wallet: Wallet) => wallet.id === WalletId.KMD
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && openModal) {
+        closeModal()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [openModal, closeModal])
+
   return (
     <dialog
       id="connect_wallet_modal"
       className={openModal ? 'modal-open' : ''}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) closeModal()
+      }}
       style={{
         display: openModal ? 'flex' : 'none',
         position: 'fixed',
@@ -33,7 +47,9 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
     >
       <div
         className="card animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
         style={{
+
           maxWidth: '420px',
           width: '100%',
           padding: '28px',

@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from 'react'
 
-const TIERS = [
+interface TierItem {
+  id: string
+  name: string
+  price: string
+  priceMicro: string
+  endpoint: string
+  script: string
+  badge: string
+  badgeColor: string
+  badgeBg: string
+  badgeBorder: string
+  description: string
+  icon: string
+  featured?: boolean
+}
+
+const TIERS: TierItem[] = [
   {
     id: 'scan',
     name: 'Pre-Flight Scanner',
@@ -74,22 +90,26 @@ const TIERS = [
   },
 ]
 
+type GuideTab = 'install' | 'agent' | 'bazaar' | 'architecture'
+
 export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({ onSwitchToPlayground }) => {
   const [copiedInstall, setCopiedInstall] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
-  const [activeTab, setActiveTab] = useState<'install' | 'agent' | 'bazaar' | 'architecture'>('install')
+  const [activeTab, setActiveTab] = useState<GuideTab>('install')
   const [bazaarStatus, setBazaarStatus] = useState<{ loading: boolean; count?: number; verified?: boolean; error?: string }>({
     loading: true,
   })
 
   useEffect(() => {
+    let isMounted = true
     // Check live GoPlausible Bazaar registry status
     fetch('https://facilitator.goplausible.xyz/discovery/resources?includeTestnets=true&limit=1000')
       .then((r) => r.json())
       .then((data) => {
+        if (!isMounted) return
         const items = data.items || data.resources || []
         const hasMedusa = items.some(
-          (i: any) => JSON.stringify(i).toLowerCase().includes('adsec') || JSON.stringify(i).includes('mesh402x')
+          (i: unknown) => JSON.stringify(i).toLowerCase().includes('adsec') || JSON.stringify(i).includes('mesh402x')
         )
         setBazaarStatus({
           loading: false,
@@ -98,8 +118,13 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
         })
       })
       .catch(() => {
+        if (!isMounted) return
         setBazaarStatus({ loading: false, count: 1524, verified: true })
       })
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const copyInstallCommand = () => {
@@ -279,7 +304,7 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
           {tabs.map((t) => (
             <button
               key={t.id}
-              onClick={() => setActiveTab(t.id as any)}
+              onClick={() => setActiveTab(t.id as GuideTab)}
               style={{
                 padding: '14px 20px',
                 fontSize: '13px',
@@ -380,14 +405,14 @@ export const AgentGuidePage: React.FC<{ onSwitchToPlayground: () => void }> = ({
             {TIERS.map((tier, i) => (
               <div
                 key={tier.id}
-                className={`card ${(tier as any).featured ? 'glow-border-emerald' : ''} card-interactive animate-fade-in`}
+                className={`card ${tier.featured ? 'glow-border-emerald' : ''} card-interactive animate-fade-in`}
                 style={{
                   padding: '24px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   animationDelay: `${i * 0.08}s`,
-                  ...((tier as any).featured ? { border: '1px solid rgba(16, 185, 129, 0.4)' } : {}),
+                  ...(tier.featured ? { border: '1px solid rgba(16, 185, 129, 0.4)' } : {}),
                 }}
               >
                 <div>
