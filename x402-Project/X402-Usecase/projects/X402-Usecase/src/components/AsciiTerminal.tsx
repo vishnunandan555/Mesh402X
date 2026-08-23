@@ -188,11 +188,11 @@ interface PhaseTheme {
 }
 
 const THEMES: Record<TerminalPhase, PhaseTheme> = {
-  idle: { label: 'STANDBY', step: 'Ready for request', text: 'text-slate-400', chip: 'bg-slate-500/10 text-slate-300 border-slate-500/40' },
+  idle: { label: 'STANDBY', step: 'Ready for request', text: 'text-neutral-400', chip: 'bg-neutral-500/10 text-neutral-300 border-neutral-500/40' },
   recon: { label: 'STATIC ANALYSIS', step: 'Step 1/5 · Analyzing code structure', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/40' },
   challenge: { label: 'HTTP 402 CHALLENGE', step: 'Step 2/5 · Micropayment invoice generated', text: 'text-amber-300', chip: 'bg-amber-500/10 text-amber-300 border-amber-500/40' },
-  signing: { label: 'WALLET SIGNATURE', step: 'Step 3/5 · Awaiting user signature', text: 'text-sky-300', chip: 'bg-sky-500/10 text-sky-300 border-sky-500/40' },
-  settling: { label: 'ON-CHAIN SETTLEMENT', step: 'Step 4/5 · Confirming on Algorand TestNet', text: 'text-cyan-300', chip: 'bg-cyan-500/10 text-cyan-300 border-cyan-500/40' },
+  signing: { label: 'WALLET SIGNATURE', step: 'Step 3/5 · Awaiting user signature', text: 'text-neutral-200', chip: 'bg-white/10 text-white border-white/25' },
+  settling: { label: 'ON-CHAIN SETTLEMENT', step: 'Step 4/5 · Confirming on Algorand TestNet', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40' },
   patching: { label: 'PATCH GENERATION', step: 'Step 5/5 · Creating unified diffs', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40' },
   success: { label: 'VERIFIED & DELIVERED', step: 'Complete · Audit report delivered', text: 'text-emerald-300', chip: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/40' },
   error: { label: 'INTERRUPTED', step: 'Request halted', text: 'text-red-400', chip: 'bg-red-500/10 text-red-300 border-red-500/40' },
@@ -254,19 +254,18 @@ export const AsciiTerminal: React.FC<AsciiTerminalProps> = ({
       : phase === 'error'
       ? 'shadow-red-500/20'
       : phase === 'idle'
-      ? 'shadow-indigo-500/10'
+      ? 'shadow-black/40'
       : 'shadow-black/40'
 
   return (
-    <div className={`rounded-xl border border-slate-800 bg-[#05070d] shadow-2xl overflow-hidden font-mono ${glow} ${className}`}>
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/80 border-b border-slate-800">
+    <div className={`rounded-xl border border-white/10 bg-[#0b0b0b] shadow-2xl overflow-hidden font-mono ${glow} ${className}`}>
+      <div className="flex items-center justify-between px-4 py-2.5 bg-white/5 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <span className="flex gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500/90"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/90"></span>
-            <span className="w-2.5 h-2.5 rounded-full bg-green-500/90"></span>
+          <span className="relative flex w-2 h-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60"></span>
+            <span className="relative inline-flex rounded-full w-2 h-2 bg-emerald-400"></span>
           </span>
-          <span className="text-[11px] text-slate-400 tracking-wider">{title}</span>
+          <span className="text-[11px] text-neutral-400 tracking-wider">{title}</span>
         </div>
         <span className={`text-[10px] px-2 py-0.5 rounded border tracking-widest uppercase ${theme.chip}`}>
           {theme.label}
@@ -276,23 +275,23 @@ export const AsciiTerminal: React.FC<AsciiTerminalProps> = ({
       <div className="relative">
         <pre
           aria-hidden
-          className={`crt px-4 py-3 text-[11px] sm:text-xs leading-snug min-h-[220px] whitespace-pre ${theme.text}`}
+          className={`px-4 py-3 text-[11px] sm:text-xs leading-snug min-h-[220px] whitespace-pre ${theme.text}`}
         >
 {frames[idx % frames.length]}
         </pre>
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-[#05070d] to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none h-8 bg-gradient-to-t from-[#0b0b0b] to-transparent"></div>
       </div>
 
-      <div className="border-t border-slate-800 bg-slate-950/90 px-4 py-2 space-y-0.5">
+      <div className="border-t border-white/10 bg-black/60 px-4 py-2 space-y-0.5">
         {visibleLogs.map((l, i) => (
-          <div key={`${l}-${i}`} className={`text-[11px] truncate ${i === visibleLogs.length - 1 ? 'text-slate-300' : 'text-slate-600'}`}>
-            <span className="text-indigo-400 mr-2">&gt;</span>
+          <div key={`${l}-${i}`} className={`text-[11px] truncate ${i === visibleLogs.length - 1 ? 'text-neutral-300' : 'text-neutral-600'}`}>
+            <span className="text-emerald-500 mr-2">&gt;</span>
             {l}
           </div>
         ))}
         <div className="flex items-center justify-between pt-1">
-          <span className="text-[10px] uppercase tracking-widest text-slate-500">{theme.step}</span>
-          <span className="animate-caret text-slate-300">█</span>
+          <span className="text-[10px] uppercase tracking-widest text-neutral-500">{theme.step}</span>
+          <span className="animate-caret text-neutral-300">█</span>
         </div>
       </div>
     </div>

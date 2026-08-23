@@ -7,7 +7,7 @@ import { ENDPOINTS_META, ENDPOINT_ORDER, EndpointMode } from '../utils/adsecEndp
 const PRESETS = [
   {
     id: 'python-sqli-secret',
-    name: 'Python: SQLi & Secret Key',
+    name: 'Python: SQLi & Exposed Key',
     language: 'python',
     filename: 'auth_service.py',
     code: `import os
@@ -31,7 +31,7 @@ def get_user_profile(user_id):
   },
   {
     id: 'typosquat-supply-chain',
-    name: 'Python: Supply Chain Typosquat',
+    name: 'Supply Chain: Malicious Package',
     language: 'python',
     filename: 'scraper.py',
     code: `import sys
@@ -66,7 +66,7 @@ def approval_program():
   },
   {
     id: 'js-xss-eval',
-    name: 'JavaScript: Eval & XSS Sink',
+    name: 'JavaScript: Eval & XSS Injection',
     language: 'javascript',
     filename: 'render.js',
     code: `// Danger: Unsafe dynamic eval and XSS injection
@@ -77,6 +77,9 @@ function renderUserContent(userInput) {
 }`,
   },
 ]
+
+// Derived once at module load — avoids re-evaluation on every render
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
 
 export const AdsecPlayground: React.FC = () => {
   const { activeAddress, signTransactions } = useWallet()
@@ -93,6 +96,7 @@ export const AdsecPlayground: React.FC = () => {
   const [error, setError] = useState<string>('')
   const [auditResponse, setAuditResponse] = useState<AdsecResponse | null>(null)
   const [copiedDiffIdx, setCopiedDiffIdx] = useState<number | null>(null)
+
 
   useEffect(() => {
     const handler = (e: Event) => setMode((e as CustomEvent<EndpointMode>).detail)
@@ -118,35 +122,59 @@ export const AdsecPlayground: React.FC = () => {
   }
 
   const beginRun = () => {
-    setLoading(true)
     setHasStarted(true)
+    setLoading(true)
     setError('')
     setAuditResponse(null)
+    setTerminalLogs([])
     setTerminalPhase('recon')
-    setTerminalLogs([
-      `Initializing security audit for ${filename}...`,
-      'Preparing AST parsing pipeline and CVE search queries...',
-    ])
+    const meta = ENDPOINTS_META[mode]
+    pushLog(`Target: ${filename} (${(new TextEncoder().encode(code).length / 1024).toFixed(1)} KB ${language})`)
+    pushLog(`Endpoint: POST ${meta.path} (${meta.name})`)
   }
 
-  const finishSuccess = (response: AdsecResponse) => {
-    setAuditResponse(response)
-    setTerminalPhase(response.fixes && response.fixes.length > 0 ? 'patching' : 'success')
-    setLoading(false)
-    pushLog('Audit completed · Structured findings rendered below')
+  const finishSuccess = (data: AdsecResponse) => {
+    setAuditResponse(data)
+    if (data.fixes && data.fixes.length > 0 && (mode === 'remediate' || mode === 'audit')) {
+      setTerminalPhase('patching')
+      pushLog(`Generated ${data.fixes.length} git patch(es) ready to apply`)
+      setTimeout(() => {
+        setTerminalPhase('success')
+        setLoading(false)
+        pushLog(
+          `Audit complete · Score: ${data.summary?.score ?? '—'}/100 · Findings: ${data.findings?.length ?? 0} · Proof recorded: ${
+            data.attestation ? 'Yes' : 'No'
+          }`
+        )
+      }, 1400)
+    } else {
+      setTerminalPhase('success')
+      setLoading(false)
+      pushLog(`Audit complete · Score: ${data.summary?.score ?? '—'}/100 · Findings: ${data.findings?.length ?? 0}`)
+    }
   }
 
   const handleExecuteAudit = async () => {
     if (!activeAddress) {
-      setError('Please connect your Algorand wallet first to authorize the $0.001 USDC micropayment.')
+      setError('Please connect your Algorand wallet (Pera, Defly, or Lute) to sign the payment.')
+      return
+    }
+
+    if (!signTransactions) {
+      setError('Connected wallet does not support transaction signing.')
       return
     }
 
     beginRun()
 
+    const endpointUrl = `${API_BASE_URL}${ENDPOINTS_META[mode].path}`
+    const meta = ENDPOINTS_META[mode]
+
     try {
-      const backendUrl = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
-      const endpointUrl = `${backendUrl.replace(/\/$/, '')}${ENDPOINTS_META[mode].path}`
+      const signer = {
+        address: activeAddress,
+        signTransactions,
+      }
 
       const response = await executeAdsecRequestWithPayment(
         endpointUrl,
@@ -156,14 +184,11 @@ export const AdsecPlayground: React.FC = () => {
           language,
           tier: mode === 'scan' || mode === 'attest' ? 'tier1' : 'tier2',
         },
-        {
-          address: activeAddress,
-          signTransactions,
-        },
+        signer,
         (step) => {
           if (step === 'challenging') {
             setTerminalPhase('challenge')
-            pushLog(`Received HTTP 402 challenge (${ENDPOINTS_META[mode].price})`)
+            pushLog(`Received HTTP 402 challenge (${meta.price})`)
           } else if (step === 'signing') {
             setTerminalPhase('signing')
             pushLog('Waiting for transaction signature in wallet...')
@@ -194,21 +219,21 @@ export const AdsecPlayground: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Symmetrical Card 1: Preset & Service Selection */}
-      <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div className="text-xs font-mono text-slate-300 font-bold uppercase tracking-wider">
-            [A] Sample Vulnerability Presets:
-          </div>
+      {/* Preset Selector & Code Input */}
+      <div className="bg-white/[0.03] backdrop-blur border border-white/10 rounded-2xl p-5 shadow-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <label className="text-sm font-bold text-neutral-200 flex items-center gap-2">
+            <span className="text-emerald-400 font-mono">▸</span> Sample Vulnerability Presets:
+          </label>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleSelectPreset(p.id)}
-                className={`text-xs px-3 py-1.5 rounded-lg border font-mono transition-all ${
+                className={`text-xs px-3 py-1.5 rounded-lg border transition-all font-medium ${
                   selectedPreset === p.id
-                    ? 'bg-indigo-600 text-white border-indigo-500 shadow shadow-indigo-600/30'
-                    : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-600 hover:text-slate-200'
+                    ? 'bg-emerald-500 text-black border-emerald-500 shadow shadow-emerald-500/25'
+                    : 'bg-transparent text-neutral-400 border-white/10 hover:border-white/30 hover:text-white'
                 }`}
               >
                 {p.name}
@@ -217,130 +242,124 @@ export const AdsecPlayground: React.FC = () => {
           </div>
         </div>
 
-        {/* Code Editor */}
-        <div className="rounded-xl overflow-hidden border border-slate-800 bg-[#05070d]">
-          <div className="bg-slate-950 px-4 py-2 flex justify-between items-center border-b border-slate-800 text-xs font-mono text-slate-400">
+        {/* Editor Box */}
+        <div className="relative rounded-xl overflow-hidden border border-white/10 bg-[#0b0b0b]">
+          <div className="bg-white/5 px-4 py-2 flex justify-between items-center border-b border-white/10 text-xs font-mono text-neutral-400">
             <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-slate-600"></span>
-              <span className="text-slate-300 font-bold">{filename}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+              <span className="text-neutral-200 font-bold">{filename}</span>
             </span>
-            <span className="uppercase text-indigo-400 font-mono text-[11px]">{language}</span>
+            <span className="uppercase text-neutral-400 font-semibold tracking-wider">{language}</span>
           </div>
           <textarea
             value={code}
             onChange={(e) => setCode(e.target.value)}
             rows={12}
             spellCheck={false}
-            className="w-full bg-[#05070d] p-4 font-mono text-xs sm:text-sm text-emerald-300 focus:outline-none resize-y leading-relaxed"
+            className="w-full bg-[#0b0b0b] p-4 font-mono text-sm text-neutral-100 focus:outline-none resize-y leading-relaxed thin-scroll focus:bg-[#0e0e0e]"
             placeholder="Paste source code to audit..."
           />
         </div>
 
-        {/* Service Selector & Run Action */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2 border-t border-slate-800/80">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-mono text-slate-500 uppercase mr-1">Target Service:</span>
-            {ENDPOINT_ORDER.map((key) => {
-              const meta = ENDPOINTS_META[key]
-              return (
-                <button
-                  key={key}
-                  onClick={() => setMode(key)}
-                  className={`text-xs px-2.5 py-1 rounded-lg border font-mono transition-all ${
-                    mode === key
-                      ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500 font-bold'
-                      : 'bg-slate-950 text-slate-500 border-slate-800 hover:text-slate-300'
-                  }`}
-                >
-                  {meta.cardBadge} ({meta.price})
-                </button>
-              )
-            })}
+        {/* Action Bar */}
+        <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="text-xs text-neutral-400 font-mono">
+            Selected Service: <span className="font-bold text-neutral-200">{ENDPOINTS_META[mode].name}</span> ({ENDPOINTS_META[mode].path}) · Cost:{' '}
+            <span className="text-white font-bold">{ENDPOINTS_META[mode].price}</span>
           </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
             <button
               onClick={handleExecuteAudit}
               disabled={loading || !activeAddress}
-              className={`w-full sm:w-auto px-6 py-2.5 rounded-xl font-bold font-mono text-xs text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
+              className={`w-full sm:w-auto px-7 py-3 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
                 loading
-                  ? 'bg-slate-700 cursor-not-allowed'
+                  ? 'bg-neutral-600 cursor-not-allowed'
                   : !activeAddress
-                  ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30 active:scale-95'
+                  ? 'bg-neutral-800 text-neutral-500 border border-neutral-700 cursor-not-allowed'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/25 active:scale-95'
               }`}
             >
               {loading ? (
-                <span>[Processing x402 Payment...]</span>
+                <>
+                  <span className="animate-caret font-mono">█</span>
+                  <span>Processing x402 Audit...</span>
+                </>
               ) : (
                 <>
                   <span>Run Paid Audit</span>
-                  <span className="text-[10px] bg-indigo-950 text-amber-300 px-1.5 py-0.5 rounded border border-indigo-800">
+                  <span className="text-xs bg-black/20 px-2 py-0.5 rounded-md font-mono text-black">
                     {ENDPOINTS_META[mode].price}
                   </span>
                 </>
               )}
             </button>
+            {!activeAddress && (
+              <p className="text-xs text-neutral-400">
+                Connect wallet to authorize $0.001 USDC
+              </p>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Live ASCII Terminal Telemetry */}
+      {/* Live ASCII Terminal */}
       {hasStarted && (
         <AsciiTerminal phase={terminalPhase} logs={terminalLogs} title={`Audit Telemetry — ${filename}`} />
       )}
 
-      {/* Error Notice */}
+      {/* Error Alert */}
       {error && (
-        <div className="bg-red-950/60 border border-red-500/50 rounded-xl p-4 text-red-200 text-xs font-mono flex items-center gap-2">
-          <span className="text-red-400 font-bold">[Error]:</span>
+        <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-4 text-red-200 text-sm flex items-center gap-2">
+          <span className="text-red-400 font-bold">Notice:</span>
           <span>{error}</span>
         </div>
       )}
 
-      {/* Symmetrical Results Section */}
+      {/* Results Section */}
       {auditResponse && (
         <div className="space-y-6">
-          {/* Summary Score Header */}
+          {/* Score Header Card */}
           {auditResponse.summary && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-center gap-6">
               <div className="flex items-center gap-5">
                 <div
-                  className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center font-black text-2xl font-mono border ${
+                  className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center font-black text-2xl border ${
                     auditResponse.summary.score >= 80
-                      ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500'
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/60 shadow-lg shadow-emerald-500/10'
                       : auditResponse.summary.score >= 50
-                      ? 'bg-amber-950/80 text-amber-300 border-amber-500'
-                      : 'bg-red-950/80 text-red-300 border-red-500'
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/60 shadow-lg shadow-amber-500/10'
+                      : 'bg-red-500/15 text-red-300 border-red-500/60 shadow-lg shadow-red-500/10'
                   }`}
                 >
                   <span>{auditResponse.summary.score}</span>
-                  <span className="text-[9px] font-mono text-slate-400">/ 100</span>
+                  <span className="text-[10px] font-mono tracking-widest uppercase opacity-75">/ 100</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-white">Security Health Score</h3>
-                  <p className="text-xs text-slate-400 font-mono mt-1">
-                    Evaluated against 42 AST vulnerability patterns & live OSV.dev CVE database.
+                  <h3 className="text-xl font-bold text-white">Security Health Rating</h3>
+                  <p className="text-xs text-neutral-400 font-mono mt-0.5">
+                    Analyzed in {auditResponse.summary.durationMs}ms · {ENDPOINTS_META[mode].name}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                <div className="bg-red-950/50 border border-red-500/30 rounded-xl p-2 px-3">
-                  <div className="text-lg font-bold text-red-400">{auditResponse.summary.critical}</div>
-                  <div className="text-[9px] uppercase text-red-300/80">Critical</div>
+              {/* Counts */}
+              <div className="grid grid-cols-4 gap-3 text-center w-full md:w-auto">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-black text-red-400">{auditResponse.summary.critical}</div>
+                  <div className="text-[10px] uppercase font-bold text-red-300/80">Critical</div>
                 </div>
-                <div className="bg-amber-950/50 border border-amber-500/30 rounded-xl p-2 px-3">
-                  <div className="text-lg font-bold text-amber-400">{auditResponse.summary.high}</div>
-                  <div className="text-[9px] uppercase text-amber-300/80">High</div>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-black text-amber-400">{auditResponse.summary.high}</div>
+                  <div className="text-[10px] uppercase font-bold text-amber-300/80">High</div>
                 </div>
-                <div className="bg-yellow-950/50 border border-yellow-500/30 rounded-xl p-2 px-3">
-                  <div className="text-lg font-bold text-yellow-400">{auditResponse.summary.medium}</div>
-                  <div className="text-[9px] uppercase text-yellow-300/80">Medium</div>
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-black text-yellow-400">{auditResponse.summary.medium}</div>
+                  <div className="text-[10px] uppercase font-bold text-yellow-300/80">Medium</div>
                 </div>
-                <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 px-3">
-                  <div className="text-lg font-bold text-slate-300">{auditResponse.summary.low}</div>
-                  <div className="text-[9px] uppercase text-slate-400">Low</div>
+                <div className="bg-white/5 border border-white/15 rounded-xl p-2.5 px-4">
+                  <div className="text-xl font-black text-neutral-300">{auditResponse.summary.low}</div>
+                  <div className="text-[10px] uppercase font-bold text-neutral-400">Low</div>
                 </div>
               </div>
             </div>
@@ -348,52 +367,92 @@ export const AdsecPlayground: React.FC = () => {
 
           {/* On-Chain Attestation Badge */}
           {auditResponse.attestation && (
-            <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-5 shadow-lg text-white space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <h4 className="font-bold text-emerald-400 font-mono text-sm">
-                  [+] On-Chain Cryptographic Certificate
+            <div className="bg-emerald-500/[0.06] border border-emerald-500/40 rounded-2xl p-5 shadow-lg text-white">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <h4 className="font-bold text-emerald-400 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  On-Chain Audit Certificate
                 </h4>
-                {auditResponse.attestation.txId && (
-                  <a
-                    href={auditResponse.attestation.loraUrl || `https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-3 py-1 rounded-full border border-indigo-500/40 transition-all font-mono font-bold"
-                  >
-                    View on Lora Explorer
-                  </a>
-                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs bg-emerald-500/20 text-emerald-300 font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold">
+                    {auditResponse.attestation.status === 'VERIFIED_ON_CHAIN' ? 'Confirmed on Algorand' : auditResponse.attestation.status}
+                  </span>
+                  {auditResponse.attestation.txId && (
+                    <a
+                      href={auditResponse.attestation.loraUrl || `https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs bg-emerald-500 hover:bg-emerald-400 text-black px-3 py-1 rounded-full transition-all flex items-center gap-1 font-bold"
+                    >
+                      View on Lora Explorer ↗
+                    </a>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1.5 text-xs font-mono text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">
-                <div><span className="text-slate-500">SHA-256 Code Hash:</span> <span className="text-emerald-400">{auditResponse.attestation.codeHash}</span></div>
-                <div><span className="text-slate-500">Transaction ID:</span> <span className="text-indigo-300">{auditResponse.attestation.txId}</span></div>
+              <div className="space-y-2 text-xs font-mono text-neutral-300 bg-black p-3.5 rounded-xl border border-white/10">
+                <div><span className="text-neutral-500">SHA-256 Code Hash:</span> <span className="text-emerald-400">{auditResponse.attestation.codeHash}</span></div>
+                <div><span className="text-neutral-500">Note Format:</span> <span className="text-emerald-300">{auditResponse.attestation.txNoteSchema}</span></div>
+                {auditResponse.attestation.txId && (
+                  <div>
+                    <span className="text-neutral-500">Transaction ID: </span>
+                    <a
+                      href={`https://lora.algokit.io/testnet/transaction/${auditResponse.attestation.txId}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-emerald-400 hover:underline font-bold"
+                    >
+                      {auditResponse.attestation.txId}
+                    </a>
+                  </div>
+                )}
+                <div><span className="text-neutral-500">Verification Authority:</span> {auditResponse.attestation.attestationAuthority}</div>
               </div>
             </div>
           )}
 
-          {/* Findings List */}
+          {/* Detailed Findings List */}
           {auditResponse.findings && auditResponse.findings.length > 0 && (
-            <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-              <h3 className="text-base font-bold text-white font-mono">
-                [!] Identified Flaws ({auditResponse.findings.length})
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 shadow-xl space-y-4">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <span className="font-mono text-red-400">●</span> Identified Issues ({auditResponse.findings.length})
               </h3>
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {auditResponse.findings.map((finding, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl border border-slate-800 bg-[#05070d] space-y-1.5">
-                    <div className="flex justify-between items-center gap-2">
-                      <span className="font-bold text-white text-xs font-mono">{finding.title}</span>
-                      <span className="text-[10px] font-mono uppercase bg-red-950/60 text-red-300 border border-red-500/40 px-2 py-0.5 rounded">
-                        {finding.severity}
-                      </span>
+                  <div
+                    key={idx}
+                    className="p-4 rounded-xl border border-white/10 bg-[#0b0b0b]/70 space-y-2"
+                  >
+                    <div className="flex justify-between items-start gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full uppercase font-mono ${
+                            finding.severity === 'critical'
+                              ? 'bg-red-500/15 text-red-400 border border-red-500/40'
+                              : finding.severity === 'high'
+                              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/40'
+                              : 'bg-yellow-500/15 text-yellow-400 border border-yellow-500/40'
+                          }`}
+                        >
+                          {finding.severity}
+                        </span>
+                        <span className="font-bold text-white text-sm">{finding.title}</span>
+                      </div>
+                      {finding.cweId && (
+                        <span className="text-xs font-mono bg-white/10 text-neutral-200 px-2 py-0.5 rounded">
+                          {finding.cweId}
+                        </span>
+                      )}
                     </div>
-                    {finding.snippet && (
-                      <div className="text-xs font-mono text-slate-400">
-                        Line {finding.line}: <code className="bg-slate-900 px-1 py-0.5 rounded text-indigo-300">{finding.snippet}</code>
+
+                    {finding.line && (
+                      <div className="text-xs font-mono text-neutral-400">
+                        Line {finding.line}: <code className="bg-white/10 px-1.5 py-0.5 rounded text-emerald-300">{finding.snippet}</code>
                       </div>
                     )}
+
                     {finding.remediation && (
-                      <div className="text-xs text-slate-400 font-mono">
-                        <span className="text-emerald-400 font-bold">Fix:</span> {finding.remediation}
+                      <div className="text-xs text-neutral-300 bg-white/5 p-2.5 rounded-lg border border-white/10">
+                        <span className="font-bold text-emerald-400 font-mono">Recommended Fix:</span> {finding.remediation}
                       </div>
                     )}
                   </div>
@@ -402,33 +461,70 @@ export const AdsecPlayground: React.FC = () => {
             </div>
           )}
 
-          {/* Git Diff Patches */}
+          {/* Actionable Unified Git Diff Fixes */}
           {auditResponse.fixes && auditResponse.fixes.length > 0 && (
-            <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-              <div className="flex justify-between items-center">
-                <h3 className="text-base font-bold text-white font-mono">
-                  [+] Unified Git Patches ({auditResponse.fixes.length})
+            <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 shadow-xl space-y-4">
+              <div className="flex justify-between items-center flex-wrap gap-2">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <span className="font-mono text-emerald-400">✓</span> Ready-to-Apply Git Patches ({auditResponse.fixes.length})
                 </h3>
-                <span className="text-xs text-slate-500 font-mono">git apply compatible</span>
+                <span className="text-xs text-neutral-400 font-mono">Apply with `git apply`</span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {auditResponse.fixes.map((fix, idx) => (
-                  <div key={idx} className="rounded-xl overflow-hidden border border-slate-800 bg-[#05070d]">
-                    <div className="bg-slate-950 px-4 py-1.5 flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800">
-                      <span>Patch {idx + 1}</span>
+                  <div key={idx} className="rounded-xl overflow-hidden border border-white/10 bg-[#0b0b0b]">
+                    <div className="bg-white/5 px-4 py-2 flex justify-between items-center text-xs font-mono text-neutral-400 border-b border-white/10">
+                      <span>Patch {idx + 1} of {auditResponse.fixes?.length}</span>
                       <button
                         onClick={() => handleCopyDiff(fix.diff, idx)}
-                        className="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2.5 py-0.5 rounded text-xs font-mono"
+                        className="bg-emerald-500/15 hover:bg-emerald-500 text-emerald-300 hover:text-black px-3 py-1 rounded transition-all text-xs font-medium"
                       >
-                        {copiedDiffIdx === idx ? '[Copied]' : 'Copy Diff'}
+                        {copiedDiffIdx === idx ? 'Copied ✓' : 'Copy Patch'}
                       </button>
                     </div>
-                    <pre className="p-3 text-xs font-mono text-emerald-300 overflow-x-auto">
+                    <pre className="p-4 text-xs font-mono text-emerald-300 overflow-x-auto leading-relaxed thin-scroll">
                       <code>{fix.diff}</code>
                     </pre>
+                    {fix.explanation && (
+                      <div className="bg-white/[0.04] p-3 border-t border-white/10 text-xs text-neutral-400">
+                        <span className="font-bold text-emerald-400">Why this fix works:</span> {fix.explanation}
+                      </div>
+                    )}
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* On-Chain Receipt */}
+          {auditResponse.receipt && (
+            <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-xs font-mono text-neutral-400 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <span>Network: </span>
+                <span className="text-neutral-200 font-semibold">{auditResponse.receipt.network || 'Algorand TestNet'}</span>
+                {auditResponse.receipt.paidAmount && (
+                  <span className="ml-2 bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">
+                    Paid {auditResponse.receipt.paidAmount}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                Settled via GoPlausible Facilitator ·
+                <a
+                  href={
+                    auditResponse.receipt.attestationTxId
+                      ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.attestationTxId}`
+                      : auditResponse.receipt.txId
+                      ? `https://lora.algokit.io/testnet/transaction/${auditResponse.receipt.txId}`
+                      : 'https://lora.algokit.io/testnet'
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-400 hover:underline flex items-center gap-1 font-bold"
+                >
+                  Verify Transaction on Lora ↗
+                </a>
               </div>
             </div>
           )}
@@ -439,3 +535,4 @@ export const AdsecPlayground: React.FC = () => {
 }
 
 export default AdsecPlayground
+

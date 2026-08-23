@@ -13,9 +13,9 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
 
   return (
     <dialog id="connect_wallet_modal" className={`modal ${openModal ? 'modal-open' : ''}`}>
-      <form method="dialog" className="modal-box bg-slate-900 text-slate-100 border border-slate-800 rounded-2xl shadow-2xl max-w-md">
+      <form method="dialog" className="modal-box bg-[#0d0d0d] text-neutral-100 border border-white/10 rounded-2xl shadow-2xl max-w-md">
         <h3 className="font-bold text-xl text-white">Connect Algorand Wallet</h3>
-        <p className="text-xs font-mono text-slate-400 mt-1">Select your wallet provider to sign x402 micropayments on TestNet.</p>
+        <p className="text-xs font-mono text-neutral-400 mt-1">Select your wallet provider to sign x402 micropayments on TestNet.</p>
 
         <div className="pt-4 space-y-2">
           {activeAddress && (
@@ -29,7 +29,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
               <button
                 type="button"
                 data-test-id={`${wallet.id}-connect`}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-700/80 bg-slate-950 hover:bg-slate-800 hover:border-slate-500 text-slate-100 font-medium text-sm transition-all"
+                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/10 hover:border-emerald-500/50 text-white font-medium text-sm transition-all"
                 key={`provider-${wallet.id}`}
                 onClick={() => {
                   return wallet.connect()
@@ -51,7 +51,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
           <button
             type="button"
             data-test-id="close-wallet-modal"
-            className="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-all"
+            className="px-5 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/15 text-neutral-200 transition-all"
             onClick={() => {
               closeModal()
             }}
@@ -61,7 +61,7 @@ const ConnectWallet = ({ openModal, closeModal }: ConnectWalletInterface) => {
           {activeAddress && (
             <button
               type="button"
-              className="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-red-950/80 hover:bg-red-900 border border-red-500/40 text-red-300 transition-all"
+              className="px-5 py-2 rounded-xl text-xs font-bold bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-300 transition-all"
               data-test-id="logout"
               onClick={async () => {
                 if (wallets) {

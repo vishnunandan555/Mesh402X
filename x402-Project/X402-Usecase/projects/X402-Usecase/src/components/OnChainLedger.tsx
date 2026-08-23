@@ -205,19 +205,19 @@ export const OnChainLedger: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
       {/* Header Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-emerald-500/20 text-emerald-300 text-xs font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold flex items-center gap-1.5">
+            <span className="bg-emerald-500/15 text-emerald-300 text-xs font-mono px-3 py-1 rounded-full border border-emerald-500/40 font-bold flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-400 animate-ping' : 'bg-emerald-400 animate-pulse'}`}></span>
               <span>{isSyncing ? 'Syncing Indexer...' : 'Live Algorand TestNet Feed'}</span>
             </span>
-            <span className="bg-indigo-500/20 text-indigo-300 text-xs font-mono px-3 py-1 rounded-full border border-indigo-500/40">
+            <span className="bg-white/5 text-neutral-300 text-xs px-3 py-1 rounded-full border border-white/15">
               x402 USDC (ASA 10458941)
             </span>
           </div>
           <h2 className="text-2xl font-bold text-white">On-Chain Settlement Ledger</h2>
-          <p className="text-xs text-slate-400 font-mono mt-1">
+          <p className="text-xs text-neutral-400 font-mono mt-1">
             Verifiable real-time audit payments and attestation receipts queried from Algorand TestNet consensus.
           </p>
         </div>
@@ -227,19 +227,19 @@ export const OnChainLedger: React.FC = () => {
           {viewMode === 'merchant' && isAdminUnlocked && (
             <button
               onClick={handleAdminLock}
-              className="text-xs bg-red-950/60 hover:bg-red-900 border border-red-500/40 text-red-300 px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1"
+              className="text-xs bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-300 px-3 py-1.5 rounded-lg font-mono transition-all flex items-center gap-1"
             >
               🔒 Lock Console
             </button>
           )}
 
-          <div className="flex bg-slate-950 border border-slate-800 rounded-xl p-1">
+          <div className="flex bg-black border border-white/10 rounded-xl p-1">
             <button
               onClick={() => setViewMode('network')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                 viewMode === 'network'
-                  ? 'bg-indigo-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-emerald-500 text-black shadow shadow-emerald-500/25'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               Network Feed
@@ -248,8 +248,8 @@ export const OnChainLedger: React.FC = () => {
               onClick={() => setViewMode('user')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                 viewMode === 'user'
-                  ? 'bg-indigo-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-emerald-500 text-black shadow shadow-emerald-500/25'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               My Receipts
@@ -258,8 +258,8 @@ export const OnChainLedger: React.FC = () => {
               onClick={() => setViewMode('merchant')}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                 viewMode === 'merchant'
-                  ? 'bg-indigo-600 text-white shadow'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-emerald-500 text-black shadow shadow-emerald-500/25'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               {isAdminUnlocked ? 'Operator Console' : 'Operator Login'}
@@ -270,13 +270,13 @@ export const OnChainLedger: React.FC = () => {
 
       {/* Admin Passcode Gate if merchant selected and not unlocked */}
       {viewMode === 'merchant' && !isAdminUnlocked ? (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 max-w-md mx-auto text-center shadow-2xl space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center mx-auto text-indigo-400 font-mono font-bold text-xs">
+        <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-8 max-w-md mx-auto text-center shadow-2xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center mx-auto text-emerald-300 font-bold text-xs tracking-widest">
             AUTH
           </div>
           <div>
             <h3 className="text-xl font-bold text-white">Operator Console</h3>
-            <p className="text-xs text-slate-400 font-mono mt-1">
+            <p className="text-xs text-neutral-400 font-mono mt-1">
               Enter operator passcode to view receiver analytics and treasury breakdown.
             </p>
           </div>
@@ -287,14 +287,14 @@ export const OnChainLedger: React.FC = () => {
               value={adminPassInput}
               onChange={(e) => setAdminPassInput(e.target.value)}
               placeholder="Enter passcode (adsec2026)..."
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-indigo-300 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-black border border-white/15 rounded-xl px-4 py-2.5 text-center font-mono text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-emerald-500/70"
             />
             {adminAuthError && (
               <div className="text-xs font-mono text-red-400">{adminAuthError}</div>
             )}
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl font-mono text-xs shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-95"
             >
               Unlock Console
             </button>
@@ -306,41 +306,41 @@ export const OnChainLedger: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {viewMode === 'user' ? (
               <>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">Connected Account</div>
-                  <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate">
+                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
+                  <div className="text-xs text-neutral-400 font-mono uppercase">Connected Account</div>
+                  <div className="text-sm font-mono font-bold text-white mt-1 truncate">
                     {activeAddress || 'Wallet not connected'}
                   </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">TestNet ALGO Balance</div>
+                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
+                  <div className="text-xs text-neutral-400 font-mono uppercase">TestNet ALGO Balance</div>
                   <div className="text-xl font-mono font-black text-emerald-400 mt-1">
                     {userBalances ? `${userBalances.algo.toFixed(3)} ALGO` : '—'}
                   </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">TestNet USDC Balance</div>
-                  <div className="text-xl font-mono font-black text-amber-400 mt-1">
+                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
+                  <div className="text-xs text-neutral-400 font-mono uppercase">TestNet USDC Balance</div>
+                  <div className="text-xl font-mono font-black text-white mt-1">
                     {userBalances ? `$${userBalances.usdc.toFixed(3)} USDC` : '—'}
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">Settlement Address</div>
-                  <div className="text-sm font-mono font-bold text-indigo-300 mt-1 truncate" title={RECEIVER_WALLET}>
+                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
+                  <div className="text-xs text-neutral-400 font-mono uppercase">Settlement Address</div>
+                  <div className="text-sm font-mono font-bold text-emerald-300 mt-1 truncate" title={RECEIVER_WALLET}>
                     {RECEIVER_WALLET.slice(0, 10)}...{RECEIVER_WALLET.slice(-8)}
                   </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">Total Settled Volume</div>
+                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
+                  <div className="text-xs text-neutral-400 font-mono uppercase">Total Settled Volume</div>
                   <div className="text-xl font-mono font-black text-emerald-400 mt-1">
                     ${networkStats.totalRevenue.toFixed(3)} USDC
                   </div>
                 </div>
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-white">
-                  <div className="text-xs text-slate-400 font-mono uppercase">Node Services & Capacity</div>
+                <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 text-white">
+                  <div className="text-xs text-neutral-400 font-mono uppercase">Node Services & Capacity</div>
                   <div className="text-sm font-mono font-bold text-emerald-400 mt-1 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>Online (4 Paid Routes · {networkStats.totalAudits} Audits)</span>
@@ -351,7 +351,7 @@ export const OnChainLedger: React.FC = () => {
           </div>
 
           {/* Transaction List */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl text-white space-y-4">
+          <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 shadow-xl text-white space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-bold text-base text-white flex items-center gap-2">
                 <span>
@@ -361,10 +361,10 @@ export const OnChainLedger: React.FC = () => {
                     ? 'Operator Settlement History'
                     : 'Live Node Settlement Stream'}
                 </span>
-                <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">
+                <span className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded font-mono">
                   {transactions.length} record(s)
                 </span>
-                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
+                <span className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full hidden sm:inline-flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   auto-syncing 5s
                 </span>
@@ -372,26 +372,26 @@ export const OnChainLedger: React.FC = () => {
               <button
                 onClick={() => fetchTransactions(true)}
                 disabled={loading}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-mono font-bold border border-indigo-500/30 px-3 py-1.5 rounded-lg hover:bg-indigo-950 transition-all flex items-center gap-1.5"
+                className="text-xs text-emerald-400 hover:text-emerald-300 font-bold border border-emerald-500/30 px-3 py-1.5 rounded-lg hover:bg-emerald-500/10 transition-all flex items-center gap-1.5"
               >
                 {loading ? 'Refreshing...' : 'Refresh Now'}
               </button>
             </div>
 
             {loading ? (
-              <div className="text-center py-12 text-slate-500 font-mono text-xs space-y-2">
-                <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <div className="text-center py-12 text-neutral-500 font-mono text-xs space-y-2">
+                <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
                 <div>Querying Algorand TestNet Indexer...</div>
               </div>
             ) : transactions.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 font-mono text-xs bg-slate-950 rounded-xl border border-slate-800/80 p-6 space-y-3">
+              <div className="text-center py-12 text-neutral-400 font-mono text-xs bg-black rounded-xl border border-white/10 p-6 space-y-3">
                 {viewMode === 'user' && !activeAddress ? (
                   <>
-                    <div className="text-slate-300 font-bold">Wallet Not Connected</div>
+                    <div className="text-neutral-300 font-bold">Wallet Not Connected</div>
                     <div>Connect your Algorand wallet above to view your personal transaction receipts.</div>
                     <button
                       onClick={() => setViewMode('network')}
-                      className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs"
+                      className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs"
                     >
                       View Live Network Feed Instead
                     </button>
@@ -403,7 +403,7 @@ export const OnChainLedger: React.FC = () => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-mono">
-                  <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase text-[10px]">
+                  <thead className="bg-black/60 text-neutral-400 border-b border-white/10 uppercase text-[10px]">
                     <tr>
                       <th className="py-3 px-4">Transaction ID</th>
                       <th className="py-3 px-4">Type</th>
@@ -414,10 +414,10 @@ export const OnChainLedger: React.FC = () => {
                       <th className="py-3 px-4 text-right">Explorer</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-white/5">
                     {transactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-slate-800/40 transition-all">
-                        <td className="py-3 px-4 font-bold text-indigo-300">
+                      <tr key={tx.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 font-bold text-emerald-300">
                           <button
                             onClick={() => copyToClipboard(tx.id, tx.id)}
                             className="hover:underline text-left"
@@ -433,26 +433,26 @@ export const OnChainLedger: React.FC = () => {
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] border ${
                               tx.type === 'x402 Micropayment'
-                                ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                                : 'bg-purple-500/10 text-purple-300 border-purple-500/30'
+                                ? 'bg-white/10 text-white border-white/25'
+                                : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                             }`}
                           >
                             {tx.type}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-black text-amber-300">
+                        <td className="py-3 px-4 font-black text-white">
                           {tx.amountUsdc > 0 ? `$${tx.amountUsdc.toFixed(3)} USDC` : '0.000 ALGO'}
                         </td>
-                        <td className="py-3 px-4 text-slate-400 whitespace-nowrap">{tx.timestamp}</td>
-                        <td className="py-3 px-4 text-slate-400 truncate max-w-[140px]" title={tx.sender}>
+                        <td className="py-3 px-4 text-neutral-400 whitespace-nowrap">{tx.timestamp}</td>
+                        <td className="py-3 px-4 text-neutral-400 truncate max-w-[140px]" title={tx.sender}>
                           {viewMode === 'user'
                             ? tx.receiver === RECEIVER_WALLET
                               ? 'Medusa Node'
                               : `${tx.receiver.slice(0, 6)}...`
                             : `${tx.sender.slice(0, 6)}...${tx.sender.slice(-4)}`}
                         </td>
-                        <td className="py-3 px-4 text-slate-400 max-w-[180px] truncate" title={tx.note}>
-                          <span className="text-slate-300 text-[11px] font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                        <td className="py-3 px-4 text-neutral-400 max-w-[180px] truncate" title={tx.note}>
+                          <span className="text-neutral-300 text-[11px] font-mono bg-black px-1.5 py-0.5 rounded border border-white/10">
                             {tx.note || 'x402 Audit Proof'}
                           </span>
                         </td>
@@ -461,7 +461,7 @@ export const OnChainLedger: React.FC = () => {
                             href={`https://lora.algokit.io/testnet/transaction/${tx.id}`}
                             target="_blank"
                             rel="noreferrer"
-                            className="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2.5 py-1 rounded-md border border-indigo-500/40 transition-all text-[11px] font-bold inline-flex items-center gap-1"
+                            className="bg-emerald-500 hover:bg-emerald-400 text-black px-2.5 py-1 rounded-md transition-all text-[11px] font-bold inline-flex items-center gap-1"
                           >
                             Lora Explorer
                           </a>

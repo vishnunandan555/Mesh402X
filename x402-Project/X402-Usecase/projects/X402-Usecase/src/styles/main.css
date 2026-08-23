@@ -2,35 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---- AdSec landing utilities ---- */
+/* ---- AdSec design system: black base · emerald & white accents ---- */
 
 .text-gradient {
-  @apply bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-cyan-300 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-white via-emerald-200 to-emerald-400 bg-clip-text text-transparent;
 }
 
 .grid-bg {
   background-image:
-    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
   background-size: 44px 44px;
-}
-
-.crt {
-  position: relative;
-}
-
-.crt::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.02) 0px,
-    rgba(255, 255, 255, 0.02) 1px,
-    transparent 1px,
-    transparent 3px
-  );
 }
 
 @keyframes fade-in-up {
@@ -68,73 +50,69 @@
   animation: float-y 5s ease-in-out infinite;
 }
 
-/* terminal-style scrollbars */
+/* refined scrollbars */
 .thin-scroll::-webkit-scrollbar {
   height: 8px;
   width: 8px;
 }
 .thin-scroll::-webkit-scrollbar-thumb {
-  @apply bg-slate-700 rounded;
+  @apply bg-neutral-700 rounded;
 }
 .thin-scroll::-webkit-scrollbar-track {
-  @apply bg-slate-900;
+  @apply bg-neutral-950;
 }
 
-/* Enhanced color grading for data displays */
+/* Code displays */
 .mockup-code {
-  @apply bg-gradient-to-br from-slate-900 to-slate-800 !important;
+  @apply bg-gradient-to-br from-neutral-900 to-neutral-950 !important;
 }
 
-/* Improved code text styling */
 pre code {
   @apply text-emerald-300 font-mono text-sm leading-relaxed;
 }
 
-/* Alert styling with better contrast */
+/* Alert styling */
 .alert {
   @apply rounded-lg shadow-md;
 }
 
 .alert-success {
-  @apply bg-gradient-to-r from-emerald-50 to-teal-50 border-l-4 border-emerald-500;
+  @apply bg-emerald-500/10 border-l-4 border-emerald-500;
 }
 
 .alert-error {
-  @apply bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500;
+  @apply bg-red-500/10 border-l-4 border-red-500;
 }
 
 .alert-warning {
-  @apply bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500;
+  @apply bg-amber-500/10 border-l-4 border-amber-500;
 }
 
 .alert-info {
-  @apply bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 border-cyan-500;
+  @apply bg-neutral-500/10 border-l-4 border-neutral-400;
 }
 
-/* Enhanced card styling */
+/* Card styling */
 .card {
-  @apply shadow-lg rounded-xl border border-gray-200/50;
+  @apply shadow-lg rounded-xl border border-white/10;
 }
 
-/* Better visibility for data content */
 .card-body {
   @apply p-6;
 }
 
-/* Text color improvements */
 .alert-success span {
-  @apply text-emerald-700 font-medium;
+  @apply text-emerald-300 font-medium;
 }
 
 .alert-error span {
-  @apply text-red-700 font-medium;
+  @apply text-red-300 font-medium;
 }
 
 .alert-warning span {
-  @apply text-amber-700 font-medium;
+  @apply text-amber-300 font-medium;
 }
 
 .alert-info span {
-  @apply text-cyan-700 font-medium;
+  @apply text-neutral-300 font-medium;
 }
-
