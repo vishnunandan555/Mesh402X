@@ -49,6 +49,14 @@ async function main(): Promise<void> {
   const filePath = args.find(a => !a.startsWith('--'));
   const tierArg = args.find(a => a.startsWith('--tier='));
   const tier = (tierArg ? tierArg.split('=')[1] : 'tier2') as 'tier1' | 'tier2';
+  const endpointArg = args.find(a => a.startsWith('--endpoint='));
+  const selectedEndpoint = endpointArg ? endpointArg.split('=')[1] : 'scan';
+
+  const baseUrl = process.env.ADSEC_SERVER_URL || 'http://localhost:4021';
+  let targetUrl = `${baseUrl}/adsec/${selectedEndpoint}`;
+  if (selectedEndpoint === 'weather') {
+    targetUrl = `${baseUrl}/weather`;
+  }
 
   let code = SAMPLE_VULNERABLE_CODE;
   let filename = 'vulnerable-auth.py';
@@ -65,11 +73,11 @@ async function main(): Promise<void> {
   else if (ext === '.sol') language = 'solidity';
 
   console.log('\n' + '═'.repeat(65));
-  console.log('🤖 ADSEC Autonomous Agent — Live On-Chain Security Audit');
+  console.log('🤖 ADSEC Autonomous Agent — Live On-Chain Security Pipeline');
   console.log('═'.repeat(65));
   console.log(`📁 Target File : ${filename} (${language})`);
-  console.log(`🏷️ Service Tier: ${tier.toUpperCase()} ($0.01 USDC on Algorand TestNet)`);
-  console.log(`🎯 Endpoint    : ${AUDIT_URL}`);
+  console.log(`🏷️ Service Tier: ${tier.toUpperCase()}`);
+  console.log(`🎯 Endpoint    : ${targetUrl}`);
   console.log('═'.repeat(65));
 
   const secretKey = getSecretKeyFromMnemonic(avmMnemonic);
@@ -77,13 +85,14 @@ async function main(): Promise<void> {
 
   const client = new x402Client();
   client.register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme(avmSigner));
+  client.register('algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=', new ExactAvmScheme(avmSigner));
 
   console.info(`\n🔑 AVM Signer Address: ${avmSigner.address}`);
-  console.log('📡 Sending audit payload to ADSEC node (expecting HTTP 402)...');
+  console.log('📡 Sending payload to ADSEC node (expecting HTTP 402 challenge)...');
 
   const fetchWithPayment = wrapFetchWithPayment(fetch, client);
 
-  const response = await fetchWithPayment(AUDIT_URL, {
+  const response = await fetchWithPayment(targetUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

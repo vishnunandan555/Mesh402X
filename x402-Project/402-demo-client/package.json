@@ -5,7 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx index.ts",
-    "audit": "tsx adsec-client.ts",
+    "audit": "tsx adsec-client.ts --endpoint=scan",
+    "audit:scan": "tsx adsec-client.ts --endpoint=scan",
+    "audit:remediate": "tsx adsec-client.ts --endpoint=remediate",
+    "audit:attest": "tsx adsec-client.ts --endpoint=attest",
+    "audit:all": "tsx adsec-client.ts --endpoint=audit",
     "check-wallet": "tsx check-wallet.ts",
     "generate-payer": "tsx generate-account.ts",
     "optin-usdc": "tsx optin-usdc.ts",

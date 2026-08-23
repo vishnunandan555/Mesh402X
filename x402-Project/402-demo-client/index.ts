@@ -17,8 +17,9 @@ async function main(): Promise<void> {
   // Initialize the x402 client.
   const client = new x402Client();
 
-  // Register with network
+  // Register with network (both CAIP-2 and full genesis hash)
   client.register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme(avmSigner));
+  client.register('algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=', new ExactAvmScheme(avmSigner));
 
   console.info(`AVM signer: ${avmSigner.address}`);
 
