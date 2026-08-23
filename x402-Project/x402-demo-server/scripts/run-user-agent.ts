@@ -19,9 +19,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import algosdk from 'algosdk';
-import { x402Client } from '@x402/core/client';
-import { wrapFetchWithPayment } from '@x402/fetch';
-import { ExactAvmScheme, toClientAvmSigner, ALGORAND_TESTNET_CAIP2 } from '@x402/avm';
+import { x402Client, wrapFetchWithPayment } from '@x402-avm/fetch';
+import { ExactAvmScheme } from '@x402-avm/avm/exact/client';
+import { ALGORAND_TESTNET_CAIP2 } from '@x402-avm/avm';
+import type { ClientAvmSigner } from '@x402-avm/avm';
 
 dotenv.config();
 
@@ -178,11 +179,20 @@ async function main() {
   console.log(`\n⚡ Submitting audit payload & executing x402 payment challenge/settlement...`);
 
   try {
-    const clientSigner = toClientAvmSigner(Buffer.from(userAccount.sk).toString('base64'));
+    const clientSigner: ClientAvmSigner = {
+      address: userAccount.addr.toString(),
+      signTransactions: async (txns: Uint8Array[]) => {
+        return txns.map((txnBytes) => {
+          const decodedTxn = algosdk.decodeUnsignedTransaction(txnBytes);
+          return decodedTxn.signTxn(userAccount.sk);
+        });
+      },
+    };
+
     const client = new x402Client();
     client.register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme(clientSigner));
 
-    const payingFetch = wrapFetchWithPayment(fetch, client as any);
+    const payingFetch = wrapFetchWithPayment(fetch, client);
 
     const startTime = Date.now();
     const res = await payingFetch(auditEndpoint, {

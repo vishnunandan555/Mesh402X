@@ -15,9 +15,10 @@
 
 import * as dotenv from 'dotenv';
 import algosdk from 'algosdk';
-import { x402Client } from '@x402/core/client';
-import { wrapFetchWithPayment } from '@x402/fetch';
-import { ExactAvmScheme, toClientAvmSigner, ALGORAND_TESTNET_CAIP2 } from '@x402/avm';
+import { x402Client, wrapFetchWithPayment } from '@x402-avm/fetch';
+import { ExactAvmScheme } from '@x402-avm/avm/exact/client';
+import { ALGORAND_TESTNET_CAIP2 } from '@x402-avm/avm';
+import type { ClientAvmSigner } from '@x402-avm/avm';
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ const ALGOD_SERVER = process.env.ALGOD_SERVER || 'https://testnet-api.algonode.c
 const USDC_ASA_ID = 10458941; // Algorand TestNet USDC
 
 async function main() {
-  const targetBackendUrl = process.argv[2] || process.env.ADSEC_SERVER_URL || process.env.VITE_API_BASE_URL || 'https://adsec-backend.onrender.com';
+  const targetBackendUrl = process.argv[2] || process.env.ADSEC_SERVER_URL || process.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com';
 
   console.log('\n' + '═'.repeat(75));
   console.log('[ADSEC] 100% LIVE ON-CHAIN AUTONOMOUS AGENT PIPELINE');
@@ -79,7 +80,7 @@ def get_user(user_id):
   // ─────────────────────────────────────────────────────────────
   // 4. CHECK FOR AGENT PAYER WALLET MNEMONIC & SIGN ON-CHAIN
   // ─────────────────────────────────────────────────────────────
-  const payerMnemonic = process.env.PAYER_MNEMONIC || process.env.AGENT_MNEMONIC;
+  const payerMnemonic = process.env.PAYER_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.AGENT_MNEMONIC;
 
   if (!payerMnemonic) {
     console.log('\n' + '─'.repeat(75));
@@ -121,11 +122,20 @@ def get_user(user_id):
   console.log(`\nSTEP 4: Submitting request & executing x402 payment challenge/settlement...`);
 
   try {
-    const clientSigner = toClientAvmSigner(Buffer.from(payerAccount.sk).toString('base64'));
+    const clientSigner: ClientAvmSigner = {
+      address: payerAccount.addr.toString(),
+      signTransactions: async (txns: Uint8Array[]) => {
+        return txns.map((txnBytes) => {
+          const decodedTxn = algosdk.decodeUnsignedTransaction(txnBytes);
+          return decodedTxn.signTxn(payerAccount.sk);
+        });
+      },
+    };
+
     const client = new x402Client();
     client.register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme(clientSigner));
 
-    const payingFetch = wrapFetchWithPayment(fetch, client as any);
+    const payingFetch = wrapFetchWithPayment(fetch, client);
 
     const auditRes = await payingFetch(auditEndpoint, {
       method: 'POST',
