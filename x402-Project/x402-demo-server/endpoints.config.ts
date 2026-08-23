@@ -38,19 +38,19 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
   return {
     /**
      * GREEN CARD 1: Pre-Flight Deterministic Scanner
-     * Price: $0.01 USDC
+     * Price: $0.001 USDC (1,000 microUSDC - super low test cost)
      */
     'POST /adsec/scan': {
       accepts: [
         {
           scheme: 'exact',
-          price: '$0.01',
+          price: '$0.001',
           network: ALGORAND_TESTNET_CAIP2,
           payTo: avmAddress,
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC Pre-Flight Scanner - Fast deterministic secrets, AST pattern flaws, typosquatting & live OSV.dev CVE checks ($0.01 USDC)',
+      description: 'ADSEC Pre-Flight Scanner - Fast deterministic secrets, AST pattern flaws, typosquatting & live OSV.dev CVE checks ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: { code: 'import os\napi_key = "sk-..."', language: 'python', filename: 'app.py' },
@@ -74,19 +74,19 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
 
     /**
      * GREEN CARD 2: Language-Aware Git Diff Patch Generator
-     * Price: $0.03 USDC
+     * Price: $0.001 USDC
      */
     'POST /adsec/remediate': {
       accepts: [
         {
           scheme: 'exact',
-          price: '$0.03',
+          price: '$0.001',
           network: ALGORAND_TESTNET_CAIP2,
           payTo: avmAddress,
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC Auto-Remediation Node - Generates language-aware unified Git diff patches (git apply compatible) ($0.03 USDC)',
+      description: 'ADSEC Auto-Remediation Node - Generates language-aware unified Git diff patches (git apply compatible) ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: { code: 'api_key = "sk-..."', language: 'python', filename: 'app.py' },
@@ -109,19 +109,19 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
 
     /**
      * GREEN CARD 3: On-Chain Cryptographic Audit Attestation
-     * Price: $0.01 USDC
+     * Price: $0.001 USDC
      */
     'POST /adsec/attest': {
       accepts: [
         {
           scheme: 'exact',
-          price: '$0.01',
+          price: '$0.001',
           network: ALGORAND_TESTNET_CAIP2,
           payTo: avmAddress,
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC On-Chain Attestation - Logs SHA-256 code hash and security audit proof to Algorand TestNet ($0.01 USDC)',
+      description: 'ADSEC On-Chain Attestation - Logs SHA-256 code hash and security audit proof to Algorand TestNet ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: { code: 'def safe(): pass', language: 'python', filename: 'app.py' },
@@ -149,19 +149,19 @@ export function createPaymentConfig(avmAddress: string): EndpointConfig {
 
     /**
      * UNIFIED SUITE: Complete All-in-One Security Audit (Scan + Remediate + Attest)
-     * Price: $0.05 USDC
+     * Price: $0.001 USDC
      */
     'POST /adsec/audit': {
       accepts: [
         {
           scheme: 'exact',
-          price: '$0.05',
+          price: '$0.001',
           network: ALGORAND_TESTNET_CAIP2,
           payTo: avmAddress,
           extra: { asset: Number(USDC_TESTNET_ASA_ID) },
         },
       ],
-      description: 'ADSEC Full Security Audit Suite - Complete Scan, Unified Git Diffs, and On-Chain Attestation ($0.05 USDC)',
+      description: 'ADSEC Full Security Audit Suite - Complete Scan, Unified Git Diffs, and On-Chain Attestation ($0.001 USDC)',
       extensions: declareDiscoveryExtension({
         bodyType: 'json',
         input: {

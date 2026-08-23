@@ -200,6 +200,12 @@ app.post('/meme-generate', handleMemeGenerateRequest);
 // ════════════════════════════════════════════════════════════════════
 
 /**
+ * Free Dev Audit endpoint - For rapid testing & demo inspection without spending USDC
+ * No payment required
+ */
+app.post('/adsec/dev-audit', handleAdsecAuditRequest);
+
+/**
  * Health check - Use this to verify server is running
  * No payment required
  */
