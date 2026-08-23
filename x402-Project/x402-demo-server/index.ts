@@ -163,18 +163,12 @@ app.post('/adsec/attest', handleAdsecAttestRequest);
 app.post('/adsec/audit', handleAdsecAuditRequest);
 
 // ════════════════════════════════════════════════════════════════════
-// PUBLIC ENDPOINTS - No payment required
+// PUBLIC HEALTH & DIAGNOSTICS (No code audit data returned)
 // ════════════════════════════════════════════════════════════════════
 
 /**
- * Free Dev Audit endpoint - For rapid testing & demo inspection without spending USDC
- * No payment required
- */
-app.post('/adsec/dev-audit', handleAdsecAuditRequest);
-
-/**
  * Health check - Use this to verify server is running
- * No payment required
+ * No payment required (diagnostic only)
  */
 app.get('/health', (c) => {
   return c.json({

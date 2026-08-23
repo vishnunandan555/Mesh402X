@@ -1,31 +1,31 @@
 ---
 name: medusa-security-audit
-description: Discovers and hires the decentralized Medusa security node via x402 on Algorand TestNet. Inspects tiers, autonomously executes modular audit scripts, pays in TestNet USDC, and applies unified Git diff patches.
+description: Discovers and hires the decentralized Medusa security node via x402 on Algorand TestNet. Inspects tiers, autonomously executes modular audit scripts, pays in TestNet USDC, reports financial spending summaries, and applies unified Git diff patches.
 ---
 
 # 🐍 Medusa x402 Autonomous Agent Skill
 
 This skill gives any AI agent the capability to discover, hire, pay, and consume security auditing services from the **Medusa Security Node** using the **x402 payment standard** on **Algorand TestNet**.
 
+> ⚠️ **NO FREE TIERS EXIST:** Medusa operates on a 100% pay-per-call economic model. Every request requires an on-chain micropayment of **$0.001 TestNet USDC (ASA ID `10458941`)**.
+
 ---
 
 ## 🧭 Service Capabilities & Tier Pricing
 
-Medusa exposes 4 paid tiers and 1 free dev mode. All paid tiers settle in **TestNet USDC (ASA ID `10458941`)** on Algorand.
-
 | Tier / Feature | Endpoint | Price | Modular Script to Execute | When to Choose |
 |---|---|---|---|---|
-| ⚡ **Pre-Flight Scanner** | `POST /adsec/scan` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-scan.ts <file>` | User asks for a fast scan, CVE check, leaked secret search, or static AST pattern analysis. |
-| 🩹 **Auto-Remediation** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | User asks to fix security bugs or generate `git apply` patches. |
-| ⛓️ **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | User asks for cryptographic proof-of-audit or on-chain certificate. |
-| 🚀 **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | User asks for a comprehensive audit, full review, or default security check. |
-| 🟢 **Free Dev Test** | `POST /adsec/dev-audit` | **$0.00** | `npx tsx medusa-scripts/audit-dev.ts <file>` | User wants a zero-token dry run or has no TestNet wallet configured. |
+| ⚡ **Pre-Flight Scanner** | `POST /adsec/scan` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-scan.ts <file>` | Fast scan for leaked secrets, dangerous AST patterns, typosquatting packages, or live OSV.dev CVEs. |
+| 🩹 **Auto-Remediation** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Automatically generate language-aware `git apply` unified diff patches to fix vulnerabilities. |
+| ⛓️ **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | Compute SHA-256 code digest and broadcast an immutable proof-of-audit certificate on Algorand. |
+| 🚀 **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Comprehensive review: Scan + LLM Logic Review + Git Diffs + On-Chain Attestation. |
+| 📊 **Financial & Spending History** | — | **$0.00** | `npx tsx medusa-scripts/wallet-history.ts` | User asks to check past transactions, total audits purchased, or financial spending summary. |
 
 ---
 
 ## 🧠 Autonomous Decision Matrix for the Agent
 
-When the user asks you to review or secure their code, evaluate their request and execute the appropriate script:
+When the user asks you to review or secure code, evaluate their request and execute the appropriate script:
 
 1. **If the user says:** *"Run a complete audit on `auth.py`"* or *"Audit this repository"*:
    👉 Run: `npx tsx medusa-scripts/audit-full.ts <target_file>`
@@ -39,8 +39,8 @@ When the user asks you to review or secure their code, evaluate their request an
 4. **If the user says:** *"Issue an on-chain attestation for `vault.py`"*:
    👉 Run: `npx tsx medusa-scripts/audit-attest.ts <target_file>`
 
-5. **If the user says:** *"Do a free test without spending tokens"*:
-   👉 Run: `npx tsx medusa-scripts/audit-dev.ts <target_file>`
+5. **If the user asks:** *"How much have I spent?"* or *"Show my transaction history"*:
+   👉 Run: `npx tsx medusa-scripts/wallet-history.ts`
 
 ---
 
@@ -52,10 +52,10 @@ When the user asks you to review or secure their code, evaluate their request an
 
 ### Step 2: Execute the Script in Terminal
 Run the chosen script using `npx tsx`. The script will:
-- Read `AGENT_MNEMONIC` from `.env`.
+- Read `AGENT_MNEMONIC` from `wallet.env` or `.env`.
 - Query GoPlausible Bazaar or contact the hosted Medusa Node (`https://mesh402x.onrender.com`).
 - Handle the HTTP 402 challenge and sign the $0.001 USDC payment on Algorand TestNet.
-- Output structured findings and save `audit.patch` if fixes were generated.
+- Echo payment confirmation and output structured findings + Git diffs.
 
 ### Step 3: Self-Heal (Apply Patches)
 If `audit.patch` is created and the user requested automated remediation:
@@ -63,16 +63,21 @@ If `audit.patch` is created and the user requested automated remediation:
 git apply audit.patch
 ```
 
-### Step 4: Report Findings to User
+### Step 4: Report Findings & Financial Spending Summary to User
 Format your final response with:
 - **🛡️ Security Health Score:** `Score / 100`
 - **🚨 Findings Table:** Category, Severity, CWE ID, Description, and Line Number.
 - **🩹 Remediation:** Summary of patches generated or applied.
-- **⛓️ On-Chain Attestation:** Direct link to [Algorand Lora Explorer](https://lora.algokit.io/testnet/transaction/<TX_ID>).
+- **💰 Financial Spending Summary:**
+  - **Amount Paid:** `$0.001 USDC (1,000 microUSDC)`
+  - **Receiver Node:** `LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`
+  - **Payment Protocol:** `x402 (Algorand TestNet ASA #10458941)`
+- **⛓️ On-Chain Attestation Proof:** Direct link to [Algorand Lora Explorer](https://lora.algokit.io/testnet/transaction/<TX_ID>).
 
 ---
 
-## 🔧 Wallet Utilities
+## 🔧 Wallet & Financial Utilities
+- **Transaction History & Spending Summary:** `npx tsx medusa-scripts/wallet-history.ts`
 - **Check Balance & Opt-in Status:** `npx tsx medusa-scripts/check-wallet.ts`
 - **Opt-in to USDC (ASA 10458941):** `npx tsx medusa-scripts/optin-usdc.ts`
 - **Generate Fresh Wallet:** `npx tsx medusa-scripts/generate-wallet.ts`

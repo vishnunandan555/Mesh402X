@@ -64,7 +64,7 @@ All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.00
 | `/adsec/remediate` | `POST` | **$0.001 USDC** | `audit-remediate.ts` | Autonomous self-healing bots | Generates language-aware unified Git diff patches (`git apply` ready). |
 | `/adsec/attest` | `POST` | **$0.001 USDC** | `audit-attest.ts` | Release pipelines, compliance | Computes SHA-256 code hash and broadcasts on-chain Algorand certificate. |
 | `/adsec/audit` | `POST` | **$0.001 USDC** | `audit-full.ts` | Coding agents, comprehensive audits | Complete pipeline: Scan + AI Review + Unified Diffs + Attestation. |
-| `/adsec/dev-audit` | `POST` | **$0.00** | `audit-dev.ts` | Free sandbox testing | Zero-token rapid testing without wallet funds. |
+| Financial History | — | **$0.00** | `wallet-history.ts` | Financial audits, reporting | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
 
 ---
 

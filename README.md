@@ -53,7 +53,7 @@ All paid tiers settle via **TestNet USDC (ASA ID `10458941`)** at **$0.001 (1,00
 | 🩹 **Auto-Remediator** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Language-aware unified Git diff patches (`git apply` compatible). |
 | ⛓️ **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | SHA-256 code digest broadcasted as an immutable Algorand note certificate. |
 | 🚀 **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Complete pipeline: Scan + LLM Logic Review + Git Diffs + Attestation. |
-| 🟢 **Free Dev Test** | `POST /adsec/dev-audit` | **$0.00** | `npx tsx medusa-scripts/audit-dev.ts <file>` | Zero-token rapid testing without wallet or TestNet funds. |
+| 📊 **Financial & Spending History** | — | **$0.00** | `npx tsx medusa-scripts/wallet-history.ts` | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
 
 ---
 
@@ -111,6 +111,7 @@ The catalog returns the full OpenAPI schema, pricing (`1000` microUSDC), and par
 ```text
 Mesh402X/
 ├── install.sh                             # 1-line universal installer for any repo
+├── AGENTS.md                              # Autonomous Agent Instructions & Spending Policies
 ├── Medusa_Skill.md                        # Master AI Agent Skill specification
 ├── README.md                              # This document
 ├── ARCHITECTURE.md                        # Architectural specification
@@ -121,7 +122,7 @@ Mesh402X/
 │   ├── audit-scan.ts                      # Pre-Flight Scanner ($0.001 USDC)
 │   ├── audit-remediate.ts                 # Git Diff Auto-Remediation ($0.001 USDC)
 │   ├── audit-attest.ts                    # On-Chain Attestation ($0.001 USDC)
-│   ├── audit-dev.ts                       # Free Dev Mode ($0.00)
+│   ├── wallet-history.ts                  # On-Chain Financial Ledger & Tx History
 │   ├── check-wallet.ts                    # Wallet balance diagnostic
 │   ├── optin-usdc.ts                      # 1-click USDC ASA opt-in
 │   └── generate-wallet.ts                 # Keypair generator

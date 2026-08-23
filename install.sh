@@ -66,7 +66,7 @@ fetch_or_create_script() {
     fi
 }
 
-SCRIPTS=("audit-full.ts" "audit-scan.ts" "audit-remediate.ts" "audit-attest.ts" "audit-dev.ts" "check-wallet.ts" "optin-usdc.ts" "generate-wallet.ts")
+SCRIPTS=("audit-full.ts" "audit-scan.ts" "audit-remediate.ts" "audit-attest.ts" "wallet-history.ts" "check-wallet.ts" "optin-usdc.ts" "generate-wallet.ts")
 
 for s in "${SCRIPTS[@]}"; do
     fetch_or_create_script "$s"
@@ -120,7 +120,7 @@ echo -e "  • ${YELLOW}npx tsx medusa-scripts/audit-full.ts <file>${NC}      - 
 echo -e "  • ${YELLOW}npx tsx medusa-scripts/audit-scan.ts <file>${NC}      - Pre-Flight Scan ($0.001 USDC)"
 echo -e "  • ${YELLOW}npx tsx medusa-scripts/audit-remediate.ts <file>${NC} - Auto Git Diff Fixes ($0.001 USDC)"
 echo -e "  • ${YELLOW}npx tsx medusa-scripts/audit-attest.ts <file>${NC}    - On-Chain Attestation ($0.001 USDC)"
-echo -e "  • ${YELLOW}npx tsx medusa-scripts/audit-dev.ts <file>${NC}       - Free Dev Test ($0.00)"
+echo -e "  • ${YELLOW}npx tsx medusa-scripts/wallet-history.ts${NC}        - Financial Ledger & Tx History"
 echo -e "  • ${YELLOW}npx tsx medusa-scripts/check-wallet.ts${NC}          - Check Wallet Balance & Status"
 echo -e "\n${CYAN}Simply prompt your AI agent (Antigravity / Cursor / Claude):${NC}"
 echo -e "  💬 ${YELLOW}\"Audit my code for security vulnerabilities using Medusa.\"${NC}\n"

@@ -77,6 +77,13 @@ async function main() {
   const report = await res.json();
 
   console.log(`\n=================== REMEDIATION RESULTS (${duration}ms) ===================`);
+  console.log(`🛡️  Patches Generated   : ${report.fixes?.length || 0}`);
+
+  // Financial Payment Echo
+  console.log(`\n💸 FINANCIAL CONFIRMATION:`);
+  console.log(`   • Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
+  console.log(`   • Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
+  console.log(`   • Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
   if (report.fixes && report.fixes.length > 0) {
     const patchPath = 'audit.patch';
     let patchContent = '';

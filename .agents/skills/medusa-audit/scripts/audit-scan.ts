@@ -80,6 +80,12 @@ async function main() {
   console.log(`🛡️  Security Score       : ${report.summary?.score ?? 'N/A'}/100`);
   console.log(`🚨 Total Issues Found    : ${report.summary?.totalIssues || 0}`);
 
+  // Financial Payment Echo
+  console.log(`\n💸 FINANCIAL CONFIRMATION:`);
+  console.log(`   • Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
+  console.log(`   • Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
+  console.log(`   • Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
+
   if (report.findings && report.findings.length > 0) {
     console.log(`\n📋 Detected Vulnerabilities:`);
     report.findings.forEach((f: any, idx: number) => {

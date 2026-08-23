@@ -211,39 +211,6 @@ export const AdsecPlayground: React.FC = () => {
     }
   }
 
-  const handleExecuteFreeDevAudit = async () => {
-    beginRun()
-    pushLog('Running in Dev Mode (bypassing on-chain payment rail)')
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/adsec/dev-audit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          filename,
-          language,
-          tier: mode === 'scan' || mode === 'attest' ? 'tier1' : 'tier2',
-        }),
-      })
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '')
-        throw new Error(`HTTP ${res.status}: ${errText || res.statusText}`)
-      }
-
-      const data = await res.json()
-      pushLog('Audit completed successfully')
-      finishSuccess(data)
-    } catch (err: any) {
-      console.error('Dev audit error:', err)
-      setError(err?.message || 'Failed to complete free dev audit.')
-      setTerminalPhase('error')
-      setLoading(false)
-      pushLog(`Error: ${(err?.message || 'Request failed').slice(0, 52)}`)
-    }
-  }
-
   const handleCopyDiff = (diffText: string, idx: number) => {
     navigator.clipboard.writeText(diffText)
     setCopiedDiffIdx(idx)
@@ -303,22 +270,11 @@ export const AdsecPlayground: React.FC = () => {
             <span className="text-amber-300 font-bold">{ENDPOINTS_META[mode].price}</span>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleExecuteFreeDevAudit}
-              disabled={loading}
-              className={`px-5 py-3 rounded-xl font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 transition-all flex items-center justify-center gap-2 active:scale-95 ${
-                loading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              title="Test the audit engine without requiring an Algorand wallet transaction"
-            >
-              <span>Run Free Test (Dev Mode)</span>
-            </button>
-
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
             <button
               onClick={handleExecuteAudit}
               disabled={loading || !activeAddress}
-              className={`px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
+              className={`w-full sm:w-auto px-7 py-3 rounded-xl font-bold text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
                 loading
                   ? 'bg-slate-600 cursor-not-allowed'
                   : !activeAddress
@@ -333,16 +289,16 @@ export const AdsecPlayground: React.FC = () => {
                 </>
               ) : (
                 <>
-                  Run Paid Audit
-                  <span className="text-xs bg-indigo-900/80 px-2 py-0.5 rounded-md font-mono">
+                  <span>Run Paid Audit</span>
+                  <span className="text-xs bg-indigo-900/80 px-2 py-0.5 rounded-md font-mono text-amber-300">
                     {ENDPOINTS_META[mode].price}
                   </span>
                 </>
               )}
             </button>
             {!activeAddress && (
-              <p className="text-xs text-amber-400/80 font-mono mt-2">
-                Connect your Algorand wallet via the header button to enable live paid audits.
+              <p className="text-xs text-amber-400/90 font-mono">
+                Connect wallet to authorize $0.001 USDC
               </p>
             )}
           </div>

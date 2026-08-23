@@ -320,7 +320,7 @@ export const OnChainLedger: React.FC = () => {
                       {tx.id.slice(0, 8)}...{tx.id.slice(-6)}
                     </td>
                     <td className="py-3 px-4 font-black text-amber-300">
-                      ${tx.amountUsdc.toFixed(2)} USDC
+                      ${tx.amountUsdc.toFixed(3)} USDC
                     </td>
                     <td className="py-3 px-4 text-slate-400">{tx.timestamp}</td>
                     <td className="py-3 px-4 text-slate-400 truncate max-w-[150px]">
