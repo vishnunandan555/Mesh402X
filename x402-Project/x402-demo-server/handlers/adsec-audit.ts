@@ -61,16 +61,14 @@ async function broadcastOnChainAttestation(
 }
 
 /**
- * Helper to parse request body with fallback
+ * Helper to parse request body with fallback.
+ * Empty body audits the built-in vulnerable sample (useful for curl demos).
+ * Malformed non-empty JSON is rejected: the caller already paid, so silently
+ * auditing different code than submitted would be wrong.
  */
 async function parseAuditRequest(c: Context, defaultTier: 'tier1' | 'tier2' = 'tier1'): Promise<AuditRequest> {
-  try {
-    const body = await c.req.json();
-    return {
-      tier: defaultTier,
-      ...body,
-    };
-  } catch {
+  const raw = await c.req.text();
+  if (!raw || raw.trim() === '') {
     return {
       code: `
 import os
@@ -87,6 +85,15 @@ def login_user(user_id):
       tier: defaultTier,
       filename: 'auth.py',
     };
+  }
+  try {
+    const body = JSON.parse(raw);
+    return {
+      tier: defaultTier,
+      ...body,
+    };
+  } catch {
+    throw new Error('Invalid JSON body: request was received and paid, but the payload could not be parsed.');
   }
 }
 
@@ -134,7 +141,7 @@ export async function handleAdsecRemediateRequest(c: Context) {
       remediatedIssuesCount: (auditResult.fixes || []).length,
       receipt: {
         network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=)',
-        paidAmount: '0.03 USDC',
+        paidAmount: '$0.001 USDC',
         timestamp: new Date().toISOString(),
       },
     });
@@ -215,7 +222,7 @@ export async function handleAdsecAuditRequest(c: Context) {
     };
 
     auditResult.receipt = {
-      network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
+      network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=)',
       paidAmount: '$0.001 USDC',
       codeHash,
       timestamp: new Date().toISOString(),

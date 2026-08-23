@@ -149,7 +149,6 @@ app.use(paymentMiddleware(paymentConfig as any, x402Server));
 
 // ════════════════════════════════════════════════════════════════════
 // MEDUSA SECURITY AUDIT PIPELINE (Payment-Protected Endpoints)
-// ════════════════════════════════════════════════════════════════════
 // Pre-Flight Deterministic Scanner ($0.001 USDC)
 app.post('/adsec/scan', handleAdsecScanRequest);
 

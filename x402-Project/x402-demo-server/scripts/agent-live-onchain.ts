@@ -44,7 +44,7 @@ async function main() {
     const discoRes = await fetch(BAZAAR_DISCOVERY_URL, { signal: AbortSignal.timeout(6000) });
     if (discoRes.ok) {
       const data = await discoRes.json();
-      liveRegistryNodes = Array.isArray(data) ? data : data.resources || [];
+      liveRegistryNodes = Array.isArray(data) ? data : data.items || data.resources || [];
       console.log(`   [SUCCESS] Connected to GoPlausible Facilitator Registry (${liveRegistryNodes.length} active network nodes).`);
     }
   } catch (err: any) {
@@ -57,8 +57,8 @@ async function main() {
   const auditEndpoint = `${targetBackendUrl.replace(/\/$/, '')}/adsec/audit`;
   console.log(`\nSTEP 2: Agent Target Node Selected:`);
   console.log(`   - Live Endpoint : ${auditEndpoint}`);
-  console.log(`   - Network       : Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)`);
-  console.log(`   - Required Fee  : $0.05 USDC (ASA 10458941)`);
+  console.log(`   - Network       : Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=)`);
+  console.log(`   - Required Fee  : $0.001 USDC (ASA 10458941)`);
   console.log(`   - Settlement    : GoPlausible Facilitator (https://facilitator.goplausible.xyz)`);
 
   // ─────────────────────────────────────────────────────────────
@@ -116,8 +116,8 @@ def get_user(user_id):
     const usdcBalance = usdcHolding ? Number(usdcHolding.amount) / 1e6 : 0;
     console.log(`   - USDC Balance: ${usdcBalance} USDC`);
 
-    if (usdcBalance < 0.05) {
-      console.warn(`\n⚠️  WARNING: Payer wallet has less than 0.05 TestNet USDC.`);
+    if (usdcBalance < 0.01) {
+      console.warn(`\n⚠️  WARNING: Payer wallet has less than 0.01 TestNet USDC.`);
       console.log(`Get TestNet USDC at: https://faucet.circle.com (select Algorand Testnet)`);
     }
   } catch (err: any) {
@@ -165,6 +165,25 @@ def get_user(user_id):
     const resultData = await auditRes.json();
 
     console.log(`\n✓ HTTP 200 OK — Payment Settled & Verified on Algorand TestNet!`);
+
+    // Surface the REAL settlement transaction from the PAYMENT-RESPONSE header
+    const settleHeader = auditRes.headers.get('payment-response');
+    if (settleHeader) {
+      try {
+        const settle = JSON.parse(Buffer.from(settleHeader, 'base64').toString('utf-8'));
+        const payTxId = settle.transaction || settle.transactionId || settle.txId;
+        if (payTxId) {
+          console.log(`\n💸 Settlement Proof:`);
+          console.log(`   - Payer          : ${settle.payer || payerAccount.addr.toString()}`);
+          console.log(`   - Payment TxID   : ${payTxId}`);
+          console.log(`   - Lora Explorer  : https://lora.algokit.io/testnet/transaction/${payTxId}`);
+        } else {
+          console.log(`   - Settle response: ${JSON.stringify(settle).slice(0, 200)}`);
+        }
+      } catch {
+        /* header present but not parseable - non-fatal */
+      }
+    }
 
     // ─────────────────────────────────────────────────────────────
     // 6. PARSE & DISPLAY AUDIT REPORT & GIT PATCH

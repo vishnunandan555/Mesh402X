@@ -133,7 +133,7 @@ async function main() {
   console.log(`\n🌐 Target Security Node:`);
   console.log(`   - Endpoint : ${auditEndpoint}`);
   console.log(`   - Network  : Algorand TestNet (CAIP-2: ${ALGORAND_TESTNET_CAIP2})`);
-  console.log(`   - Price    : $0.05 USDC (ASA ${USDC_ASA_ID})`);
+  console.log(`   - Price    : $0.001 USDC (ASA ${USDC_ASA_ID})`);
 
   // 3. Load User Agent Wallet
   const rawMnemonic =
@@ -176,8 +176,8 @@ async function main() {
     const usdcBalance = usdcAsset ? Number(usdcAsset.amount) / 1e6 : 0;
     console.log(`   - USDC Balance : ${usdcBalance} USDC`);
 
-    if (usdcBalance < 0.05) {
-      console.warn(`\n⚠️  WARNING: Insufficient USDC (${usdcBalance} < $0.05 USDC).`);
+    if (usdcBalance < 0.01) {
+      console.warn(`\n⚠️  WARNING: Insufficient USDC (${usdcBalance} < $0.01 USDC).`);
       console.log(`   Fund at: https://faucet.circle.com for address ${userAccount.addr}`);
     }
   } catch (err: any) {
@@ -226,6 +226,23 @@ async function main() {
     const report = await res.json();
 
     console.log(`\n✓ HTTP 200 OK — Payment Settled & Verified on Algorand TestNet in ${duration}ms!`);
+
+    // Surface the REAL settlement transaction from the PAYMENT-RESPONSE header
+    const settleHeader = res.headers.get('payment-response');
+    if (settleHeader) {
+      try {
+        const settle = JSON.parse(Buffer.from(settleHeader, 'base64').toString('utf-8'));
+        const payTxId = settle.transaction || settle.transactionId || settle.txId;
+        if (payTxId) {
+          console.log(`\n💸 Settlement Proof:`);
+          console.log(`   - Payer          : ${settle.payer || userAccount.addr.toString()}`);
+          console.log(`   - Payment TxID   : ${payTxId}`);
+          console.log(`   - Lora Explorer  : https://lora.algokit.io/testnet/transaction/${payTxId}`);
+        }
+      } catch {
+        /* non-fatal */
+      }
+    }
 
     // 5. Display Findings & Write Patches
     if (report.summary) {
