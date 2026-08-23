@@ -22,19 +22,7 @@ import { ExactAvmScheme } from '@x402/avm/exact/server';
 import { ALGORAND_TESTNET_CAIP2 } from '@x402/avm';
 import { bazaarResourceServerExtension } from '@x402-avm/extensions';
 
-// Import handler functions
-import { handleWeatherRequest } from './handlers/weather';
-import { handleAnalyticsRequest, handleAnalyticsReportRequest } from './handlers/analytics';
-import {
-  handleAIAnalysisRequest,
-  handleAIAnalysisBatchRequest,
-} from './handlers/ai-analysis';
-import { handleCreatorContentRequest,
-  handleCreatorContentListRequest,
-  handleCreatorPublishRequest,
-  handleCreatorEarningsRequest,
-} from './handlers/creator-content';
-import { handleMemeGenerateRequest, handleMemeStylesRequest } from './handlers/meme-generator';
+// Import Medusa security audit handlers
 import {
   handleAdsecScanRequest,
   handleAdsecRemediateRequest,
@@ -160,40 +148,19 @@ app.use(paymentMiddleware(paymentConfig as any, x402Server));
  */
 
 // ════════════════════════════════════════════════════════════════════
-// ADSEC SECURITY AUDIT PIPELINE (3 Green Cards + Unified Suite)
+// MEDUSA SECURITY AUDIT PIPELINE (Payment-Protected Endpoints)
 // ════════════════════════════════════════════════════════════════════
-// Green Card 1: Pre-Flight Deterministic Scanner ($0.01 USDC)
+// Pre-Flight Deterministic Scanner ($0.001 USDC)
 app.post('/adsec/scan', handleAdsecScanRequest);
 
-// Green Card 2: Auto-Remediation Unified Git Diff Generator ($0.03 USDC)
+// Auto-Remediation Unified Git Diff Generator ($0.001 USDC)
 app.post('/adsec/remediate', handleAdsecRemediateRequest);
 
-// Green Card 3: Cryptographic On-Chain Audit Attestation ($0.01 USDC)
+// Cryptographic On-Chain Audit Attestation ($0.001 USDC)
 app.post('/adsec/attest', handleAdsecAttestRequest);
 
-// Unified All-in-One Security Audit ($0.05 USDC)
+// Unified All-in-One Security Audit Suite ($0.001 USDC)
 app.post('/adsec/audit', handleAdsecAuditRequest);
-
-// Example 1: Weather Data - Pay $0.005
-app.get('/weather', handleWeatherRequest);
-
-// Meme Generator - Pay $0.1 USDC (Payment Protected)
-app.post('/meme-generate', handleMemeGenerateRequest);
-
-
-// Example 2: Analytics - Uncomment to enable
-// app.get('/analytics', handleAnalyticsRequest);
-// app.post('/analytics/report', handleAnalyticsReportRequest);
-
-// Example 3: AI Analysis - Uncomment to enable
-// app.post('/ai-analysis', handleAIAnalysisRequest);
-// app.post('/ai-analysis/batch', handleAIAnalysisBatchRequest);
-
-// Example 4: Creator Content - Uncomment to enable
-// app.get('/exclusive-content/:id', handleCreatorContentRequest);
-// app.get('/creators/:wallet/content', handleCreatorContentListRequest);
-// app.post('/creators/publish', handleCreatorPublishRequest);
-// app.get('/creators/:wallet/earnings', handleCreatorEarningsRequest);
 
 // ════════════════════════════════════════════════════════════════════
 // PUBLIC ENDPOINTS - No payment required
@@ -212,7 +179,7 @@ app.post('/adsec/dev-audit', handleAdsecAuditRequest);
 app.get('/health', (c) => {
   return c.json({
     status: 'ok',
-    service: 'x402-hackathon-starter',
+    service: 'medusa-security-node',
     uptime: process.uptime(),
   });
 });
@@ -223,20 +190,14 @@ app.get('/health', (c) => {
  */
 app.get('/info', (c) => {
   return c.json({
-    service: 'x402-hackathon-starter',
+    service: 'medusa-security-node',
     version: '1.0.0',
     network: 'Algorand TestNet',
     receiver: avmAddress,
     endpoints: Object.keys(paymentConfig),
-    documentation: 'See README.md in project root',
+    documentation: 'Autonomous pay-per-call code security node on Algorand',
   });
 });
-
-/**
- * Meme Styles endpoint - Shows available styles and themes
- * Public endpoint - no payment required
- */
-app.get('/meme-styles', handleMemeStylesRequest);
 
 // ════════════════════════════════════════════════════════════════════
 // ERROR HANDLING
@@ -263,19 +224,15 @@ app.notFound((c) => {
 // ════════════════════════════════════════════════════════════════════
 
 serve({ fetch: app.fetch, port }, () => {
-  console.log('\n✅ x402 Resource Server is running!\n');
+  console.log('\n🛡️  Medusa Security Node is active!\n');
   console.log('═'.repeat(60));
   console.log('Endpoints:');
-  console.log(`  API:     http://localhost:${port}`);
-  console.log(`  Health:  http://localhost:${port}/health`);
-  console.log(`  Info:    http://localhost:${port}/info`);
-  console.log('═'.repeat(60));
-  console.log('\n📚 QUICK COMMANDS:\n');
-  console.log('Test health endpoint (no payment):');
-  console.log(`  curl http://localhost:${port}/health\n`);
-  console.log('Test payment endpoint (will request payment):');
-  console.log(`  curl http://localhost:${port}/weather\n`);
-  console.log('See handlers/ directory for examples');
-  console.log('See endpoints.config.ts to add new endpoints');
-  console.log('\n' + '═'.repeat(60) + '\n');
+  console.log(`  API:        http://localhost:${port}`);
+  console.log(`  Health:     http://localhost:${port}/health`);
+  console.log(`  Info:       http://localhost:${port}/info`);
+  console.log(`  Scan:       POST http://localhost:${port}/adsec/scan`);
+  console.log(`  Remediate:  POST http://localhost:${port}/adsec/remediate`);
+  console.log(`  Attest:     POST http://localhost:${port}/adsec/attest`);
+  console.log(`  Audit:      POST http://localhost:${port}/adsec/audit`);
+  console.log('═'.repeat(60) + '\n');
 });
