@@ -27,6 +27,7 @@ You can invoke Medusa either via **Native MCP Tools** (preferred in Antigravity 
 
 | Tier / Feature | Price | Native MCP Tool (Preferred) | Modular CLI Script Fallback | When to Choose |
 |---|---|---|---|---|
+| **CI/CD Security Scorer** | **$0.001 USDC** | `medusa_get_security_score(filePath, minScoreThreshold)` | `npx tsx medusa-scripts/audit-score.ts <file> [threshold]` | Calculates 0-100 score on manifests/imports (pubspec.yaml, package.json, requirements.txt) and blocks CI/CD if below threshold. |
 | **Full Security Suite** | **$0.001 USDC** | `medusa_audit_file(filePath, applyRemediation)` | `npx tsx medusa-scripts/audit-full.ts <file>` | Comprehensive review: Scan + LLM Logic Review + Git Diffs + On-Chain Attestation. |
 | **Pre-Flight Scanner** | **$0.001 USDC** | `medusa_scan_code(filePath)` | `npx tsx medusa-scripts/audit-scan.ts <file>` | Fast scan for leaked secrets, dangerous AST patterns, typosquatting packages, or live OSV.dev CVEs. |
 | **Auto-Remediation** | **$0.001 USDC** | `medusa_remediate_file(filePath, applyPatch)` | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Automatically generate language-aware `git apply` unified diff patches to fix vulnerabilities. |

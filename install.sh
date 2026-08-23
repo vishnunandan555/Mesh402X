@@ -67,7 +67,7 @@ fetch_or_create_script() {
     fi
 }
 
-SCRIPTS=("audit-full.ts" "audit-scan.ts" "audit-remediate.ts" "audit-attest.ts" "wallet-history.ts" "check-wallet.ts" "optin-usdc.ts" "generate-wallet.ts")
+SCRIPTS=("audit-full.ts" "audit-scan.ts" "audit-remediate.ts" "audit-attest.ts" "audit-score.ts" "wallet-history.ts" "check-wallet.ts" "optin-usdc.ts" "generate-wallet.ts")
 
 for s in "${SCRIPTS[@]}"; do
     fetch_or_create_script "$s"
@@ -138,11 +138,12 @@ echo -e "\n${GREEN}════════════════════�
 echo -e "${GREEN}[OK] MEDUSA x402 AGENT INSTALLATION COMPLETE!${NC}"
 echo -e "${GREEN}══════════════════════════════════════════════════════════════════════════${NC}"
 echo -e "\n${CYAN}Available Commands for You or Your AI Agent:${NC}"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-full.ts <file>${NC}      - Full Audit ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-scan.ts <file>${NC}      - Pre-Flight Scan ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-remediate.ts <file>${NC} - Auto Git Diff Fixes ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-attest.ts <file>${NC}    - On-Chain Attestation ($0.001 USDC)"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/wallet-history.ts${NC}        - Financial Ledger & Tx History"
-echo -e "  * ${YELLOW}npx tsx medusa-scripts/check-wallet.ts${NC}          - Check Wallet Balance & Status"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-score.ts <file> [threshold]${NC} - CI/CD Security Score Gate ($0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-full.ts <file>${NC}              - Full Audit Pipeline ($0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-scan.ts <file>${NC}              - Pre-Flight Scan ($0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-remediate.ts <file>${NC}         - Auto Git Diff Fixes ($0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/audit-attest.ts <file>${NC}            - On-Chain Attestation ($0.001 USDC)"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/wallet-history.ts${NC}                - Financial Ledger & Tx History"
+echo -e "  * ${YELLOW}npx tsx medusa-scripts/check-wallet.ts${NC}                  - Check Wallet Balance & Status"
 echo -e "\n${CYAN}Prompt your AI assistant (Antigravity / Cursor / Claude):${NC}"
 echo -e "  > ${YELLOW}\"Audit my code for security vulnerabilities using Medusa.\"${NC}\n"

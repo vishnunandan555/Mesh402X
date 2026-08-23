@@ -22,19 +22,19 @@ interface OsvQueryResponse {
 interface PackageVersion {
   name: string;
   version?: string;
-  ecosystem: 'npm' | 'PyPI';
+  ecosystem: 'npm' | 'PyPI' | 'Pub' | 'Go' | 'crates.io' | 'Packagist' | 'Maven';
   line?: number;
   snippet?: string;
 }
 
-function parseDependencies(code: string, language?: AuditLanguage, manifestContent?: string): PackageVersion[] {
+function parseDependencies(code: string, language?: AuditLanguage, manifestContent?: string, filename?: string): PackageVersion[] {
   const deps: PackageVersion[] = [];
   const lines = code.split('\n');
 
-  // If manifestContent is provided (e.g. package.json)
-  if (manifestContent) {
+  // If manifestContent or filename is provided
+  if (manifestContent || filename?.endsWith('.json')) {
     try {
-      const parsed = JSON.parse(manifestContent);
+      const parsed = JSON.parse(manifestContent || code);
       const allDeps = { ...parsed.dependencies, ...parsed.devDependencies };
       for (const [pkg, ver] of Object.entries(allDeps)) {
         const cleanVer = (ver as string).replace(/^[\^~>=<]/, '');
@@ -45,9 +45,62 @@ function parseDependencies(code: string, language?: AuditLanguage, manifestConte
     }
   }
 
-  // Parse lines in code for imports and versions
+  let inPubDependencies = false;
+
+  // Parse lines in code for imports, requirements, pubspec, Cargo, go.mod
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+
+    // Pubspec.yaml parser (Dart / Flutter)
+    if (filename?.includes('pubspec') || line.startsWith('dependencies:') || line.startsWith('dev_dependencies:')) {
+      if (line === 'dependencies:' || line === 'dev_dependencies:') {
+        inPubDependencies = true;
+        continue;
+      } else if (inPubDependencies && line.endsWith(':') && !line.includes(' ')) {
+        inPubDependencies = false;
+      }
+
+      if (inPubDependencies) {
+        const pubMatch = line.match(/^([a-zA-Z0-9_]+)\s*:\s*[\^~>=<]*([0-9a-zA-Z_.-]+)/);
+        if (pubMatch && pubMatch[1] !== 'flutter' && pubMatch[1] !== 'sdk') {
+          deps.push({
+            name: pubMatch[1],
+            version: pubMatch[2],
+            ecosystem: 'Pub',
+            line: i + 1,
+            snippet: line,
+          });
+          continue;
+        }
+      }
+    }
+
+    // Go.mod parser: `require github.com/gin-gonic/gin v1.9.0`
+    const goModMatch = line.match(/(?:require\s+)?([a-zA-Z0-9._/-]+)\s+v([0-9a-zA-Z_.-]+)/);
+    if (goModMatch && (filename?.endsWith('go.mod') || language === 'go')) {
+      deps.push({
+        name: goModMatch[1],
+        version: goModMatch[2],
+        ecosystem: 'Go',
+        line: i + 1,
+        snippet: line,
+      });
+      continue;
+    }
+
+    // Cargo.toml parser (Rust): `serde = "1.0.104"`
+    const cargoMatch = line.match(/^([a-zA-Z0-9_-]+)\s*=\s*["'][\^~>=<]*([0-9a-zA-Z_.-]+)["']/);
+    if (cargoMatch && (filename?.endsWith('Cargo.toml') || language === 'rust')) {
+      deps.push({
+        name: cargoMatch[1],
+        version: cargoMatch[2],
+        ecosystem: 'crates.io',
+        line: i + 1,
+        snippet: line,
+      });
+      continue;
+    }
 
     // Python requirements.txt format: `requests==2.20.0` or `flask>=2.0.0`
     const reqMatch = line.match(/^([a-zA-Z0-9_-]+)(?:==|>=|<=|~=)([0-9a-zA-Z_.-]+)/);
@@ -62,7 +115,7 @@ function parseDependencies(code: string, language?: AuditLanguage, manifestConte
       continue;
     }
 
-    // Python import: `import requests`
+    // Python import: `import requests` or `from flask import ...`
     const pyImport = line.match(/^(?:import|from)\s+([a-zA-Z0-9_-]+)/);
     if (pyImport && (language === 'python' || !language)) {
       deps.push({
@@ -94,10 +147,11 @@ function parseDependencies(code: string, language?: AuditLanguage, manifestConte
 export async function scanOsvVulnerabilities(
   code: string,
   language?: AuditLanguage,
-  manifestContent?: string
+  manifestContent?: string,
+  filename?: string
 ): Promise<AuditFinding[]> {
   const findings: AuditFinding[] = [];
-  const deps = parseDependencies(code, language, manifestContent);
+  const deps = parseDependencies(code, language, manifestContent, filename);
 
   if (deps.length === 0) {
     return findings;

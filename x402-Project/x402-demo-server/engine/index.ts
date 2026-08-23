@@ -35,7 +35,7 @@ export async function runAudit(req: AuditRequest): Promise<AuditResponse> {
 
   // 2. Query OSV.dev CVE Database
   try {
-    const osvFindings = await scanOsvVulnerabilities(code, language, req.manifestContent);
+    const osvFindings = await scanOsvVulnerabilities(code, language, req.manifestContent, req.filename);
     findings.push(...osvFindings);
   } catch {
     // OSV lookup error tolerated

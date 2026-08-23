@@ -222,6 +222,25 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      {
+        name: 'medusa_get_security_score',
+        description:
+          'Calculate the security health score (0-100) for a source or manifest file (e.g. pubspec.yaml, package.json, requirements.txt, go.mod) based on live OSV.dev CVEs and code hazards. Returns score and pass/fail CI/CD gate status ($0.001 USDC).',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            filePath: {
+              type: 'string',
+              description: 'Path to source code or package manifest file (pubspec.yaml, package.json, requirements.txt, etc.).',
+            },
+            minScoreThreshold: {
+              type: 'number',
+              description: 'Minimum acceptable security score threshold for CI/CD to pass (default: 80).',
+            },
+          },
+          required: ['filePath'],
+        },
+      },
     ],
   };
 });
@@ -570,6 +589,56 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return { content: [{ type: 'text', text: report }] };
     } catch (err: any) {
       return { content: [{ type: 'text', text: `❌ Failed to query financial history: ${err.message}` }] };
+    }
+  }
+
+  // 8. Tool: medusa_get_security_score
+  if (name === 'medusa_get_security_score') {
+    const filePath = String((args as any)?.filePath);
+    const minThreshold = Number((args as any)?.minScoreThreshold) || 80;
+
+    if (!filePath || !fs.existsSync(filePath)) {
+      return { content: [{ type: 'text', text: `❌ Target file '${filePath}' not found.` }] };
+    }
+    const account = getAgentAccount();
+    if (!account) return { content: [{ type: 'text', text: '❌ Missing AGENT_MNEMONIC in wallet.env.' }] };
+
+    try {
+      const payingFetch = createPayingFetch(account);
+      const code = fs.readFileSync(filePath, 'utf-8');
+      const filename = path.basename(filePath);
+      const language = inferLanguage(filePath);
+      const endpoint = `${DEFAULT_NODE_URL.replace(/\/$/, '')}/adsec/scan`;
+
+      const response = await payingFetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code,
+          language,
+          filename,
+          manifestContent: filename.includes('package') || filename.includes('pubspec') || filename.includes('requirements') ? code : undefined,
+        }),
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      const result = await response.json();
+      const score = Number(result.score ?? 100);
+      const findings = result.findings || [];
+      const passed = score >= minThreshold;
+
+      const report = [
+        `🎯 **Medusa CI/CD Security Score Assessment**`,
+        `• Target: \`${filePath}\``,
+        `• Calculated Score: **${score} / 100**`,
+        `• Minimum Gate Requirement: **${minThreshold} / 100**`,
+        `• Vulnerabilities Found: **${findings.length} issue(s)**`,
+        `• Gate Verdict: **${passed ? '🟢 PASS (CI/CD Pipeline Proceeding)' : '🔴 FAIL (CI/CD Pipeline Stopped)'}**`,
+      ].join('\n');
+
+      return { content: [{ type: 'text', text: report }] };
+    } catch (err: any) {
+      return { content: [{ type: 'text', text: `❌ Score calculation failed: ${err.message}` }] };
     }
   }
 
