@@ -33,11 +33,11 @@ def login_user(user_id):
 }
 
 /**
- * GREEN CARD 1: Pre-Flight Deterministic Scanner ($0.01 USDC)
+ * GREEN CARD 1: Pre-Flight Deterministic Scanner ($0.001 USDC)
  */
 export async function handleAdsecScanRequest(c: Context) {
   try {
-    console.log('\n🟢 [ADSEC /adsec/scan] Payment Verified ($0.01 USDC)! Executing pre-flight scan...');
+    console.log('\n🟢 [ADSEC /adsec/scan] Payment Verified ($0.001 USDC)! Executing pre-flight scan...');
     const reqBody = await parseAuditRequest(c, 'tier1');
     const auditResult = await runAudit({ ...reqBody, tier: 'tier1' });
 
@@ -49,7 +49,7 @@ export async function handleAdsecScanRequest(c: Context) {
       findings: auditResult.findings,
       receipt: {
         network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
-        paidAmount: '0.01 USDC',
+        paidAmount: '$0.001 USDC',
         timestamp: new Date().toISOString(),
       },
     });
@@ -60,11 +60,11 @@ export async function handleAdsecScanRequest(c: Context) {
 }
 
 /**
- * GREEN CARD 2: Language-Aware Git Diff Patch Generator ($0.03 USDC)
+ * GREEN CARD 2: Language-Aware Git Diff Patch Generator ($0.001 USDC)
  */
 export async function handleAdsecRemediateRequest(c: Context) {
   try {
-    console.log('\n🟢 [ADSEC /adsec/remediate] Payment Verified ($0.03 USDC)! Generating unified Git diffs...');
+    console.log('\n🟢 [ADSEC /adsec/remediate] Payment Verified ($0.001 USDC)! Generating unified Git diffs...');
     const reqBody = await parseAuditRequest(c, 'tier2');
     const auditResult = await runAudit({ ...reqBody, tier: 'tier2' });
 
@@ -87,11 +87,11 @@ export async function handleAdsecRemediateRequest(c: Context) {
 }
 
 /**
- * GREEN CARD 3: Cryptographic On-Chain Audit Attestation ($0.01 USDC)
+ * GREEN CARD 3: Cryptographic On-Chain Audit Attestation ($0.001 USDC)
  */
 export async function handleAdsecAttestRequest(c: Context) {
   try {
-    console.log('\n🟢 [ADSEC /adsec/attest] Payment Verified ($0.01 USDC)! Issuing on-chain attestation...');
+    console.log('\n🟢 [ADSEC /adsec/attest] Payment Verified ($0.001 USDC)! Issuing on-chain attestation...');
     const reqBody = await parseAuditRequest(c, 'tier1');
     const auditResult = await runAudit({ ...reqBody, tier: 'tier1' });
 
@@ -114,7 +114,7 @@ export async function handleAdsecAttestRequest(c: Context) {
       attestation: attestationProof,
       receipt: {
         network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
-        paidAmount: '0.01 USDC',
+        paidAmount: '$0.001 USDC',
         timestamp: new Date().toISOString(),
       },
     });
@@ -125,11 +125,11 @@ export async function handleAdsecAttestRequest(c: Context) {
 }
 
 /**
- * UNIFIED SUITE: Complete All-in-One Security Audit ($0.05 USDC)
+ * UNIFIED SUITE: Complete All-in-One Security Audit ($0.001 USDC)
  */
 export async function handleAdsecAuditRequest(c: Context) {
   try {
-    console.log('\n⚡ [ADSEC /adsec/audit] Payment Verified ($0.05 USDC)! Executing full security audit suite...');
+    console.log('\n⚡ [ADSEC /adsec/audit] Payment Verified ($0.001 USDC)! Executing full security audit suite...');
     const reqBody = await parseAuditRequest(c, 'tier2');
     const auditResult = await runAudit(reqBody);
 
@@ -137,7 +137,7 @@ export async function handleAdsecAuditRequest(c: Context) {
 
     auditResult.receipt = {
       network: 'Algorand TestNet (CAIP-2: algorand:SGO1GKSzyE7IEPtTxCbyp9x0ZFi)',
-      paidAmount: '0.05 USDC',
+      paidAmount: '$0.001 USDC',
       codeHash,
       timestamp: new Date().toISOString(),
     };
