@@ -1,12 +1,7 @@
 name: 🚀 Deploy Backend to Render
 
 on:
-  workflow_dispatch: # Manual "Run workflow" button in GitHub Actions
-  push:
-    branches: [ main ]
-    paths:
-      - 'x402-Project/x402-demo-server/**'
-      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch: # ONLY manual "Run workflow" button in GitHub Actions UI
 
 jobs:
   test-and-deploy-backend:
@@ -35,7 +30,6 @@ jobs:
           npm run audit
 
       - name: 📡 Trigger Render Backend Deployment
-        if: github.ref == 'refs/heads/main'
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
