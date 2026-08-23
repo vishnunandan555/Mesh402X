@@ -1,7 +1,7 @@
-# 🛡️ ADSEC — Autonomous Decentralized Security Audit Node
+# ADSEC - Autonomous Decentralized Security Audit Node
 
 > **x402 Pay-Per-Call Code Security Auditing for AI Agents on Algorand TestNet**  
-> Built for the **x402 Global Challenge / Hackathon Sprint**
+> Built for the **x402 Global Build Sprint**
 
 [![Network](https://img.shields.io/badge/Network-Algorand%20TestNet-blue)](https://lora.algokit.io/testnet)
 [![Protocol](https://img.shields.io/badge/Protocol-x402%20HTTP%20Payment-green)](https://x402.money)
@@ -11,7 +11,7 @@
 
 ---
 
-## 📌 What is ADSEC?
+## 1. What is ADSEC?
 
 **ADSEC** is an on-demand, pay-per-call **Code Security Audit API and Agent CLI** running as an x402 node on Algorand TestNet.
 
@@ -19,43 +19,48 @@ When autonomous AI coding agents generate code, write smart contracts, or prepar
 
 ---
 
-## 🎯 Key Capabilities
+## 2. Key Capabilities & The 3 Green Cards Pipeline
 
-1. **🛡️ Multi-Tier Security Engine**:
+ADSEC implements a modular 3-stage security pipeline where each stage is a standalone x402 payment endpoint:
+
+1. **Card 1: Pre-Flight Deterministic Scanner (`POST /adsec/scan` - $0.01 USDC)**
    - **Secret & Credential Scanner:** Detects exposed AWS/GCP keys, OpenAI tokens, GitHub PATs, JWTs, and private keys.
-   - **Dangerous Pattern Detector:** Detects `eval()`, SQL string concatenations, unsafe deserialization (`pickle`, `yaml`), and ReDoS.
+   - **Dangerous Pattern Detector:** Detects `eval()`, SQL string concatenations, unsafe deserialization (`pickle`, `yaml`), and command execution.
    - **Typosquatting Package Checker:** Levenshtein edit-distance checks against top 500 npm/PyPI packages.
    - **OSV.dev CVE Database Correlation:** Queries real vulnerability databases and correlates CVEs directly to calling code lines.
-   - **AI Semantic Logic Review & Auto-Fixes:** Analyzes business logic flaws and generates actionable **Git diff patches** (`git apply` compatible).
-2. **🤖 Developer & Agent Terminal CLI**:
-   - Run `pnpm agent:audit <file>` in terminal to watch the autonomous agent handle the 402 challenge, sign the TestNet payment, receive the findings, and apply the Git diff fix automatically.
-3. **📜 On-Chain Proof-of-Audit**:
-   - Every audit response includes the confirmed Algorand TestNet transaction ID, verifiable directly on [Lora Explorer](https://lora.algokit.io/testnet).
-4. **🌐 Open Bazaar Discovery**:
-   - Registered in the GoPlausible Bazaar discovery index for autonomous AI agent discovery.
+
+2. **Card 2: Auto-Remediation Patch Generator (`POST /adsec/remediate` - $0.03 USDC)**
+   - **Language-Aware Unified Diff Generator:** Generates actionable unified Git diff patches (`--- a/ +++ b/`) formatted for `git apply`.
+   - **Multi-Provider Semantic Fallback:** Groq (Llama-3.3-70B in <300ms) -> Google Gemini 1.5 Flash -> OpenAI GPT-4o-mini -> Deterministic rules.
+
+3. **Card 3: Cryptographic On-Chain Attestation (`POST /adsec/attest` - $0.01 USDC)**
+   - Calculates SHA-256 code hash and logs cryptographic Proof-of-Audit certificates directly to Algorand TestNet transaction notes (`tx_note`).
+
+4. **Unified Suite (`POST /adsec/audit` - $0.05 USDC)**
+   - Full all-in-one execution of scanning, diff patch generation, and on-chain attestation in a single call.
 
 ---
 
-## 🏗️ Architecture & Workflow
+## 3. Architecture & Machine-to-Machine Workflow
 
 ```
 ┌────────────────────────────────────────────────────────┐
 │             Autonomous AI Agent / Terminal CLI         │
-│   (pnpm agent:audit target.py)                         │
+│   (npm run live / npm run discover)                    │
 └───────────────────────────┬────────────────────────────┘
                             │ 1. POST /adsec/audit (Unpaid)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │             ADSEC Hono Resource Server                 │
 │                 (x402-demo-server)                     │
-│   • Enforces x402 payment gate (Price: $0.01 - $0.05)  │
+│   - Enforces x402 payment gate (Price: $0.01 - $0.05)  │
 └───────────────────────────┬────────────────────────────┘
                             │ 2. Returns HTTP 402 Payment Required
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │             GoPlausible Facilitator                    │
-│   • Agent signs TestNet USDC transaction               │
-│   • Facilitator broadcasts & verifies on Algorand      │
+│   - Agent signs TestNet USDC transaction               │
+│   - Facilitator broadcasts & verifies on Algorand      │
 └───────────────────────────┬────────────────────────────┘
                             │ 3. Retries POST with Payment-Signature
                             ▼
@@ -67,107 +72,77 @@ When autonomous AI coding agents generate code, write smart contracts, or prepar
 │   │   ├── Typosquatting Package Name Analyzer          │
 │   │   └── OSV.dev CVE Query + Line Correlation         │
 │   └── Tier 2: AI Logic Review & Git Diff Generator     │
-│       ├── Auth Bypass & Logic Flaw Review (LLM)        │
+│       ├── Auth Bypass & Logic Flaw Review              │
 │       └── Unified Git Patch Generator (--- a/ +++ b/)  │
 └───────────────────────────┬────────────────────────────┘
                             │ 4. HTTP 200 OK (Findings + Diff + TxID)
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │             Agent Auto-Applies Git Patch               │
-│   • Code is secured and ready for production!          │
+│   - Code is secured and ready for production           │
 └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📂 Repository Structure
+## 4. Quick Start & CLI Usage
+
+### Prerequisites
+- Node.js v18+ and npm
+
+### Run Commands from Project Root:
+```bash
+# 1. Run Dynamic Bazaar Discovery & Hire Demo
+npm run discover
+
+# 2. Run Live On-Chain Agent against Hosted Backend
+npm run live https://adsec-backend.onrender.com
+
+# 3. Run Multi-File Security Audit
+npm run audit path/to/file1.py path/to/file2.js
+
+# 4. Start Local Backend Server
+npm run dev:backend
+
+# 5. Start Local React Playground
+npm run dev:frontend
+```
+
+---
+
+## 5. Cloud Hosting & CI/CD Setup
+
+- **Backend:** Hosted on Render as a long-running Node.js Web Service (`x402-demo-server`).
+- **Frontend:** Hosted on Render / Vercel as a Static Site (`X402-Usecase`).
+- **CI/CD:** 2 separate manual GitHub Actions workflows:
+  - `.github/workflows/deploy-backend.yml` (Manual trigger for Render backend)
+  - `.github/workflows/deploy-frontend.yml` (Manual trigger for Frontend)
+
+See [**`HOSTING_GUIDE.md`**](./HOSTING_GUIDE.md) for full deployment instructions.
+
+---
+
+## 6. Repository Organization
 
 ```text
 Mesh402X/
-├── checklist.md                        # Master project progress checklist
-├── features.md                         # Detailed feature specs & expansion roadmap
-├── Phase 2 Build Plan.md               # Security engine architecture & flowcharts
-├── full-setup.md                       # Complete build plan & milestones
-├── pre-setup.md                        # Infrastructure & wallet setup guide
+├── package.json                        # Root workspace scripts (discover, live, audit, dev)
+├── checklist.md                        # Project milestone tracking
+├── features.md                         # Detailed feature specs & ROI analysis
+├── HOSTING_GUIDE.md                    # Cloud deployment guide for Render & Vercel
 ├── README.md                           # Main documentation
 │
-└── x402-Project/                       # Project Implementation
+└── x402-Project/
     ├── x402-demo-server/               # Backend Hono Resource Server
-    │   ├── index.ts                    # Server entry, CORS & x402 middleware
-    │   ├── endpoints.config.ts         # Payment routes & Bazaar discovery metadata
-    │   ├── handlers/                   # Endpoint handlers
-    │   │   └── adsec-audit.ts          # ADSEC audit endpoint handler
-    │   ├── scripts/
-    │   │   └── agent-audit.ts          # Multi-file Terminal Agent CLI script
-    │   └── engine/                     # Core Security Audit Engine
-    │       ├── types.ts                # TypeScript interface contract
-    │       ├── scoring.ts              # 0-100 Security Health Score calculator
-    │       ├── tier1/                  # Deterministic scanners & OSV.dev
-    │       └── tier2/                  # Multi-provider LLM review & diff generator
+    │   ├── index.ts                    # Hono server entry, CORS & x402 middleware
+    │   ├── endpoints.config.ts         # 3 Green Card routes & Bazaar discovery metadata
+    │   ├── handlers/adsec-audit.ts     # Endpoint handlers for scan, remediate, attest, audit
+    │   ├── engine/                     # Security audit engine (regex, CVEs, typosquat, diffs)
+    │   └── scripts/                    # Agent CLI demonstration scripts
     │
-    └── X402-Usecase/                   # Frontend Web Application (Optional UI)
-        └── projects/X402-Usecase/      # React dashboard
+    └── X402-Usecase/                   # React Frontend
+        └── projects/X402-Usecase/
+            ├── src/components/AdsecPlayground.tsx # Interactive x402 audit playground
+            ├── src/AdsecHome.tsx                  # ADSEC view with wallet connector
+            └── src/AppWithTabs.tsx                # App navigation with ADSEC as default tab
 ```
-
----
-
-## ⚡ Quick Start
-
-### 1. Prerequisites
-- **Node.js** 18+ and `npm`
-- **Algorand TestNet Wallet** ([Lora](https://lora.algokit.io/testnet))
-- **TestNet ALGO** from [Lora Faucet](https://lora.algokit.io/testnet/fund)
-- **TestNet USDC (ASA 10458941)** from [Circle Faucet](https://faucet.circle.com/)
-
----
-
-### 2. Backend Setup (`x402-demo-server`)
-
-```bash
-cd x402-Project/x402-demo-server
-npm install
-cp .env.example .env
-```
-
-Configure `.env`:
-```env
-AVM_ADDRESS=YOUR_ALGORAND_TESTNET_RECEIVER_ADDRESS
-FACILITATOR_URL=https://facilitator.goplausible.xyz
-PORT=4021
-```
-
-Start the backend:
-```bash
-npm run dev
-```
-
----
-
-### 3. Run the Agent CLI Audit
-
-```bash
-cd x402-Project/x402-demo-server
-
-# Audit default vulnerable demo
-npm run audit
-
-# Or audit multiple custom files at once
-npx tsx scripts/agent-audit.ts path/to/file1.py path/to/file2.js --tier=tier2
-```
-
-*Watch the autonomous agent pay 0.01 USDC on Algorand TestNet, receive the findings across all files, and generate unified Git diff fixes automatically.*
-
----
-
-## 📋 Hackathon Judging Alignment (100/100 Points)
-
-* **✅ Live x402 on Algorand TestNet (30 pts):** Verified via GoPlausible Facilitator with USDC ASA `10458941`.
-* **✅ Code Quality & Architecture (25 pts):** Clean separation of payment transport and security audit engine in `engine/`.
-* **✅ Technical Complexity (20 pts):** Real OSV.dev CVE database queries, AST pattern analysis, Levenshtein distance typosquatting, and AI Git diff generation.
-* **✅ Functionality & Agent Automation (15 pts):** Terminal CLI and Web dashboard demonstrating 402 challenge, payment, and instant patch remediation.
-* **✅ Algorand Network Configuration (10 pts):** Native TestNet USDC ASA configuration and verified Lora Explorer transactions.
-
----
-
-## 📄 License
-MIT License
