@@ -16,7 +16,7 @@ const MEDUSA_RECEIVER = 'LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQ
 async function main() {
   const mnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
   if (!mnemonic) {
-    console.error('❌ Error: Missing AGENT_MNEMONIC in .env or wallet.env');
+    console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
     process.exit(1);
   }
 
@@ -25,9 +25,9 @@ async function main() {
     const agentAddress = account.addr;
 
     console.log(`\n========================================================================`);
-    console.log(`📊 MEDUSA ON-CHAIN FINANCIAL LEDGER & TRANSACTION HISTORY`);
+    console.log(`MEDUSA ON-CHAIN FINANCIAL LEDGER & TRANSACTION HISTORY`);
     console.log(`========================================================================`);
-    console.log(`💳 Agent Wallet : ${agentAddress}`);
+    console.log(`Agent Wallet : ${agentAddress}`);
 
     // 1. Fetch Current Balance via Algod
     const algodClient = new algosdk.Algodv2('', ALGOD_SERVER, '');
@@ -36,8 +36,8 @@ async function main() {
     const usdcAsset = accountInfo.assets?.find((a: any) => Number(a['asset-id']) === USDC_ASA_ID);
     const usdcBalance = usdcAsset ? Number(usdcAsset.amount) / 1e6 : 0;
 
-    console.log(`💰 Current Balance: ${usdcBalance.toFixed(4)} USDC | ${algoBalance.toFixed(4)} ALGO`);
-    console.log(`🌐 Querying Algorand TestNet Indexer for audit settlement receipts...\n`);
+    console.log(`Current Balance: ${usdcBalance.toFixed(4)} USDC | ${algoBalance.toFixed(4)} ALGO`);
+    console.log(`Querying Algorand TestNet Indexer for audit settlement receipts...\n`);
 
     // 2. Fetch Transactions via Indexer
     const indexerUrl = `${INDEXER_SERVER}/v2/accounts/${agentAddress}/transactions?limit=30`;
@@ -99,10 +99,10 @@ async function main() {
     });
 
     if (auditRecords.length === 0) {
-      console.log(`ℹ️ No prior Medusa audit payments found for this account yet.`);
+      console.log(`[i] No prior Medusa audit payments found for this account yet.`);
     } else {
-      console.log(`📜 Recent Audit & Settlement Transactions (${auditRecords.length} found):`);
-      console.log('─'.repeat(72));
+      console.log(`Recent Audit & Settlement Transactions (${auditRecords.length} found):`);
+      console.log('-'.repeat(72));
       auditRecords.slice(0, 10).forEach((rec, idx) => {
         console.log(`\n[${idx + 1}] TxID: ${rec.txId}`);
         console.log(`    Date/Time : ${rec.time}`);
@@ -110,16 +110,16 @@ async function main() {
         if (rec.note) console.log(`    Receipt   : ${rec.note}`);
         console.log(`    Lora Link : ${rec.loraUrl}`);
       });
-      console.log('\n' + '─'.repeat(72));
+      console.log('\n' + '-'.repeat(72));
     }
 
-    console.log(`\n📊 FINANCIAL SUMMARY:`);
-    console.log(`   • Total Paid Audits Executed : ${auditCallCount}`);
-    console.log(`   • Total USDC Micro-Payments  : $${totalUsdcSpent.toFixed(4)} USDC`);
-    console.log(`   • Remaining Agent Budget     : $${usdcBalance.toFixed(4)} USDC (~${Math.floor(usdcBalance / 0.001)} calls remaining)`);
+    console.log(`\nFINANCIAL SUMMARY:`);
+    console.log(`   * Total Paid Audits Executed : ${auditCallCount}`);
+    console.log(`   * Total USDC Micro-Payments  : $${totalUsdcSpent.toFixed(4)} USDC`);
+    console.log(`   * Remaining Agent Budget     : $${usdcBalance.toFixed(4)} USDC (~${Math.floor(usdcBalance / 0.001)} calls remaining)`);
     console.log(`========================================================================\n`);
   } catch (err: any) {
-    console.error(`❌ Error querying transaction history:`, err.message);
+    console.error(`[!] Error querying transaction history:`, err.message);
   }
 }
 

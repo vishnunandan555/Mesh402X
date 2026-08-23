@@ -1,20 +1,20 @@
-# 🤖 AGENTS.MD — Autonomous Agent Instructions for Medusa x402
+# AGENTS.MD — Autonomous Agent Instructions for Medusa x402
 
 > **Instructions for AI Assistants (Google Antigravity, Cursor, Claude Code, GitHub Copilot) operating in this repository.**
 
 ---
 
-## 🎯 Primary Purpose & Economic Policy
+## Primary Purpose & Economic Policy
 
 Medusa is a decentralized security audit node on Algorand TestNet monetized via the **x402 payment standard**.
 
-> ⚠️ **STRICT POLICY: NO FREE TIERS EXIST.**
+> **STRICT POLICY: NO FREE TIERS EXIST.**
 > Every audit execution requires an on-chain micropayment of **$0.001 TestNet USDC (ASA #10458941)**.
 > All requests must be executed using the modular scripts in `medusa-scripts/` which autonomously handle the HTTP 402 challenge and sign payments using `AGENT_MNEMONIC` from `wallet.env` or `.env`.
 
 ---
 
-## 🧭 Modular Scripts & Capabilities
+## Modular Scripts & Capabilities
 
 | Script | Endpoint | Price | Function |
 |---|---|---|---|
@@ -27,28 +27,28 @@ Medusa is a decentralized security audit node on Algorand TestNet monetized via 
 
 ---
 
-## 📋 Agent Output Requirements & Financial Spending Summary
+## Agent Output Requirements & Financial Spending Summary
 
 Whenever you perform a security audit for the user, you **MUST** include the following sections in your final report:
 
-1. **🛡️ Security Health Score:** Output the overall score (`0–100/100`).
-2. **🚨 Detected Vulnerabilities:** List CWE ID, file name, line numbers, and vulnerability descriptions.
-3. **🩹 Remediation:** Apply or present the generated unified Git diff patch (`git apply audit.patch`).
-4. **💰 Financial Spending Summary (MANDATORY):**
+1. **Security Health Score:** Output the overall score (`0–100/100`).
+2. **Detected Vulnerabilities:** List CWE ID, file name, line numbers, and vulnerability descriptions.
+3. **Remediation:** Apply or present the generated unified Git diff patch (`git apply audit.patch`).
+4. **Financial Spending Summary (MANDATORY):**
    - **Cost of Current Call:** `$0.001 USDC (1,000 microUSDC)`
    - **Receiver Node Account:** `LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`
    - **Payment Protocol:** `x402 (Algorand TestNet ASA #10458941)`
    - **Settlement Transaction ID:** `<TX_ID>`
-5. **⛓️ On-Chain Verification:** Provide the direct [Algorand Lora Explorer Link](https://lora.algokit.io/testnet/transaction/<TX_ID>).
+5. **On-Chain Verification:** Provide the direct [Algorand Lora Explorer Link](https://lora.algokit.io/testnet/transaction/<TX_ID>).
 
 ---
 
-## 📊 Checking Financial History
+## Checking Financial History
 
 If the user asks:
 - *"How much money did I spend on audits?"*
 - *"Show my past transaction history"*
 - *"What is my remaining balance?"*
 
-👉 Execute: `npx tsx medusa-scripts/wallet-history.ts`
+-> Execute: `npx tsx medusa-scripts/wallet-history.ts`
 And present the summary table and total USDC spent to the user.

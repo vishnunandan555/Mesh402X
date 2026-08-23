@@ -1,4 +1,4 @@
-# 🐍 MEDUSA: Pay-Per-Call Autonomous Security Audits for AI Agents on Algorand
+# MEDUSA: Pay-Per-Call Autonomous Security Audits for AI Agents on Algorand
 
 **Medusa** (ADSEC) is a decentralized HTTP security auditing node that autonomous AI agents and developers pay to use per request, using micropayments in **TestNet USDC** settled on the **Algorand blockchain** through the **x402 protocol**. 
 
@@ -11,7 +11,7 @@ There are **no accounts, API keys, logins, or subscriptions**. A valid on-chain 
 
 ---
 
-## 🏆 Verified On-Chain Submission Proof
+## Verified On-Chain Submission Proof
 
 | Proof Item | Value |
 |---|---|
@@ -27,7 +27,7 @@ There are **no accounts, API keys, logins, or subscriptions**. A valid on-chain 
 
 ---
 
-## ⚡ 1-Line Universal Installer for Any External Repository
+## 1-Line Universal Installer for Any External Repository
 
 To enable autonomous pay-per-call security audits in **any codebase**, run this single command in the project root:
 
@@ -37,53 +37,54 @@ curl -fsSL https://raw.githubusercontent.com/vishnunandan555/Mesh402X/main/insta
 
 **What this does automatically:**
 1. Installs `@x402-avm/fetch` & `algosdk`.
-2. Sets up your agent's Algorand wallet in `.env`.
+2. Sets up your agent's Algorand wallet in `wallet.env`.
 3. Downloads the modular `medusa-scripts/` suite.
 4. Configures `Medusa_Skill.md` and `.agents/skills/medusa-audit/SKILL.md` so AI agents (Antigravity, Cursor, Claude) understand Medusa natively.
 
 ---
 
-## 💎 Medusa Capabilities & Modular Tier Pricing
+## Medusa Capabilities & Modular Tier Pricing
 
 All paid tiers settle via **TestNet USDC (ASA ID `10458941`)** at **$0.001 (1,000 microUSDC)** per request.
 
 | Tier / Feature | Endpoint | Price | Modular Script | Features |
 |---|---|---|---|---|
-| ⚡ **Pre-Flight Scanner** | `POST /adsec/scan` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-scan.ts <file>` | Static AST syntax hazards, leaked keys, typosquats & live OSV.dev CVEs. |
-| 🩹 **Auto-Remediator** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Language-aware unified Git diff patches (`git apply` compatible). |
-| ⛓️ **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | SHA-256 code digest broadcasted as an immutable Algorand note certificate. |
-| 🚀 **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Complete pipeline: Scan + LLM Logic Review + Git Diffs + Attestation. |
-| 📊 **Financial & Spending History** | — | **$0.00** | `npx tsx medusa-scripts/wallet-history.ts` | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
+| **Pre-Flight Scanner** | `POST /adsec/scan` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-scan.ts <file>` | Static AST syntax hazards, leaked keys, typosquats & live OSV.dev CVEs. |
+| **Auto-Remediator** | `POST /adsec/remediate` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-remediate.ts <file>` | Language-aware unified Git diff patches (`git apply` compatible). |
+| **On-Chain Attestation** | `POST /adsec/attest` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-attest.ts <file>` | SHA-256 code digest broadcasted as an immutable Algorand note certificate. |
+| **Full Security Suite** | `POST /adsec/audit` | **$0.001 USDC** | `npx tsx medusa-scripts/audit-full.ts <file>` | Complete pipeline: Scan + LLM Logic Review + Git Diffs + Attestation. |
+| **Financial Ledger & History** | — | **$0.00** | `npx tsx medusa-scripts/wallet-history.ts` | On-chain ledger explorer: shows transaction history, total audits bought & USDC spent. |
 
 ---
 
-## 🤖 Dual-Mode Operation
+## Dual-Mode Operation
 
-```
-                               ┌─────────────────────────────────────────────────────────────┐
-                               │                    MEDUSA ECOSYSTEM                         │
-                               └──────────────────────────────┬──────────────────────────────┘
-                                                              │
-                     ┌────────────────────────────────────────┴────────────────────────────────────────┐
-                     ▼                                                                                 ▼
-     ┌───────────────────────────────┐                                                 ┌───────────────────────────────┐
-     │   MODE 1: AGENT-TO-AGENT      │                                                 │   MODE 2: HUMAN-TO-AGENT (WEB)│
-     ├───────────────────────────────┤                                                 ├───────────────────────────────┤
-     │ • 1-line install in any repo  │                                                 │ • Tab 1: Agent & Dev Guide    │
-     │ • Medusa_Skill.md specification│                                                │   - 1-click copy installer    │
-     │ • Headless x402 sign & settle │                                                 │   - Live Bazaar registry      │
-     │ • Auto-heal with `git apply`  │                                                 │ • Tab 2: Live Web Playground  │
-     │ • Zero human popups or logins │                                                 │   - Pera/Defly Wallet connect │
-     └───────────────────────────────┘                                                 └───────────────────────────────┘
+```text
+                               +-------------------------------------------------------------+
+                               |                     MEDUSA ECOSYSTEM                        |
+                               +------------------------------+------------------------------+
+                                                              |
+                     +----------------------------------------+----------------------------------------+
+                     |                                                                                 |
+                     v                                                                                 v
+     +-------------------------------+                                                 +-------------------------------+
+     |    MODE 1: AGENT-TO-AGENT     |                                                 |   MODE 2: INTERACTIVE WEB UI  |
+     +-------------------------------+                                                 +-------------------------------+
+     | * 1-line install in any repo  |                                                 | * Tab 1: Agent & Dev Guide    |
+     | * Medusa_Skill.md specification|                                                |   - 1-click copy installer    |
+     | * Headless x402 sign & settle |                                                 |   - Live Bazaar registry      |
+     | * Auto-heal with `git apply`  |                                                 | * Tab 2: Interactive Playground|
+     | * Zero human popups or logins |                                                 |   - Pera/Defly Wallet connect |
+     +-------------------------------+                                                 +-------------------------------+
 ```
 
 ---
 
-## 🚀 Quickstart: Prompting Your AI Agent
+## Quickstart: Prompting Your AI Agent
 
 Once `install.sh` has run in your target repo, simply type into your AI assistant chat (Antigravity, Cursor, Claude Code):
 
-> 💬 *"Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof."*
+> *"Audit this codebase for security vulnerabilities using Medusa, and report back the findings and on-chain proof."*
 
 **What your agent does autonomously:**
 1. Evaluates your code against `Medusa_Skill.md`.
@@ -94,7 +95,7 @@ Once `install.sh` has run in your target repo, simply type into your AI assistan
 
 ---
 
-## 🌐 Dynamic Discovery via GoPlausible Bazaar
+## Dynamic Discovery via GoPlausible Bazaar
 
 Any external autonomous agent can dynamically discover this service from the decentralized catalog:
 
@@ -106,7 +107,7 @@ The catalog returns the full OpenAPI schema, pricing (`1000` microUSDC), and par
 
 ---
 
-## 📦 Repository Structure
+## Repository Structure
 
 ```text
 Mesh402X/
@@ -115,7 +116,6 @@ Mesh402X/
 ├── Medusa_Skill.md                        # Master AI Agent Skill specification
 ├── README.md                              # This document
 ├── ARCHITECTURE.md                        # Architectural specification
-├── GLOBAL_AGENT_GUIDE.md                  # Autonomous agent setup guide
 │
 ├── medusa-scripts/                        # Modular audit and wallet scripts
 │   ├── audit-full.ts                      # Full All-in-One Audit ($0.001 USDC)
@@ -150,7 +150,7 @@ Mesh402X/
 
 ---
 
-## 🔍 On-Chain Verification on Lora Explorer
+## On-Chain Verification on Lora Explorer
 Every payment and on-chain attestation is publicly verifiable on Algorand TestNet:
 - **Lora Explorer:** [https://lora.algokit.io/testnet](https://lora.algokit.io/testnet)
 - **Direct Attestation Tx Link:** `https://lora.algokit.io/testnet/transaction/<TRANSACTION_ID>`

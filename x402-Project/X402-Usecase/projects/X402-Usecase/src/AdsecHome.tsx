@@ -19,7 +19,7 @@ const PIPELINE = [
   {
     step: '01',
     glyph: '>_',
-    title: 'Send Code',
+    title: 'Submit Code Payload',
     accent: 'text-indigo-300 border-indigo-500/40 bg-indigo-500/10',
     body: 'Submit source code over HTTP. No accounts, API tokens, or upfront subscriptions required — the request pays for itself.',
     code: 'POST /adsec/audit\n{ "code": "...", "language": "py" }',
@@ -96,26 +96,13 @@ export const AdsecHome: React.FC = () => {
                 onClick={() => setCurrentView('playground')}
                 className="px-6 py-3.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition-all active:scale-95 text-white"
               >
-                Run an audit ↓
+                Run an audit
               </a>
-              <button
-                onClick={() => {
-                  setCurrentView('ledger')
-                  document.getElementById('playground')?.scrollIntoView({ behavior: 'smooth' })
-                }}
-                className={`px-5 py-3.5 rounded-xl font-bold font-mono text-sm border transition-all ${
-                  currentView === 'ledger'
-                    ? 'bg-emerald-950/80 border-emerald-500 text-emerald-300'
-                    : 'border-slate-700 hover:border-slate-500 hover:bg-slate-900 text-slate-300'
-                }`}
-              >
-                📜 Audit Ledger
-              </button>
               <a
-                href="#pipeline"
-                className="px-6 py-3.5 rounded-xl font-bold border border-slate-700 hover:border-slate-500 hover:bg-slate-900 transition-all text-slate-300"
+                href="#endpoints"
+                className="px-6 py-3.5 rounded-xl font-bold bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-slate-500 text-slate-300 transition-all"
               >
-                How it works
+                Inspect Tiers
               </a>
             </div>
 
@@ -133,7 +120,7 @@ export const AdsecHome: React.FC = () => {
           <div className="animate-float-y">
             <AsciiTerminal title="Security Node — Live Telemetry" phase="idle" />
             <p className="mt-3 text-center text-[11px] font-mono text-slate-500 uppercase tracking-widest">
-              Live service status · interactive test environment below ↓
+              Live service status · interactive test environment below
             </p>
           </div>
         </div>
@@ -252,7 +239,7 @@ export const AdsecHome: React.FC = () => {
                     currentView === 'ledger' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  📜 On-Chain Ledger
+                  On-Chain Ledger
                 </button>
               </div>
 
@@ -273,7 +260,7 @@ export const AdsecHome: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center font-mono font-black text-xs text-white">
-                🐍
+                M
               </div>
               <div className="font-black text-white tracking-wide">MEDUSA<span className="text-indigo-400">.</span></div>
               <span className="text-xs font-mono text-slate-500">v1.0.0 · TestNet</span>
@@ -285,9 +272,9 @@ export const AdsecHome: React.FC = () => {
 
           <div className="space-y-2 font-mono text-xs">
             <div className="uppercase tracking-widest text-slate-600 mb-3">Protocol & Explorer</div>
-            <a className="block text-slate-400 hover:text-indigo-300 transition-colors" href="https://www.x402.org" target="_blank" rel="noreferrer">x402 Specification ↗</a>
-            <a className="block text-slate-400 hover:text-indigo-300 transition-colors" href="https://lora.algokit.io/testnet" target="_blank" rel="noreferrer">Algorand Lora Explorer ↗</a>
-            <a className="block text-slate-400 hover:text-indigo-300 transition-colors" href="https://facilitator.goplausible.xyz" target="_blank" rel="noreferrer">GoPlausible Facilitator ↗</a>
+            <a className="block text-slate-400 hover:text-indigo-300 transition-colors" href="https://www.x402.org" target="_blank" rel="noreferrer">x402 Specification</a>
+            <a className="block text-slate-400 hover:text-indigo-300 transition-colors" href="https://lora.algokit.io/testnet" target="_blank" rel="noreferrer">Algorand Lora Explorer</a>
+            <a className="block text-slate-400 hover:text-indigo-300 transition-colors" href="https://facilitator.goplausible.xyz" target="_blank" rel="noreferrer">GoPlausible Facilitator</a>
           </div>
 
           <div className="space-y-2 font-mono text-xs">
@@ -301,7 +288,7 @@ export const AdsecHome: React.FC = () => {
         </div>
 
         <div className="border-t border-slate-900 py-6 text-center text-xs text-slate-600 font-mono">
-          © 2026 Medusa Security Labs — Live on Algorand TestNet · x402 Protocol
+          (C) 2026 Medusa Security Labs — Live on Algorand TestNet · x402 Protocol
         </div>
       </footer>
     </div>

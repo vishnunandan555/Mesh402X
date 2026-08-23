@@ -72,7 +72,7 @@ export default function App() {
                   className="flex items-center gap-2.5 shrink-0 group text-left"
                 >
                   <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-mono font-black text-xs text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition-transform">
-                    🐍
+                    M
                   </div>
                   <div>
                     <div className="font-black text-sm tracking-wider text-white flex items-center gap-1.5">
@@ -95,9 +95,10 @@ export default function App() {
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                   }`}
                 >
-                  <span>📖</span>
+                  <span className="font-mono text-indigo-300">[01]</span>
                   <span>Agent & Dev Guide</span>
                 </button>
+
                 <button
                   onClick={() => setActiveTab('playground')}
                   className={`px-4 sm:px-5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
@@ -106,19 +107,19 @@ export default function App() {
                       : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                   }`}
                 >
-                  <span>⚡</span>
-                  <span>Live Web Playground</span>
+                  <span className="font-mono text-cyan-300">[02]</span>
+                  <span>Interactive Playground</span>
                 </button>
               </nav>
 
-              {/* Wallet Connection Header Button */}
+              {/* Header Right Actions */}
               <div className="flex items-center gap-3">
-                <NavWalletButton onClick={toggleWalletModal} />
+                <HeaderWalletButton onToggleModal={toggleWalletModal} />
               </div>
             </div>
           </header>
 
-          {/* Main Content View Switcher */}
+          {/* PAGE CONTENT */}
           <main className="flex-1">
             {activeTab === 'guide' ? (
               <AgentGuidePage onSwitchToPlayground={() => setActiveTab('playground')} />
@@ -126,34 +127,36 @@ export default function App() {
               <AdsecHome />
             )}
           </main>
-
-          {/* Global Wallet Modal */}
-          <ConnectWallet openModal={openWalletModal} closeModal={toggleWalletModal} />
         </div>
+
+        <ConnectWallet openModal={openWalletModal} closeModal={toggleWalletModal} />
       </WalletProvider>
     </SnackbarProvider>
   )
 }
 
-function NavWalletButton({ onClick }: { onClick: () => void }) {
+function HeaderWalletButton({ onToggleModal }: { onToggleModal: () => void }) {
   const { activeAddress } = useWallet()
+
   return (
     <button
-      onClick={onClick}
-      data-test-id="nav-wallet-button"
-      className={`shrink-0 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold font-mono transition-all border flex items-center gap-2 ${
+      onClick={onToggleModal}
+      className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 border ${
         activeAddress
-          ? 'bg-emerald-950/60 border-emerald-500/60 text-emerald-300 hover:border-emerald-400 shadow-sm'
-          : 'bg-indigo-600 hover:bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-600/30 active:scale-95'
+          ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/60'
+          : 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-500 shadow-lg shadow-indigo-600/20 active:scale-95'
       }`}
     >
-      <span className={`w-2 h-2 rounded-full ${activeAddress ? 'bg-emerald-400 animate-pulse' : 'bg-white'}`}></span>
-      <span className="hidden sm:inline">
-        {activeAddress ? `${activeAddress.slice(0, 6)}...${activeAddress.slice(-4)}` : 'Connect Wallet'}
-      </span>
-      <span className="sm:hidden">
-        {activeAddress ? `${activeAddress.slice(0, 4)}..` : 'Wallet'}
-      </span>
+      {activeAddress ? (
+        <>
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>{activeAddress.slice(0, 6)}...{activeAddress.slice(-4)}</span>
+        </>
+      ) : (
+        <>
+          <span>Connect Wallet</span>
+        </>
+      )}
     </button>
   )
 }

@@ -11,19 +11,19 @@ dotenv.config({ path: 'wallet.env' });
  * MEDUSA TIER: GIT DIFF AUTO-REMEDIATION GENERATOR
  * Endpoint: POST /adsec/remediate
  * Price: $0.001 USDC (1,000 microUSDC)
- * Features: Generates language-aware unified Git diff patches fixing identified security vulnerabilities (git apply ready).
+ * Features: Generates language-aware unified Git diff patches compatible with `git apply`.
  */
 async function main() {
   const targetFile = process.argv[2];
   if (!targetFile || !fs.existsSync(targetFile)) {
-    console.error(`❌ Error: Target file '${targetFile || ''}' not found.`);
+    console.error(`[!] Error: Target file '${targetFile || ''}' not found.`);
     console.log(`Usage: npx tsx audit-remediate.ts <path_to_source_file>`);
     process.exit(1);
   }
 
   const mnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
   if (!mnemonic) {
-    console.error('❌ Error: Missing AGENT_MNEMONIC in .env');
+    console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
     process.exit(1);
   }
 
@@ -31,13 +31,13 @@ async function main() {
   const endpointUrl = `${backendUrl.replace(/\/$/, '')}/adsec/remediate`;
 
   console.log(`\n======================================================`);
-  console.log(`🩹 MEDUSA [AUTO-REMEDIATION DIFF GENERATOR]: ${targetFile}`);
+  console.log(`[+] MEDUSA [AUTO-REMEDIATION GENERATOR]: ${targetFile}`);
   console.log(`======================================================`);
-  console.log(`💰 Price : $0.001 USDC (Algorand TestNet ASA #10458941)`);
-  console.log(`🎯 Target: ${endpointUrl}`);
+  console.log(`Price : $0.001 USDC (Algorand TestNet ASA #10458941)`);
+  console.log(`Target: ${endpointUrl}`);
 
   const agentAccount = algosdk.mnemonicToSecretKey(mnemonic);
-  console.log(`💳 Wallet: ${agentAccount.addr}`);
+  console.log(`Wallet: ${agentAccount.addr}`);
 
   const client = new x402Client();
   client.register('algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=', new ExactAvmScheme({
@@ -52,7 +52,7 @@ async function main() {
   else if (targetFile.endsWith('.ts') || targetFile.endsWith('.tsx')) language = 'typescript';
   else if (targetFile.endsWith('.sol')) language = 'solidity';
 
-  console.log(`⚡ Requesting Git diff patches & settling $0.001 USDC via x402...`);
+  console.log(`[*] Requesting language-aware Git diff patches...`);
   const startTime = Date.now();
 
   const res = await payingFetch(endpointUrl, {
@@ -61,8 +61,7 @@ async function main() {
     body: JSON.stringify({
       code,
       filename: targetFile,
-      language,
-      tier: 'tier2'
+      language
     })
   });
 
@@ -70,33 +69,29 @@ async function main() {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    console.error(`❌ Remediation Failed (${res.status}): ${errText}`);
+    console.error(`[!] Remediation Failed (${res.status}): ${errText}`);
     process.exit(1);
   }
 
   const report = await res.json();
 
   console.log(`\n=================== REMEDIATION RESULTS (${duration}ms) ===================`);
-  console.log(`🛡️  Patches Generated   : ${report.fixes?.length || 0}`);
+  console.log(`Patches Generated   : ${report.fixes?.length || 0}`);
 
   // Financial Payment Echo
-  console.log(`\n💸 FINANCIAL CONFIRMATION:`);
-  console.log(`   • Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
-  console.log(`   • Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
-  console.log(`   • Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
+  console.log(`\n[FINANCIAL CONFIRMATION]`);
+  console.log(`   * Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
+  console.log(`   * Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
+  console.log(`   * Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
   if (report.fixes && report.fixes.length > 0) {
     const patchPath = 'audit.patch';
     let patchContent = '';
-    report.fixes.forEach((fx: any, idx: number) => {
-      console.log(`\n# Fix #${idx + 1}:`);
-      console.log(fx.diff);
+    report.fixes.forEach((fx: any) => {
       patchContent += `${fx.diff}\n\n`;
     });
     fs.writeFileSync(patchPath, patchContent);
-    console.log(`\n🩹 Unified Git Diff saved to: '${patchPath}'`);
-    console.log(`   Apply automatically with: git apply ${patchPath}`);
-  } else {
-    console.log(`\n✅ No fixes needed! Code appears cleanly hardened.`);
+    console.log(`\n[+] Unified Git Diff Patch saved to: '${patchPath}'`);
+    console.log(`    Apply automatically with: git apply ${patchPath}`);
   }
   console.log(`=========================================================\n`);
 }

@@ -1,60 +1,60 @@
-# 🐍 MEDUSA (ADSEC) — Architecture & Technical Specification
+# MEDUSA (ADSEC) — Architecture & Technical Specification
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
 Medusa is composed of four decoupled, scalable layers serving both **Autonomous AI Agents** and **Human Developers**:
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                          1. CLIENT / AGENT LAYER                       │
-│  • Autonomous AI Agents (using Medusa_Skill.md & medusa-scripts/)      │
-│  • CI/CD Autonomous Security Gates (GitHub Actions / GitLab CI)        │
-│  • Web Application Users (Dual-Mode React UI + Pera / Defly Wallet)    │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ HTTP Requests (x402 Protocol)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                        2. X402 PROTOCOL GATEWAY                        │
-│  • Hono HTTP Framework (TypeScript, Node.js / Edge-Ready)              │
-│  • @x402/hono Payment Middleware (Enforces HTTP 402 Challenges)        │
-│  • GoPlausible Facilitator Settlement (`facilitator.goplausible.xyz`)  │
-│  • Algorand TestNet Blockchain (USDC ASA 10458941)                     │
-│  • GoPlausible Bazaar Discovery (Dynamic Agent Service Indexing)       │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │ Verified Paid Requests ($0.001 USDC)
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                      3. MEDUSA SECURITY AUDIT ENGINE                   │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ Tier 1: Deterministic Engine (<50ms)                             │  │
-│  │ • Secret Scanner: AWS, OpenAI, GitHub PAT, JWT, Private Keys     │  │
-│  │ • Dangerous Patterns: eval(), exec(), pickle, SQLi, Command Inj  │  │
-│  │ • Supply Chain: Typosquatting detection via Levenshtein distance │  │
-│  │ • OSV.dev CVE Query: Real-time public vulnerability database     │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ Tier 2: AI Semantic Logic & Diff Engine                          │  │
-│  │ • LLM Semantic Review: Auth bypass, IDOR, logic flaws            │  │
-│  │ • Unified Diff Generator: Actionable Git patch generation        │  │
-│  │ • Weighted Scoring: 0–100 Health Score calculation               │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                      4. SETTLEMENT & AUDIT RECEIPTS                    │
-│  • On-Chain Algorand TestNet Transaction Hash (Immutable Proof)        │
-│  • Algorand Lora Explorer Deep-Links                                   │
-│  • JSON Structured Findings + Standard Unified Git Diff (.patch)       │
-└────────────────────────────────────────────────────────────────────────┘
+```text
++------------------------------------------------------------------------+
+|                          1. CLIENT / AGENT LAYER                       |
+|  * Autonomous AI Agents (using Medusa_Skill.md & medusa-scripts/)      |
+|  * CI/CD Autonomous Security Gates (GitHub Actions / GitLab CI)        |
+|  * Web Application Users (Dual-Mode React UI + Pera / Defly Wallet)    |
++-----------------------------------+------------------------------------+
+                                    | HTTP Requests (x402 Protocol)
+                                    v
++------------------------------------------------------------------------+
+|                        2. X402 PROTOCOL GATEWAY                        |
+|  * Hono HTTP Framework (TypeScript, Node.js / Edge-Ready)              |
+|  * @x402/hono Payment Middleware (Enforces HTTP 402 Challenges)        |
+|  * GoPlausible Facilitator Settlement (facilitator.goplausible.xyz)     |
+|  * Algorand TestNet Blockchain (USDC ASA 10458941)                     |
+|  * GoPlausible Bazaar Discovery (Dynamic Agent Service Indexing)       |
++-----------------------------------+------------------------------------+
+                                    | Verified Paid Requests ($0.001 USDC)
+                                    v
++------------------------------------------------------------------------+
+|                      3. MEDUSA SECURITY AUDIT ENGINE                   |
+|                                                                        |
+|  +------------------------------------------------------------------+  |
+|  | Tier 1: Deterministic Engine (<50ms)                             |  |
+|  | * Secret Scanner: AWS, OpenAI, GitHub PAT, JWT, Private Keys     |  |
+|  | * Dangerous Patterns: eval(), exec(), pickle, SQLi, Command Inj  |  |
+|  | * Supply Chain: Typosquatting detection via Levenshtein distance |  |
+|  | * OSV.dev CVE Query: Real-time public vulnerability database     |  |
+|  +------------------------------------------------------------------+  |
+|  +------------------------------------------------------------------+  |
+|  | Tier 2: AI Semantic Logic & Diff Engine                          |  |
+|  | * LLM Semantic Review: Auth bypass, IDOR, logic flaws            |  |
+|  | * Unified Diff Generator: Actionable Git patch generation        |  |
+|  | * Weighted Scoring: 0–100 Health Score calculation               |  |
+|  +------------------------------------------------------------------+  |
++-----------------------------------+------------------------------------+
+                                    |
+                                    v
++------------------------------------------------------------------------+
+|                      4. SETTLEMENT & AUDIT RECEIPTS                    |
+|  * On-Chain Algorand TestNet Transaction Hash (Immutable Proof)        |
+|  * Algorand Lora Explorer Deep-Links                                   |
+|  * JSON Structured Findings + Standard Unified Git Diff (.patch)       |
++------------------------------------------------------------------------+
 ```
 
 ---
 
-## 💰 Endpoint Pricing & Modular Script Specifications
+## Endpoint Pricing & Modular Script Specifications
 
 All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.001 USDC (1,000 microUSDC)**.
 
@@ -68,7 +68,7 @@ All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.00
 
 ---
 
-## 🔄 Dual Interaction Modes
+## Dual Interaction Modes
 
 ### Mode 1: Headless Autonomous Agent (Agent-to-Agent)
 1. **Installation:** Any codebase runs `curl -fsSL .../install.sh | bash`.
@@ -78,4 +78,4 @@ All paid tiers settle in **TestNet USDC (ASA #10458941)** on Algorand at **$0.00
 
 ### Mode 2: Web Playground (Human-to-Agent)
 1. **Interactive Guide:** Tab 1 provides copyable installer commands and live Bazaar inspection.
-2. **Manual Auditor:** Tab 2 provides Pera/Defly wallet connection, code presets, live ASCII terminal animation, and on-chain ledger links.
+2. **Interactive Auditor:** Tab 2 provides Pera/Defly wallet connection, code presets, live ASCII terminal animation, and on-chain ledger links.

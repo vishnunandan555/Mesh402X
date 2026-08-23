@@ -16,15 +16,15 @@ dotenv.config({ path: 'wallet.env' });
 async function main() {
   const targetFile = process.argv[2];
   if (!targetFile || !fs.existsSync(targetFile)) {
-    console.error(`❌ Error: Target file '${targetFile || ''}' not found.`);
+    console.error(`[!] Error: Target file '${targetFile || ''}' not found.`);
     console.log(`Usage: npx tsx audit-full.ts <path_to_source_file>`);
     process.exit(1);
   }
 
   const mnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
   if (!mnemonic) {
-    console.error('❌ Error: Missing AGENT_MNEMONIC in .env');
-    console.log('Please add your 25-word Algorand TestNet mnemonic to .env');
+    console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
+    console.log('Please add your 25-word Algorand TestNet mnemonic to wallet.env');
     process.exit(1);
   }
 
@@ -32,14 +32,14 @@ async function main() {
   const endpointUrl = `${backendUrl.replace(/\/$/, '')}/adsec/audit`;
 
   console.log(`\n======================================================`);
-  console.log(`🤖 MEDUSA [FULL AUDIT SUITE]: ${targetFile}`);
+  console.log(`[+] MEDUSA [FULL AUDIT SUITE]: ${targetFile}`);
   console.log(`======================================================`);
-  console.log(`💰 Price : $0.001 USDC (Algorand TestNet ASA #10458941)`);
-  console.log(`🎯 Target: ${endpointUrl}`);
+  console.log(`Price : $0.001 USDC (Algorand TestNet ASA #10458941)`);
+  console.log(`Target: ${endpointUrl}`);
 
   // 1. Load Account
   const agentAccount = algosdk.mnemonicToSecretKey(mnemonic);
-  console.log(`💳 Wallet: ${agentAccount.addr}`);
+  console.log(`Wallet: ${agentAccount.addr}`);
 
   // 2. Setup x402 Client
   const client = new x402Client();
@@ -56,7 +56,7 @@ async function main() {
   else if (targetFile.endsWith('.ts') || targetFile.endsWith('.tsx')) language = 'typescript';
   else if (targetFile.endsWith('.sol')) language = 'solidity';
 
-  console.log(`⚡ Sending code to Medusa & settling $0.001 USDC via x402...`);
+  console.log(`[*] Sending code to Medusa & settling $0.001 USDC via x402...`);
   const startTime = Date.now();
 
   const res = await payingFetch(endpointUrl, {
@@ -74,7 +74,7 @@ async function main() {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    console.error(`❌ Audit Failed (${res.status}): ${errText}`);
+    console.error(`[!] Audit Failed (${res.status}): ${errText}`);
     process.exit(1);
   }
 
@@ -82,20 +82,20 @@ async function main() {
 
   // 4. Output Results
   console.log(`\n=================== AUDIT RESULTS (${duration}ms) ===================`);
-  console.log(`🛡️  Security Health Score : ${report.summary?.score ?? 'N/A'}/100`);
-  console.log(`🚨 Total Issues Found    : ${report.summary?.totalIssues || 0} (Critical: ${report.summary?.critical || 0}, High: ${report.summary?.high || 0})`);
+  console.log(`Security Health Score : ${report.summary?.score ?? 'N/A'}/100`);
+  console.log(`Total Issues Found    : ${report.summary?.totalIssues || 0} (Critical: ${report.summary?.critical || 0}, High: ${report.summary?.high || 0})`);
 
   // Financial Payment Echo
-  console.log(`\n💸 FINANCIAL CONFIRMATION:`);
-  console.log(`   • Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
-  console.log(`   • Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
-  console.log(`   • Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
+  console.log(`\n[FINANCIAL CONFIRMATION]`);
+  console.log(`   * Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
+  console.log(`   * Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
+  console.log(`   * Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
   if (report.attestation?.txId || report.receipt?.txId) {
-    console.log(`   • Settlement Tx  : ${report.attestation?.txId || report.receipt?.txId}`);
+    console.log(`   * Settlement Tx  : ${report.attestation?.txId || report.receipt?.txId}`);
   }
 
   if (report.findings && report.findings.length > 0) {
-    console.log(`\n📋 Detected Vulnerabilities:`);
+    console.log(`\nDetected Vulnerabilities:`);
     report.findings.forEach((f: any, idx: number) => {
       console.log(`  ${idx + 1}. [${(f.severity || 'high').toUpperCase()}] ${f.title}`);
       if (f.line) console.log(`     Location : Line ${f.line}`);
@@ -113,15 +113,15 @@ async function main() {
       patchContent += `${fx.diff}\n\n`;
     });
     fs.writeFileSync(patchPath, patchContent);
-    console.log(`\n🩹 Unified Git Diff Patch saved to: '${patchPath}'`);
-    console.log(`   Apply automatically with: git apply ${patchPath}`);
+    console.log(`\n[+] Unified Git Diff Patch saved to: '${patchPath}'`);
+    console.log(`    Apply automatically with: git apply ${patchPath}`);
   }
 
   // On-Chain Attestation
   const txId = report.attestation?.txId || report.receipt?.txId;
   if (txId) {
-    console.log(`\n⛓️  On-Chain Attestation TxID : ${txId}`);
-    console.log(`🔗 Lora Explorer Verification : https://lora.algokit.io/testnet/transaction/${txId}`);
+    console.log(`\nOn-Chain Attestation TxID : ${txId}`);
+    console.log(`Lora Explorer Link        : https://lora.algokit.io/testnet/transaction/${txId}`);
   }
   console.log(`=========================================================\n`);
 }

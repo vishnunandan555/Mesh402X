@@ -16,14 +16,14 @@ dotenv.config({ path: 'wallet.env' });
 async function main() {
   const targetFile = process.argv[2];
   if (!targetFile || !fs.existsSync(targetFile)) {
-    console.error(`❌ Error: Target file '${targetFile || ''}' not found.`);
+    console.error(`[!] Error: Target file '${targetFile || ''}' not found.`);
     console.log(`Usage: npx tsx audit-attest.ts <path_to_source_file>`);
     process.exit(1);
   }
 
   const mnemonic = process.env.AGENT_MNEMONIC || process.env.USER_AGENT_MNEMONIC || process.env.PAYER_MNEMONIC;
   if (!mnemonic) {
-    console.error('❌ Error: Missing AGENT_MNEMONIC in .env');
+    console.error('[!] Error: Missing AGENT_MNEMONIC in wallet.env or .env');
     process.exit(1);
   }
 
@@ -31,13 +31,13 @@ async function main() {
   const endpointUrl = `${backendUrl.replace(/\/$/, '')}/adsec/attest`;
 
   console.log(`\n======================================================`);
-  console.log(`⛓️  MEDUSA [ON-CHAIN ATTESTATION]: ${targetFile}`);
+  console.log(`[+] MEDUSA [ON-CHAIN ATTESTATION]: ${targetFile}`);
   console.log(`======================================================`);
-  console.log(`💰 Price : $0.001 USDC (Algorand TestNet ASA #10458941)`);
-  console.log(`🎯 Target: ${endpointUrl}`);
+  console.log(`Price : $0.001 USDC (Algorand TestNet ASA #10458941)`);
+  console.log(`Target: ${endpointUrl}`);
 
   const agentAccount = algosdk.mnemonicToSecretKey(mnemonic);
-  console.log(`💳 Wallet: ${agentAccount.addr}`);
+  console.log(`Wallet: ${agentAccount.addr}`);
 
   const client = new x402Client();
   client.register('algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=', new ExactAvmScheme({
@@ -52,7 +52,7 @@ async function main() {
   else if (targetFile.endsWith('.ts') || targetFile.endsWith('.tsx')) language = 'typescript';
   else if (targetFile.endsWith('.sol')) language = 'solidity';
 
-  console.log(`⚡ Generating SHA-256 digest & broadcasting on-chain note via x402...`);
+  console.log(`[*] Submitting code for on-chain SHA-256 attestation note...`);
   const startTime = Date.now();
 
   const res = await payingFetch(endpointUrl, {
@@ -61,8 +61,7 @@ async function main() {
     body: JSON.stringify({
       code,
       filename: targetFile,
-      language,
-      tier: 'tier1'
+      language
     })
   });
 
@@ -70,7 +69,7 @@ async function main() {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
-    console.error(`❌ Attestation Failed (${res.status}): ${errText}`);
+    console.error(`[!] Attestation Failed (${res.status}): ${errText}`);
     process.exit(1);
   }
 
@@ -78,19 +77,17 @@ async function main() {
 
   console.log(`\n=================== ATTESTATION RESULTS (${duration}ms) ===================`);
   // Financial Payment Echo
-  console.log(`\n💸 FINANCIAL CONFIRMATION:`);
-  console.log(`   • Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
-  console.log(`   • Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
-  console.log(`   • Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
+  console.log(`\n[FINANCIAL CONFIRMATION]`);
+  console.log(`   * Paid to Node   : $0.001 USDC (1,000 microUSDC)`);
+  console.log(`   * Receiver Node  : LG24FUHIBJEL6Z3X7TPSOPGQKF6E2ZBLSZMNSFVOTSJA7TNETZTGCAQGDQ`);
+  console.log(`   * Network Scheme : x402 ExactAvmScheme (Algorand TestNet ASA #10458941)`);
   if (report.attestation) {
-    console.log(`📜 Cryptographic SHA-256 Code Hash : ${report.attestation.codeHash}`);
-    console.log(`🛡️  Audited Security Score         : ${report.attestation.score}/100`);
-    console.log(`⛓️  On-Chain Attestation TxID       : ${report.attestation.txId}`);
-    console.log(`🔗 Lora Explorer Verification       : https://lora.algokit.io/testnet/transaction/${report.attestation.txId}`);
-  } else {
-    console.log(`Receipt:`, report.receipt || report);
+    console.log(`Cryptographic SHA-256 Code Hash : ${report.attestation.codeHash}`);
+    console.log(`Audited Security Score         : ${report.attestation.score}/100`);
+    console.log(`On-Chain Transaction ID        : ${report.attestation.txId}`);
+    console.log(`Lora Explorer Link             : https://lora.algokit.io/testnet/transaction/${report.attestation.txId}`);
   }
-  console.log(`==========================================================\n`);
+  console.log(`=========================================================\n`);
 }
 
 main().catch(console.error);
