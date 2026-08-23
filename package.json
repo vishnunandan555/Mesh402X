@@ -1,0 +1,21 @@
+{
+  "name": "mesh402x-workspace",
+  "version": "1.0.0",
+  "description": "ADSEC — Autonomous Code Security Audit Node on Algorand x402",
+  "private": true,
+  "scripts": {
+    "discover": "npm --prefix x402-Project/x402-demo-server run discover",
+    "audit": "npm --prefix x402-Project/x402-demo-server run audit",
+    "dev:backend": "npm --prefix x402-Project/x402-demo-server run dev",
+    "dev:frontend": "npm --prefix x402-Project/X402-Usecase/projects/X402-Usecase run dev",
+    "build:frontend": "npm --prefix x402-Project/X402-Usecase/projects/X402-Usecase run build"
+  },
+  "keywords": [
+    "x402",
+    "algorand",
+    "security-audit",
+    "agentic-commerce"
+  ],
+  "author": "ADSEC Team",
+  "license": "MIT"
+}
