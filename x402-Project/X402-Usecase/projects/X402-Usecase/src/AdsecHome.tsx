@@ -261,7 +261,7 @@ export const AdsecHome: React.FC = () => {
               </div>
 
               <div className="text-xs font-mono text-slate-500 bg-slate-900/80 border border-slate-800 rounded-xl px-4 py-3 shrink-0 hidden md:block">
-                <div>target : <span className="text-slate-300">{`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4021'}`}</span></div>
+                <div>target : <span className="text-slate-300">{`${import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'}`}</span></div>
                 <div className="mt-1">network : <span className="text-emerald-400">algorand testnet</span></div>
               </div>
             </div>

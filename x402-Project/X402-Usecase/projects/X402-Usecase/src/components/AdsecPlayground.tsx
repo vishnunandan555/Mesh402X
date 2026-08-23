@@ -94,7 +94,7 @@ export const AdsecPlayground: React.FC = () => {
   const [auditResponse, setAuditResponse] = useState<AdsecResponse | null>(null)
   const [copiedDiffIdx, setCopiedDiffIdx] = useState<number | null>(null)
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4021'
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://mesh402x.onrender.com'
 
   useEffect(() => {
     const handler = (e: Event) => setMode((e as CustomEvent<EndpointMode>).detail)

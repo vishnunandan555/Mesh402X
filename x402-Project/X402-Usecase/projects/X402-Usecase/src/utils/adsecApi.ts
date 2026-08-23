@@ -100,6 +100,7 @@ export async function createAdsecX402Fetch(walletSigner: any) {
   }
 
   client.register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme(x402Signer))
+  client.register('algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=', new ExactAvmScheme(x402Signer))
   return wrapFetchWithPayment(fetch, client)
 }
 
