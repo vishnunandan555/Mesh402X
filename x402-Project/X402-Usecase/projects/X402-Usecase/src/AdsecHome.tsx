@@ -30,7 +30,7 @@ const PIPELINE = [
     title: 'Get challenged, pay in one tap',
     accent: 'text-amber-300 border-amber-500/40 bg-amber-500/10',
     body: 'The node answers HTTP 402 Payment Required with a micropayment invoice. Your wallet signs a $0.001 TestNet USDC transfer (ASA 10458941).',
-    code: 'HTTP/1.1 402 PAYMENT REQUIRED\nX-PRICE: 0.05 USDC',
+    code: 'HTTP/1.1 402 PAYMENT REQUIRED\nX-PRICE: 0.001 USDC',
   },
   {
     step: '03',
