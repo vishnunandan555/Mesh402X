@@ -6,6 +6,7 @@
   "scripts": {
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
+    "agent": "tsx scripts/run-user-agent.ts",
     "audit": "tsx scripts/agent-audit.ts",
     "discover": "tsx scripts/agent-discover-and-audit.ts",
     "live": "tsx scripts/agent-live-onchain.ts",
